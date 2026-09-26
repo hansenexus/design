@@ -1,13 +1,15 @@
 {
   "name": "@hansenexus/state-check",
-  "version": "0.1.0",
-  "description": "The hansenexus frontend state contract as a deterministic check: dynamic Next.js App Router segments need loading.tsx or <Suspense>. Per-app baseline ratchet, reasoned opt-outs, CLI.",
+  "version": "0.2.0",
+  "description": "The hansenexus frontend state contract as a deterministic check: dynamic Next.js App Router segments need loading.tsx or <Suspense>; opt-in rules for Convex useQuery loading branches and pending actions. Per-app baseline ratchet, reasoned opt-outs, CLI.",
   "license": "MIT",
   "keywords": [
     "nextjs",
     "app-router",
     "loading",
     "suspense",
+    "convex",
+    "pending",
     "lint",
     "ratchet"
   ],

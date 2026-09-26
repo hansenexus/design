@@ -1,26 +1,8 @@
-// Fixture apps are written to a scratch directory per test, so the fake Next.js code never meets
-// the repo's lint, typecheck or raw-palette ratchet.
 import { describe, expect, test } from "bun:test";
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { check, emptyBaseline, readBaseline, toBaseline } from "../src";
-
-const CLI = resolve(import.meta.dir, "../src/cli.ts");
-
-function app(files: Record<string, string>): string {
-  const dir = mkdtempSync(join(tmpdir(), "hn-state-check-"));
-  for (const [path, content] of Object.entries(files)) {
-    mkdirSync(dirname(join(dir, path)), { recursive: true });
-    writeFileSync(join(dir, path), content);
-  }
-  return dir;
-}
-
-function run(dir: string, ...args: string[]) {
-  const p = Bun.spawnSync(["bun", CLI, "--app", dir, ...args], { cwd: dir });
-  return { code: p.exitCode, out: p.stdout.toString(), err: p.stderr.toString() };
-}
+import { app, CLI, run } from "./fixture";
 
 const violations = (dir: string, authHelpers?: string[]) =>
   check(dir, emptyBaseline(), { authHelpers }).new.map((v) => `${v.file}:${v.line}`);

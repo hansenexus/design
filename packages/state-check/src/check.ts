@@ -3,11 +3,17 @@ import { join, relative, sep } from "node:path";
 import ts from "typescript";
 import { type Baseline, compare, type Entry } from "./baseline";
 import { covering, type Directive, directives } from "./ignore";
+import { convexQuery } from "./rules/convex-query";
 import { nextRoute } from "./rules/next-route";
+import { pendingAction } from "./rules/pending-action";
 import type { CheckOptions, Rule, RuleContext, Violation } from "./types";
 
-/** Every rule set by id. The route rule is the default; later ones are opt-in. */
-export const RULES: Record<string, Rule> = { [nextRoute.id]: nextRoute };
+/** Every rule set by id. The route rule is the default; the others are opt-in (see config.ts). */
+export const RULES: Record<string, Rule> = {
+  [nextRoute.id]: nextRoute,
+  [convexQuery.id]: convexQuery,
+  [pendingAction.id]: pendingAction,
+};
 export const DEFAULT_RULES = [nextRoute.id];
 
 const SKIP = new Set(["node_modules", ".next", ".turbo", "dist", "out", "build", "coverage"]);

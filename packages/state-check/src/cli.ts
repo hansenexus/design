@@ -1,15 +1,19 @@
-// state-check --app <dir> [--baseline <file>] [--json] [--update-baseline] [--auth-helper <name>]…
+// state-check --app <dir> [--config <file>] [--baseline <file>] [--json] [--update-baseline]
+//             [--auth-helper <name>]…
 // Exit 0: no violation beyond the baseline. Exit 1: new violations or an ignore without a reason.
-// Exit 2: bad usage or an unreadable baseline.
+// Exit 2: bad usage or an unreadable baseline or config.
 import { existsSync, realpathSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { readBaseline, toBaseline, writeBaseline } from "./baseline";
 import { check, type Report } from "./check";
+import { CONFIG_FILE, PACKAGE_KEY, readConfig } from "./config";
 
-const USAGE = `usage: state-check --app <dir> [--baseline <file>] [--json] [--update-baseline]
-                   [--auth-helper <name>]...
+const USAGE = `usage: state-check --app <dir> [--config <file>] [--baseline <file>] [--json]
+                   [--update-baseline] [--auth-helper <name>]...
 
-  --app <dir>          the Next.js app (holds app/ or src/app/)
+  --app <dir>          the app (for the route rule: holds app/ or src/app/)
+  --config <file>      rule sets and options (default <app>/${CONFIG_FILE}, else the
+                       "${PACKAGE_KEY}" key of <app>/package.json; default rules: next-route)
   --baseline <file>    allowed violations (default <app>/state-coverage.baseline.json)
   --json               print the report as JSON
   --update-baseline    rewrite the baseline to the current violations
@@ -17,6 +21,7 @@ const USAGE = `usage: state-check --app <dir> [--baseline <file>] [--json] [--up
 
 type Args = {
   app?: string;
+  config?: string;
   baseline?: string;
   json: boolean;
   update: boolean;
@@ -33,6 +38,7 @@ function parse(argv: string[]): Args {
       return v;
     };
     if (a === "--app") args.app = value();
+    else if (a === "--config") args.config = value();
     else if (a === "--baseline") args.baseline = value();
     else if (a === "--json") args.json = true;
     else if (a === "--update-baseline") args.update = true;
@@ -57,17 +63,18 @@ function print(report: Report, appDir: string, baselinePath: string): void {
     );
   for (const v of report.ignored)
     console.log(`IGNORED ${at(v.file, v.line)} ${v.rule}: ${v.reason}`);
-  const s = report.stats;
+  const { ignored: _ignored, ...ruleStats } = report.stats;
   const counts = [
-    `${s.pages ?? 0} pages`,
-    `${s.dynamic ?? 0} dynamic`,
-    `${s.covered ?? 0} covered`,
+    ...Object.entries(ruleStats).map(([k, n]) => `${n} ${k}`),
     `${report.baselined.length} baselined`,
     `${report.ignored.length} ignored`,
     `${report.new.length} new`,
   ].join(", ");
   const verdict = report.ok ? "pass" : "FAIL";
-  console.log(`state-check: ${counts} (${relative(process.cwd(), baselinePath)}): ${verdict}`);
+  const rules = report.rules.join(", ");
+  console.log(
+    `state-check [${rules}]: ${counts} (${relative(process.cwd(), baselinePath)}): ${verdict}`
+  );
 }
 
 function main(): number {
@@ -92,8 +99,10 @@ function main(): number {
 
   let report: Report;
   try {
+    const config = readConfig(appDir, args.config && resolve(args.config));
     const baseline = readBaseline(baselinePath);
-    report = check(appDir, baseline, { authHelpers: args.authHelpers });
+    const authHelpers = [...(config.options.authHelpers ?? []), ...args.authHelpers];
+    report = check(appDir, baseline, { ...config.options, authHelpers, rules: config.rules });
   } catch (e) {
     console.error(`state-check: ${(e as Error).message}`);
     return 2;
