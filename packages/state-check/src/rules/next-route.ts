@@ -17,13 +17,14 @@
 // loading.tsx does. Awaiting `params` / `searchParams` does not count as blocking: it is how
 // Next 15 hands them over, and it is what a page does before rendering its <Suspense>.
 //
-// Limits (v0): helpers are followed within the page file only, and a <Suspense> anywhere in the
+// Limits: helpers are followed within the page file only, and a <Suspense> anywhere in the
 // page file counts as covering its async children.
 //
 // The rule never looks at what the fallback renders or which library it comes from.
 import { posix } from "node:path";
 import ts from "typescript";
 import type { Rule, RuleContext, Violation } from "../types";
+import { calleeName, type FunctionLike, isFunctionLike, lineOf } from "./ast";
 
 export const REQUEST_APIS = ["cookies", "headers", "draftMode", "connection"];
 export const AUTH_HELPERS = [
@@ -40,25 +41,6 @@ const LOADING = ["loading.tsx", "loading.jsx", "loading.js", "loading.ts"];
 const PARAM = /^\[{1,2}(?:\.\.\.)?[^\]]+\]{1,2}$/;
 
 type Signal = { what: string; line: number; blocking: boolean };
-
-type FunctionLike =
-  | ts.FunctionDeclaration
-  | ts.FunctionExpression
-  | ts.ArrowFunction
-  | ts.MethodDeclaration;
-
-function lineOf(sf: ts.SourceFile, node: ts.Node): number {
-  return sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
-}
-
-function isFunctionLike(node: ts.Node): node is FunctionLike {
-  return (
-    ts.isFunctionDeclaration(node) ||
-    ts.isFunctionExpression(node) ||
-    ts.isArrowFunction(node) ||
-    ts.isMethodDeclaration(node)
-  );
-}
 
 function hasModifier(node: ts.Node, kind: ts.SyntaxKind): boolean {
   return ts.canHaveModifiers(node) && (ts.getModifiers(node) ?? []).some((m) => m.kind === kind);
@@ -104,13 +86,6 @@ function pageComponent(
     }
   }
   return { line: 1 };
-}
-
-function calleeName(call: ts.CallExpression): string | undefined {
-  const c = call.expression;
-  if (ts.isIdentifier(c)) return c.text;
-  if (ts.isPropertyAccessExpression(c)) return c.name.text;
-  return undefined;
 }
 
 /** `params` / `searchParams` (or `props.params`) when awaited: Next 15 route input, not data. */

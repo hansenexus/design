@@ -11,6 +11,12 @@ export type Violation = {
 export type CheckOptions = {
   /** Extra call names that read the request (auth helpers). Added to the defaults. */
   authHelpers?: string[];
+  /** convex-query: extra components that take a query result and render its loading state. */
+  queryWrappers?: string[];
+  /** pending-action: extra hooks whose result triggers a mutation (on top of useMutation, useAction). */
+  mutationHooks?: string[];
+  /** pending-action: extra components that render their own pending state (a useFormStatus button). */
+  pendingComponents?: string[];
 };
 
 /** What a rule sees: the app's files and a parsed-source cache shared across rules. */
@@ -25,8 +31,8 @@ export type RuleContext = {
 };
 
 /**
- * A rule set. The route rule is on by default; later rule sets (Convex queries, pending actions)
- * plug in here as opt-ins. A rule reports that a state is missing, never which library should
+ * A rule set. The route rule is on by default; the Convex query and pending action rules are
+ * opt-in through the app's config. A rule reports that a state is missing, never which library should
  * render it.
  */
 export type Rule = {

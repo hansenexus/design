@@ -1,10 +1,10 @@
-// `// state-coverage-ignore: <reason>` is the only opt-out. It suppresses a violation reported on
-// its own line or on the line below, and the reason is mandatory: a directive without one is an
-// error that no baseline can absorb.
+// `// state-coverage-ignore: <reason>` is the only opt-out (in JSX, `{/* state-coverage-ignore:
+// <reason> */}`). It suppresses a violation reported on its own line or on the line below, and the
+// reason is mandatory: a directive without one is an error that no baseline can absorb.
 
 export type Directive = { file: string; line: number; reason: string };
 
-const DIRECTIVE = /\/\/\s*state-coverage-ignore\b(.*)$/;
+const DIRECTIVE = /(?:\/\/|\/\*)\s*state-coverage-ignore\b(.*)$/;
 
 /** Every directive in `text`, valid (non-empty reason after a colon) or not. */
 export function directives(
@@ -16,7 +16,9 @@ export function directives(
   text.split("\n").forEach((line, i) => {
     const m = DIRECTIVE.exec(line);
     if (!m) return;
-    const rest = (m[1] ?? "").trim();
+    // A block comment ends at `*/`; what follows it is code, not reason.
+    const body = line.slice(m.index).startsWith("/*") ? (m[1] ?? "").split("*/")[0] : m[1];
+    const rest = (body ?? "").trim();
     const reason = rest.startsWith(":") ? rest.slice(1).trim() : "";
     (reason ? valid : invalid).push({ file, line: i + 1, reason });
   });
