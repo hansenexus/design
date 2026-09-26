@@ -5,12 +5,14 @@ hansenexus design system: DTCG tokens, UI primitives and the Swift package. Open
 | Package | What |
 | --- | --- |
 | [`@hansenexus/tokens`](packages/tokens) | DTCG source, CSS variables, Tailwind v4 `@theme`, TS constants, contrast CI |
+| [`HansenexusTokens`](swift) | SwiftPM package: generated colours, fonts and spacing for SwiftUI |
 | [`@hansenexus/ui`](packages/ui) | 16 primitives on Radix, semantic tokens only, shadcn registry, screenshot baselines |
 
 ```sh
 bun install
 bun run build && bun run contrast && bun run ratchet && bun run test
 bun run screenshots   # needs Docker, see packages/ui
+swift test   # the Swift package; bun run swift regenerates it after a token change
 ```
 
 `bun run ratchet` fails on a raw colour value (hex, colour functions, Tailwind palette utilities) anywhere

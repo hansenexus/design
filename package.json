@@ -12,7 +12,8 @@
     "build": "bun run --filter '*' build",
     "contrast": "bun run --filter '*' contrast",
     "test": "bun test scripts && bun run --filter '*' test",
-    "screenshots": "bun run --filter @hansenexus/ui screenshots"
+    "screenshots": "bun run --filter @hansenexus/ui screenshots",
+    "swift": "bun run --filter @hansenexus/tokens swift"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",

@@ -75,10 +75,33 @@ jobs:
             packages/ui/playwright-report/
           retention-days: 7
 
+  swift:
+    # Compiles and tests the SwiftPM package. Linux covers the Foundation-free token
+    # values; macOS also builds the SwiftUI adapters and compiles them for iOS.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - run: swift --version
+      - name: Build
+        run: swift build
+      - name: Test
+        run: swift test
+      - name: Build for iOS
+        if: runner.os == 'macOS'
+        run: |
+          # Xcode names the package scheme itself (not after the product); read it.
+          xcodebuild -list -json | tee schemes.json
+          scheme=$(python3 -c 'import json; s=json.load(open("schemes.json"))["workspace"]["schemes"]; print(next((x for x in s if x.endswith("-Package")), s[0]))')
+          xcodebuild build -scheme "$scheme" -destination 'generic/platform=iOS' -quiet
+
   result:
     name: CI Result
     if: always()
-    needs: [check, package, screenshots]
+    needs: [check, package, screenshots, swift]
     runs-on: ubuntu-latest
     steps:
       - name: All jobs passed

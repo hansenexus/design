@@ -203,7 +203,8 @@ export async function build(tokensDir?: string, dist = DIST) {
   const { js, dts } = renderTs(all, densities);
   writeFileSync(resolve(dist, "index.js"), js);
   writeFileSync(resolve(dist, "index.d.ts"), dts);
-  writeFileSync(resolve(dist, "tokens.json"), `${JSON.stringify(all, null, 2)}\n`);
+  const noRaw = (key: string, v: unknown) => (key === "raw" ? undefined : v);
+  writeFileSync(resolve(dist, "tokens.json"), `${JSON.stringify(all, noRaw, 2)}\n`);
   return all;
 }
 

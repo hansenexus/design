@@ -21,6 +21,8 @@ export type ResolvedToken = {
   cssVar: string;
   type: string;
   value: string;
+  /** Resolved DTCG value before CSS transforms: arrays and objects stay structured. */
+  raw: unknown;
   description?: string;
 };
 
@@ -52,9 +54,14 @@ export async function resolveTokens(
         prefix: "hn",
         transforms: ["name/kebab", "color/css", "fontFamily/css", "shadow/css/shorthand"],
       },
+      // No value transforms: references resolved, values as authored (the Swift output).
+      raw: { transforms: [] },
     },
   });
   const { allTokens } = await sd.getPlatformTokens("css");
+  const raw = new Map(
+    (await sd.getPlatformTokens("raw")).allTokens.map((t) => [t.path.join("."), t.$value])
+  );
   return allTokens
     .filter((t) => !isPrimitive(t.filePath))
     .map((t) => ({
@@ -62,6 +69,7 @@ export async function resolveTokens(
       cssVar: `--${t.name}`,
       type: String(t.$type),
       value: String(t.$value),
+      raw: raw.get(t.path.join(".")),
       ...(t.$description ? { description: String(t.$description) } : {}),
     }))
     .sort((a, b) => a.path.localeCompare(b.path, "en", { numeric: true }));
@@ -90,6 +98,7 @@ export async function resolveDensities(
           cssVar: `--hn-size-${key}`,
           type: String(t.$type),
           value: String(t.$value),
+          raw: t.$value,
         };
       });
   }
