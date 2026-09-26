@@ -1,0 +1,69 @@
+{
+  "name": "@hansenexus/ui",
+  "version": "0.1.0",
+  "description": "hansenexus UI primitives on Radix, styled only through the semantic tokens of @hansenexus/tokens. Dark and light.",
+  "license": "MIT",
+  "keywords": [
+    "react",
+    "radix-ui",
+    "tailwindcss",
+    "design-system",
+    "shadcn"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hansenexus/design.git",
+    "directory": "packages/ui"
+  },
+  "bugs": "https://github.com/hansenexus/design/issues",
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./registry/*": "./dist/r/*"
+  },
+  "files": [
+    "dist/",
+    "src/",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "bun scripts/build.ts",
+    "test": "bun test tests",
+    "gallery": "bun scripts/gallery.ts",
+    "screenshots": "scripts/screenshots.sh",
+    "screenshots:update": "scripts/screenshots.sh --update-snapshots"
+  },
+  "dependencies": {
+    "radix-ui": "1.6.7"
+  },
+  "peerDependencies": {
+    "@hansenexus/tokens": "^0.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@fontsource-variable/fraunces": "5.3.0",
+    "@fontsource-variable/instrument-sans": "5.3.0",
+    "@fontsource-variable/jetbrains-mono": "5.3.0",
+    "@hansenexus/tokens": "workspace:*",
+    "@playwright/test": "1.63.0",
+    "@tailwindcss/cli": "4.3.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "shadcn": "4.21.0",
+    "tailwindcss": "4.3.3"
+  }
+}

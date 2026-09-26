@@ -23,7 +23,7 @@ import SwiftUI
 Color.hn(.kommandant).surface.page   // follows the system appearance, dark by default
 Color.hn().status.crit               // theme hansenexus
 Color(hn: HNColors.of(.kommandant, .light).action.text)  // fixed to one mode
-HNColors.of(.kommandant, .dark).status.crit.hex          // "#ff7a66"
+HNColors.of(.kommandant, .dark).status.crit.hex          // the CSS spelling, for logs and tests
 ```
 
 ## Type

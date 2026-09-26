@@ -30,6 +30,10 @@ public enum HNDensity: String, CaseIterable, Sendable {
 /// In SwiftUI, `Color.hn(theme)` follows the system appearance instead of a fixed mode.
 public struct HNColors: Sendable, Equatable {
   public struct Action: Sendable, Equatable {
+    /// Destructive fill (Scale to 2)
+    public let danger: HNRGBA
+    /// Text on the danger fill
+    public let dangerInk: HNRGBA
     /// Primary fill
     public let primary: HNRGBA
     public let primaryHover: HNRGBA
@@ -109,6 +113,8 @@ public struct HNColors: Sendable, Equatable {
 
   static let hansenexusDark = HNColors(
     action: Action(
+      danger: HNRGBA(0xFF7A66),
+      dangerInk: HNRGBA(0x16140F),
       primary: HNRGBA(0x42C501),
       primaryHover: HNRGBA(0x8BE45F),
       primaryInk: HNRGBA(0x16140F),
@@ -146,6 +152,8 @@ public struct HNColors: Sendable, Equatable {
 
   static let hansenexusLight = HNColors(
     action: Action(
+      danger: HNRGBA(0xB3261E),
+      dangerInk: HNRGBA(0xFBF8F1),
       primary: HNRGBA(0x42C501),
       primaryHover: HNRGBA(0x8BE45F),
       primaryInk: HNRGBA(0x16140F),
@@ -183,6 +191,8 @@ public struct HNColors: Sendable, Equatable {
 
   static let kommandantDark = HNColors(
     action: Action(
+      danger: HNRGBA(0xFF7A66),
+      dangerInk: HNRGBA(0x16140F),
       primary: HNRGBA(0x42C501),
       primaryHover: HNRGBA(0x8BE45F),
       primaryInk: HNRGBA(0x16140F),
@@ -220,6 +230,8 @@ public struct HNColors: Sendable, Equatable {
 
   static let kommandantLight = HNColors(
     action: Action(
+      danger: HNRGBA(0xB3261E),
+      dangerInk: HNRGBA(0xFBF8F1),
       primary: HNRGBA(0x42C501),
       primaryHover: HNRGBA(0x8BE45F),
       primaryInk: HNRGBA(0x16140F),
@@ -257,6 +269,8 @@ public struct HNColors: Sendable, Equatable {
 
   static let portalDark = HNColors(
     action: Action(
+      danger: HNRGBA(0xFF7A66),
+      dangerInk: HNRGBA(0x16140F),
       primary: HNRGBA(0x42C501),
       primaryHover: HNRGBA(0x8BE45F),
       primaryInk: HNRGBA(0x16140F),
@@ -294,6 +308,8 @@ public struct HNColors: Sendable, Equatable {
 
   static let portalLight = HNColors(
     action: Action(
+      danger: HNRGBA(0xB3261E),
+      dangerInk: HNRGBA(0xFBF8F1),
       primary: HNRGBA(0x42C501),
       primaryHover: HNRGBA(0x8BE45F),
       primaryInk: HNRGBA(0x16140F),

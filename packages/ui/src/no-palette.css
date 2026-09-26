@@ -1,0 +1,4 @@
+/* Components see semantic colours only: drop Tailwind's palette so its utilities cannot compile. */
+@theme {
+  --color-*: initial;
+}

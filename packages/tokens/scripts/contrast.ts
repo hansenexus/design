@@ -29,6 +29,7 @@ export const RULES: Rule[] = [
   },
   { kind: "text", fg: ["ink.primary", "action.text"], bg: ["surface.tint"] },
   { kind: "text", fg: ["action.primary-ink"], bg: ["action.primary", "action.primary-hover"] },
+  { kind: "text", fg: ["action.danger-ink"], bg: ["action.danger"] },
   {
     kind: "ui",
     fg: [
@@ -53,6 +54,7 @@ export const EXEMPT: Record<string, string> = {
   "line.subtle": "decoration only; never the sole boundary of a control",
   "action.primary": "a fill; its label carries the contrast (action.primary-ink on it)",
   "action.primary-hover": "a fill; its label carries the contrast (action.primary-ink on it)",
+  "action.danger": "a fill; its label carries the contrast (action.danger-ink on it)",
 };
 
 function luminance(hex: string): number {

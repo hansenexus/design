@@ -1,0 +1,6 @@
+/* The gallery: full Tailwind (with preflight) over the primitives' sources, semantic colours only. */
+@import "tailwindcss";
+@import "../src/no-palette.css";
+@import "@hansenexus/tokens/tailwind.css";
+@source "../src";
+@source "./";
