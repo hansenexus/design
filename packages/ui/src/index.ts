@@ -1,7 +1,10 @@
 export * from "./badge";
+export { MARK, WORDMARK } from "./brand-geometry";
 export * from "./button";
 export { cx, focusRing } from "./cx";
 export * from "./dialog";
+export * from "./hansenexus-mark";
+export * from "./hansenexus-wordmark";
 export * from "./input";
 export * from "./kbd";
 export * from "./menu";

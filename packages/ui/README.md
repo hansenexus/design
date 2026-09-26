@@ -5,7 +5,10 @@ through the semantic tokens of [`@hansenexus/tokens`](../tokens). Dark and light
 colour follows `data-mode`, `data-theme` and `data-density` on an ancestor.
 
 Button, Badge, StatusBadge, Switch, Dialog, Menu, Tabs, Table, Meter, Sparkline, Kbd, Toast,
-Tooltip, Input, Select, RailItem.
+Tooltip, Input, Select, RailItem. Plus the brand: `HansenexusMark` and `HansenexusWordmark`
+(`variant` lime, lime-deep, ink, paper or mono, which is `currentColor` and the default; `size` is
+the height; named "hansenexus" unless `aria-label` or `aria-hidden` says otherwise). Usage rules in
+[brand/README.md](../../brand/README.md).
 
 ```sh
 bun add @hansenexus/ui @hansenexus/tokens react react-dom
@@ -81,4 +84,6 @@ bun run gallery -- --serve    # look at it: http://127.0.0.1:4410/gallery/?scene
 
 ## Licence
 
-MIT
+MIT, except the hansenexus name, mark and wordmark (`brand-geometry`, `HansenexusMark`,
+`HansenexusWordmark`): trademarks, not covered by the MIT licence. See
+[TRADEMARK.md](../../TRADEMARK.md).

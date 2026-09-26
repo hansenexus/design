@@ -1,6 +1,6 @@
 {
   "name": "@hansenexus/tokens",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "hansenexus design tokens: DTCG source, CSS variables (--hn-*), a Tailwind v4 @theme and TypeScript constants for dark and light.",
   "license": "MIT",
   "keywords": [

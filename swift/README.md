@@ -1,4 +1,4 @@
-# HansenexusTokens (Swift)
+# HansenexusTokens and HansenexusBrand (Swift)
 
 The hansenexus design tokens for Swift and SwiftUI, generated from the same DTCG source as
 `@hansenexus/tokens`. Semantic tier only: the raw palette never reaches Swift.
@@ -58,12 +58,34 @@ Also `HNDuration` (seconds), `HNFocus` (ring width and offset), `HNShadow.lift` 
 - Status is never colour alone: ok dot, busy ring, warn triangle, crit diamond, off hollow circle,
   unknown dashed circle.
 
+## Brand
+
+The `HansenexusBrand` product draws the mark and the wordmark from their geometry and bundles the
+files of `brand/assets` (mark and wordmark SVGs, the 1024 px app icon master, the menu bar
+template PNGs).
+
+```swift
+.product(name: "HansenexusBrand", package: "design"),
+
+import HansenexusBrand
+
+HansenexusMark(variant: .lime).frame(height: 24)        // flat lime; .mono follows the foreground
+HansenexusWordmark(variant: .limeDeep).frame(height: 20) // on light surfaces
+HNBrandAsset.url(HNBrandAsset.appIcon)                   // app-icon-1024.png
+HNBrandAsset.url(HNBrandAsset.trayTemplate)              // NSImage: set isTemplate = true
+```
+
+The name, mark and wordmark are trademarks, not covered by the MIT licence
+([TRADEMARK.md](../TRADEMARK.md)); usage rules in [brand/README.md](../brand/README.md).
+
 ## Regenerate
 
-`Sources/HansenexusTokens/Tokens.swift` is generated. After a token change:
+`Sources/HansenexusTokens/Tokens.swift`, `Sources/HansenexusBrand/BrandGeometry.swift` and
+`Sources/HansenexusBrand/Resources/` are generated. After a token or geometry change:
 
 ```sh
 bun run swift    # rewrites Tokens.swift; commit it
+bun run brand    # rewrites the brand assets and the Swift brand files; commit them
 ```
 
 `bun run test` fails while the committed file is stale, and CI builds and tests the package on

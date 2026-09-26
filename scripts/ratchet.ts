@@ -15,6 +15,9 @@ export const EXEMPT: Record<string, string> = {
   "scripts/ratchet.test.ts": "fixtures that must trip the ratchet",
   "packages/ui/tests/ui.test.tsx": "a probe proving Tailwind's palette cannot compile",
   "bun.lock": "integrity hashes, not colours",
+  "brand/assets/":
+    "logo files carry literal fills; generated from brand.* tokens, checked by scripts/brand.test.ts",
+  "swift/Sources/HansenexusBrand/Resources/": "copies of brand/assets for the Swift package",
 };
 
 const TEXT = new Set([
