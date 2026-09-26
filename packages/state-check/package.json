@@ -1,0 +1,49 @@
+{
+  "name": "@hansenexus/state-check",
+  "version": "0.1.0",
+  "description": "The hansenexus frontend state contract as a deterministic check: dynamic Next.js App Router segments need loading.tsx or <Suspense>. Per-app baseline ratchet, reasoned opt-outs, CLI.",
+  "license": "MIT",
+  "keywords": [
+    "nextjs",
+    "app-router",
+    "loading",
+    "suspense",
+    "lint",
+    "ratchet"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hansenexus/design.git",
+    "directory": "packages/state-check"
+  },
+  "bugs": "https://github.com/hansenexus/design/issues",
+  "type": "module",
+  "bin": {
+    "state-check": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "bun scripts/build.ts",
+    "test": "bun test tests",
+    "prepack": "bun scripts/build.ts"
+  },
+  "dependencies": {
+    "typescript": "^5.9.3"
+  }
+}
