@@ -34,16 +34,21 @@ Every token is a `--hn-*` variable: `--hn-surface-page`, `--hn-ink-muted`, `--hn
 
 Utilities carry an `hn-` prefix so they never shadow Tailwind's own: `bg-hn-surface-card`,
 `text-hn-ink-body`, `border-hn-line-strong`, `rounded-hn-md`, `font-hn-mono`, `h-hn-row`,
-`min-h-hn-target`, `p-hn-4`, `shadow-hn-lift`.
+`min-h-hn-target`, `p-hn-4`, `shadow-hn-lift`, `ease-hn-pulse`.
+
+Two loading animations come with their keyframes: `animate-hn-pulse` (a skeleton fill from
+`skeleton.base` to `skeleton.highlight` and back) and `animate-hn-spin`. Pair each with
+`motion-reduce:animate-none`.
 
 ## TypeScript
 
 ```ts
-import { tokens, vars, density } from "@hansenexus/tokens";
+import { tokens, vars, density, ms } from "@hansenexus/tokens";
 
 tokens.kommandant.dark.status.crit; // "#ff7a66", for charts and canvas
 vars.surface.page; // "var(--hn-surface-page)", follows the active mode
 density.touch.target; // "44px"
+ms.delay.pending; // 200, every duration in milliseconds for timers
 ```
 
 ## Tiers
@@ -51,7 +56,10 @@ density.touch.target; // "44px"
 - `tokens/primitives/`: the raw palette and the density scales. Never emitted: components only
   see semantics.
 - `tokens/semantic/`: what a value means. `color.dark.json` and `color.light.json` carry the
-  same names; `scale.json` holds space, radius, fonts, durations, focus and the one lift shadow.
+  same names; `scale.json` holds space, radius, fonts, durations, focus and the one lift shadow;
+  `motion.json` holds the loading timings: `delay.pending` (200 ms before a spinner or pending
+  indicator shows), `min-visible.pending` (400 ms it then stays), and duration plus easing for
+  `pulse`, `shimmer` and `spin`.
 - `tokens/themes/`: per product, the density and any semantic that differs from the shared set.
   `themes/<theme>.<mode>.json` holds per-mode overrides.
 
@@ -69,7 +77,8 @@ density.touch.target; // "44px"
 ## Checks
 
 `bun run contrast` resolves every theme in both modes and checks each pair in
-`scripts/contrast.ts` (text 4.5:1, UI 3:1). It fails on a pair below AA and on a colour token
+`scripts/contrast.ts` (text 4.5:1, UI 3:1, and a 1.2:1 floor for `skeleton.*` on every surface:
+not a WCAG minimum, since a placeholder carries no information, but it must read as a shape). It fails on a pair below AA and on a colour token
 that no rule covers and that is not explicitly exempt.
 
 ## Versioning

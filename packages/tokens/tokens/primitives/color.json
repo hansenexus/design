@@ -31,6 +31,10 @@
       "600": {
         "$value": "#6b6456"
       },
+      "650": {
+        "$value": "#4a4439",
+        "$description": "Skeleton highlight in dark"
+      },
       "700": {
         "$value": "#3a352c"
       },

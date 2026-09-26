@@ -8,7 +8,7 @@
       "type": "registry:style",
       "title": "hansenexus tokens",
       "description": "Installs @hansenexus/tokens and imports its Tailwind v4 theme (--hn-* variables, dark and light).",
-      "dependencies": ["@hansenexus/tokens@^0.3.0"],
+      "dependencies": ["@hansenexus/tokens@^0.4.0"],
       "css": {
         "@import \"@hansenexus/tokens/tailwind.css\"": {}
       }
@@ -318,6 +318,50 @@
       "files": [
         {
           "path": "src/tooltip.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "delayed-visibility",
+      "type": "registry:ui",
+      "title": "useDelayedVisibility",
+      "description": "The pending-indicator timing rule: show after 200 ms, then stay at least 400 ms (motion tokens).",
+      "dependencies": ["@hansenexus/tokens"],
+      "registryDependencies": ["@hansenexus/tokens"],
+      "files": [
+        {
+          "path": "src/delayed-visibility.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "skeleton",
+      "type": "registry:ui",
+      "title": "Skeleton",
+      "description": "Loading placeholders (block, text, circle) and the aria-busy SkeletonGroup; the pulse stops under reduced motion.",
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],
+      "files": [
+        {
+          "path": "src/skeleton.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "spinner",
+      "type": "registry:ui",
+      "title": "Spinner",
+      "description": "A pending ring that never flashes: hidden under 200 ms, then shown at least 400 ms.",
+      "registryDependencies": [
+        "@hansenexus/tokens",
+        "@hansenexus/cx",
+        "@hansenexus/delayed-visibility"
+      ],
+      "files": [
+        {
+          "path": "src/spinner.tsx",
           "type": "registry:ui"
         }
       ]

@@ -21,6 +21,16 @@ for (const mode of MODES) {
     });
   });
 
+  test(`loading ${mode}`, async ({ page }, info) => {
+    await page.goto(`/gallery/?scene=loading&mode=${mode}`);
+    await page.evaluate(() => document.fonts.ready);
+    // The Spinner in the button appears after its 200 ms delay: wait for all three rings.
+    await expect(page.locator('svg[role="status"]')).toHaveCount(3);
+    await expect(page).toHaveScreenshot(`loading-${info.project.name}-${mode}.png`, {
+      fullPage: true,
+    });
+  });
+
   for (const scene of OVERLAYS) {
     test(`${scene} ${mode}`, async ({ page }, info) => {
       await page.goto(`/gallery/?scene=${scene}&mode=${mode}`);

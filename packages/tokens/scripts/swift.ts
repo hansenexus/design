@@ -37,6 +37,11 @@ const TYPE_NAME: Record<string, string> = {
   radius: "HNRadius",
   font: "HNFontFamily",
   duration: "HNDuration",
+  delay: "HNDelay",
+  "min-visible": "HNMinVisible",
+  pulse: "HNPulse",
+  shimmer: "HNShimmer",
+  spin: "HNSpin",
   focus: "HNFocus",
   shadow: "HNShadow",
   size: "HNSize",
@@ -47,6 +52,11 @@ const GROUP_DOC: Record<string, string> = {
   radius: "Corner radii in points.",
   font: "Font family stacks, first choice first. `Font.hn` in SwiftUI resolves them.",
   duration: "Animation durations in seconds. Motion only on real events.",
+  delay: "Waits in seconds before a pending indicator shows; faster work shows nothing.",
+  "min-visible": "Minimum time in seconds a pending indicator stays once shown.",
+  pulse: "The skeleton pulse, base to highlight and back. Off under Reduce Motion.",
+  shimmer: "The shimmer sweep. Off under Reduce Motion.",
+  spin: "One spinner turn. Off under Reduce Motion.",
   focus: "Focus ring geometry in points. The ring colour is `HNColors.focus.ring`.",
   size: "Row height and minimum target in points, per theme or per density.",
 };
@@ -97,6 +107,11 @@ function swiftValue(t: ResolvedToken): [string, string] {
       const m = typeof v === "string" ? /^(\d+(?:\.\d+)?)(ms|s)$/.exec(v) : null;
       if (!m?.[1]) fail(t, "is not a ms or s duration");
       return ["Double", number(Number(m[1]) / (m[2] === "ms" ? 1000 : 1))];
+    }
+    case "cubicBezier": {
+      const ok = Array.isArray(v) && v.length === 4 && v.every((n) => typeof n === "number");
+      if (!ok) fail(t, "is not four control-point numbers");
+      return ["HNCubicBezier", `HNCubicBezier(${(v as number[]).map(number).join(", ")})`];
     }
     case "fontFamily": {
       const list = Array.isArray(v) ? v : [v];

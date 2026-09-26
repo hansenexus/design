@@ -87,7 +87,8 @@ export function renderCss(all: Resolved, densities: Record<string, ResolvedToken
 }
 
 // Tailwind v4 namespace per token group. Utilities read e.g. bg-hn-surface-page,
-// text-hn-ink-muted, rounded-hn-md, font-hn-mono, h-hn-row, p-hn-4, shadow-hn-lift.
+// text-hn-ink-muted, rounded-hn-md, font-hn-mono, h-hn-row, p-hn-4, shadow-hn-lift,
+// ease-hn-pulse (every cubicBezier token, named after its group).
 const TAILWIND_NAMESPACE: Record<string, (rest: string) => string> = {
   color: (rest) => `--color-hn-${rest}`,
   radius: (rest) => `--radius-hn-${rest}`,
@@ -95,18 +96,40 @@ const TAILWIND_NAMESPACE: Record<string, (rest: string) => string> = {
   space: (rest) => `--spacing-hn-${rest}`,
   size: (rest) => `--spacing-hn-${rest}`,
   shadow: (rest) => `--shadow-hn-${rest}`,
+  ease: (group) => `--ease-hn-${group}`,
 };
+
+// The loading animations from the motion tokens: animate-hn-pulse (skeleton base to highlight)
+// and animate-hn-spin. Keyframes move between token values only; motion-reduce:animate-none
+// switches them off. Shimmer has tokens but no animation: its sweep needs a gradient, which the
+// brand rules forbid until the skeleton-style vote decides otherwise.
+const ANIMATIONS = [
+  "  --animate-hn-pulse: hn-pulse var(--hn-pulse-duration) var(--hn-pulse-easing) infinite;",
+  "  --animate-hn-spin: hn-spin var(--hn-spin-duration) var(--hn-spin-easing) infinite;",
+  "",
+  "  @keyframes hn-pulse {",
+  "    50% {",
+  "      background-color: var(--hn-skeleton-highlight);",
+  "    }",
+  "  }",
+  "  @keyframes hn-spin {",
+  "    to {",
+  "      transform: rotate(1turn);",
+  "    }",
+  "  }",
+];
 
 export function renderTailwind(all: Resolved): string {
   const lines: string[] = [];
   for (const t of all[DEFAULT_THEME][DEFAULT_MODE]) {
     const [group = "", ...rest] = t.path.split(".");
-    const ns = isModal(t) ? "color" : group;
+    const ns = isModal(t) ? "color" : t.type === "cubicBezier" ? "ease" : group;
     const name = TAILWIND_NAMESPACE[ns]?.(
-      isModal(t) ? t.path.replaceAll(".", "-") : rest.join("-")
+      isModal(t) ? t.path.replaceAll(".", "-") : ns === "ease" ? group : rest.join("-")
     );
     if (name) lines.push(`  ${name}: var(${t.cssVar});`);
   }
+  lines.push("", ...ANIMATIONS);
   return [
     HEADER,
     '/* Import after tailwindcss: @import "tailwindcss"; @import "@hansenexus/tokens/tailwind.css"; */',
@@ -120,6 +143,21 @@ export function renderTailwind(all: Resolved): string {
 }
 
 type Tree = { [key: string]: string | Tree };
+
+/** "200ms" or "0.2s" in milliseconds. */
+export function parseDuration(value: string): number {
+  const m = /^(\d+(?:\.\d+)?)(ms|s)$/.exec(value);
+  if (!m?.[1]) throw new Error(`build: ${value} is not a ms or s duration`);
+  return Number(m[1]) * (m[2] === "s" ? 1000 : 1);
+}
+
+type NumberTree = { [key: string]: number | NumberTree };
+
+function numbers(tree: Tree): NumberTree {
+  return Object.fromEntries(
+    Object.entries(tree).map(([k, v]) => [k, typeof v === "string" ? Number(v) : numbers(v)])
+  );
+}
 
 function toTree(tokens: ResolvedToken[], pick: (t: ResolvedToken) => string): Tree {
   const root: Tree = {};
@@ -138,7 +176,7 @@ function toTree(tokens: ResolvedToken[], pick: (t: ResolvedToken) => string): Tr
 }
 
 function toType(value: unknown, indent = ""): string {
-  if (typeof value === "string") return JSON.stringify(value);
+  if (typeof value === "string" || typeof value === "number") return JSON.stringify(value);
   if (Array.isArray(value)) return `readonly [${value.map((v) => toType(v, indent)).join(", ")}]`;
   const inner = `${indent}  `;
   const entries = Object.entries(value as Record<string, unknown>).map(
@@ -160,6 +198,8 @@ export function renderTs(all: Resolved, densities: Record<string, ResolvedToken[
       (densities[d] ?? []).map((t) => [t.path.split(".").pop(), t.value])
     );
   }
+  const durations = all[DEFAULT_THEME][DEFAULT_MODE].filter((t) => t.type === "duration");
+  const ms = toTree(durations, (t) => String(parseDuration(t.value)));
   const exports: [string, string, unknown][] = [
     ["themes", "Theme names, the values of data-theme.", [...THEMES]],
     ["modes", "Mode names, the values of data-mode.", [...MODES]],
@@ -173,6 +213,7 @@ export function renderTs(all: Resolved, densities: Record<string, ResolvedToken[
     ],
     ["vars", "CSS variable references that follow the active theme, mode and density.", vars],
     ["density", "Row height and minimum target per density.", density],
+    ["ms", "Every duration in milliseconds, for timers, e.g. ms.delay.pending = 200.", numbers(ms)],
   ];
   const js = [
     HEADER,

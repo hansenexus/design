@@ -61,6 +61,25 @@ describe("contrast", () => {
     expect(run.stderr.toString()).toContain("ui: line.strong on surface.raised");
   });
 
+  test("skeleton pairs are checked on every surface, both modes", async () => {
+    const { results } = await checkAll();
+    const skeleton = results.filter((r) => r.kind === "placeholder");
+    expect(new Set(skeleton.map((r) => r.fg))).toEqual(
+      new Set(["skeleton.base", "skeleton.highlight"])
+    );
+    expect(new Set(skeleton.map((r) => r.bg)).size).toBe(4);
+    expect(new Set(skeleton.map((r) => r.mode))).toEqual(new Set(["dark", "light"]));
+  });
+
+  test("a skeleton that vanishes into its surface fails the CLI", () => {
+    const dir = fixture("semantic/color.dark.json", (j) => {
+      setToken(j, "skeleton", "base", "{palette.warm.750}");
+    });
+    const run = Bun.spawnSync(["bun", CONTRAST, "--tokens", dir]);
+    expect(run.exitCode).toBe(1);
+    expect(run.stderr.toString()).toContain("placeholder: skeleton.base on surface.raised");
+  });
+
   test("a colour token outside every rule fails the CLI", () => {
     const dir = fixture("semantic/color.light.json", (j) => {
       setToken(j, "ink", "faint", "{palette.warm.200}");
@@ -106,6 +125,23 @@ describe("build", () => {
     expect(mod.tokens.kommandant.dark.size.row).toBe("36px");
     expect(mod.density.touch.target).toBe("44px");
     expect(mod.vars.surface.page).toBe("var(--hn-surface-page)");
+  });
+
+  test("motion tokens reach CSS, Tailwind and TS", async () => {
+    await built;
+    const css = readFileSync(join(dist, "tokens.css"), "utf8");
+    expect(css).toContain("--hn-delay-pending: 200ms;");
+    expect(css).toContain("--hn-min-visible-pending: 400ms;");
+    expect(css).toContain("--hn-pulse-easing: cubic-bezier(0.4, 0, 0.6, 1);");
+    expect(css).toContain("--hn-skeleton-base: #3a352c;");
+    const tw = readFileSync(join(dist, "tailwind.css"), "utf8");
+    expect(tw).toContain("--ease-hn-pulse: var(--hn-pulse-easing);");
+    expect(tw).toContain("--animate-hn-pulse: hn-pulse var(--hn-pulse-duration)");
+    expect(tw).toContain("@keyframes hn-spin");
+    const mod = await import(join(dist, "index.js"));
+    expect(mod.ms.delay.pending).toBe(200);
+    expect(mod.ms["min-visible"].pending).toBe(400);
+    expect(mod.tokens.hansenexus.light.skeleton.highlight).toBe("#cdc6b6");
   });
 });
 
