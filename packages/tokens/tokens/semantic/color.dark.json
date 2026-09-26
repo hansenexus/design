@@ -30,7 +30,9 @@
     "primary-hover": { "$value": "{palette.lime.300}" },
     "primary-ink": { "$value": "{palette.warm.900}", "$description": "Text on the lime fill" },
     "text": { "$value": "{palette.lime.500}", "$description": "Links, text actions" },
-    "text-hover": { "$value": "{palette.lime.300}" }
+    "text-hover": { "$value": "{palette.lime.300}" },
+    "danger": { "$value": "{palette.coral.400}", "$description": "Destructive fill (Scale to 2)" },
+    "danger-ink": { "$value": "{palette.warm.900}", "$description": "Text on the danger fill" }
   },
   "status": {
     "$type": "color",

@@ -29,6 +29,8 @@ jobs:
         run: bun run lint
       - name: Typecheck
         run: bun run typecheck
+      - name: Ratchet (no raw palette values outside packages/tokens)
+        run: bun run ratchet
       - name: Build
         run: bun run build
       - name: Contrast (WCAG 2.2 AA, every semantic pair, dark and light)
@@ -48,10 +50,35 @@ jobs:
         working-directory: packages/tokens
         run: bun run build && scripts/smoke.sh "$RUNNER_TEMP/smoke"
 
+  screenshots:
+    # Baselines are pixels, so they render in the same pinned image as scripts/screenshots.sh
+    # uses locally. Bump the tag together with @playwright/test in packages/ui.
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+    steps:
+      - uses: actions/checkout@v5
+      - name: Bun (the image has no unzip for setup-bun)
+        run: npm install --global bun@1.4.0
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - name: Screenshots at 390 and 1280 px, dark and light
+        working-directory: packages/ui
+        run: bun run screenshots
+      - name: Upload diffs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshot-diffs
+          path: |
+            packages/ui/test-results/
+            packages/ui/playwright-report/
+          retention-days: 7
+
   result:
     name: CI Result
     if: always()
-    needs: [check, package]
+    needs: [check, package, screenshots]
     runs-on: ubuntu-latest
     steps:
       - name: All jobs passed

@@ -61,6 +61,7 @@ density.touch.target; // "44px"
   On light, lime text is `action.text` (`#2b7300`). No glow, gradients, coloured shadows or sheen.
 - Status is never colour alone: ok dot, busy ring, warn triangle, crit diamond, off hollow circle,
   unknown dashed circle. `status.off` is a shape colour; its label uses `ink.muted`.
+- A destructive action is the flat `action.danger` fill with `action.danger-ink` on it.
 - `line.subtle` is decoration only; a control's boundary uses `line.strong`.
 
 ## Checks
