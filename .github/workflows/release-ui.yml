@@ -1,23 +1,23 @@
-name: tarball
+name: release-ui
 
 # A GitHub release carrying the packed @hansenexus/tokens and @hansenexus/ui, so consumers
 # can install a tagged version before npm trusted publishing is attached (design#6):
 #
-#   bun add https://github.com/hansenexus/design/releases/download/design-v0.2.0/hansenexus-tokens-0.4.0.tgz \
-#           https://github.com/hansenexus/design/releases/download/design-v0.2.0/hansenexus-ui-0.2.0.tgz
+#   bun add https://github.com/hansenexus/design/releases/download/ui-v0.2.0/hansenexus-tokens-0.4.0.tgz \
+#           https://github.com/hansenexus/design/releases/download/ui-v0.2.0/hansenexus-ui-0.2.0.tgz
 #
-# Trigger: push a `design-v<ui version>` tag. The workflow refuses a tag that disagrees with
+# Trigger: push a `ui-v<version>` tag. The workflow refuses a tag that disagrees with
 # packages/ui/package.json. No npm publish here; that stays in release.yml (tokens-v*).
 
 on:
   push:
-    tags: ["design-v*"]
+    tags: ["ui-v*"]
 
 permissions:
   contents: read
 
 concurrency:
-  group: release-tarball
+  group: release-ui
   cancel-in-progress: false
 
 jobs:
@@ -35,10 +35,10 @@ jobs:
       - name: Tag and packages/ui/package.json agree
         run: |
           set -euo pipefail
-          tag="${GITHUB_REF_NAME#design-v}"
+          tag="${GITHUB_REF_NAME#ui-v}"
           pkg=$(bun -p "require('./packages/ui/package.json').version")
           if [ "$tag" != "$pkg" ]; then
-            echo "::error::tag design-v$tag does not match packages/ui/package.json $pkg"
+            echo "::error::tag ui-v$tag does not match packages/ui/package.json $pkg"
             exit 1
           fi
 

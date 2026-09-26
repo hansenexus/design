@@ -1,12 +1,13 @@
 # design
 
-hansenexus design system: DTCG tokens, UI primitives and the Swift package. Open core (MIT).
+hansenexus design system: DTCG tokens, UI primitives, the state-check and the Swift package. Open core (MIT).
 
 | Package | What |
 | --- | --- |
 | [`@hansenexus/tokens`](packages/tokens) | DTCG source, CSS variables, Tailwind v4 `@theme`, TS constants, contrast CI |
 | [`HansenexusTokens`](swift) | SwiftPM package: generated colours, fonts and spacing for SwiftUI |
 | [`@hansenexus/ui`](packages/ui) | 16 primitives on Radix, Skeleton, Spinner, `useDelayedVisibility`, semantic tokens only, shadcn registry, screenshot baselines; `HansenexusMark`, `HansenexusWordmark` |
+| [`@hansenexus/state-check`](packages/state-check) | The frontend state contract as a CI ratchet: dynamic Next.js routes need `loading.tsx` or `<Suspense>`; CLI, per-app baseline |
 | [`brand/`](brand) | The mark and wordmark in every variant, favicons, app icon, menu bar template; usage rules |
 
 ```sh
@@ -23,12 +24,12 @@ may only shrink (`bun scripts/ratchet.ts --update`).
 
 ## Releases
 
-Until npm trusted publishing is attached (#6), a `design-v<ui version>` tag builds, gates and
-attaches both packed packages to a GitHub release (`.github/workflows/tarball.yml`):
+Until npm trusted publishing is attached (#6), a `ui-v<version>` tag builds, gates and
+attaches both packed packages to a GitHub release (`.github/workflows/release-ui.yml`):
 
 ```sh
-bun add https://github.com/hansenexus/design/releases/download/design-v0.2.0/hansenexus-tokens-0.4.0.tgz \
-        https://github.com/hansenexus/design/releases/download/design-v0.2.0/hansenexus-ui-0.2.0.tgz
+bun add https://github.com/hansenexus/design/releases/download/ui-v0.2.0/hansenexus-tokens-0.4.0.tgz \
+        https://github.com/hansenexus/design/releases/download/ui-v0.2.0/hansenexus-ui-0.2.0.tgz
 ```
 
 ## Licence and trademarks

@@ -1,0 +1,72 @@
+name: release-state-check
+
+# Packs @hansenexus/state-check and attaches the tarball to a GitHub release. npm publish
+# follows once the trusted publisher is attached (design#6); until then consumers install
+# the release asset URL.
+#
+# Trigger: push a `state-check-v<version>` tag. The workflow refuses a tag that disagrees
+# with package.json.
+
+on:
+  push:
+    tags: ["state-check-v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-state-check
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # GitHub release
+    defaults:
+      run:
+        working-directory: packages/state-check
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: bun install --frozen-lockfile
+
+      - name: Tag and package.json agree
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME#state-check-v}"
+          pkg=$(node -p "require('./package.json').version")
+          if [ "$tag" != "$pkg" ]; then
+            echo "::error::tag state-check-v$tag does not match package.json $pkg"
+            exit 1
+          fi
+
+      - name: Gate
+        run: bun run build && bun test tests
+
+      - name: Pack
+        run: npm pack
+
+      - name: Smoke (install the tarball, run the bin under Node)
+        run: |
+          set -euo pipefail
+          tgz="$PWD/$(ls hansenexus-state-check-*.tgz)"
+          dir="$RUNNER_TEMP/smoke"
+          mkdir -p "$dir/app/app/[id]"
+          printf 'export default function P() { return null; }\n' > "$dir/app/app/[id]/page.tsx"
+          cd "$dir" && npm init -y >/dev/null && npm install "$tgz"
+          set +e
+          npx state-check --app app
+          code=$?
+          set -e
+          test "$code" = 1
+
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" hansenexus-state-check-*.tgz --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
