@@ -1,0 +1,12 @@
+{
+  "size": {
+    "$description": "Theme portal: maps semantics to primitives where it differs from the shared set, and picks the comfortable density.",
+    "$type": "dimension",
+    "row": {
+      "$value": "{density.comfortable.row}"
+    },
+    "target": {
+      "$value": "{density.comfortable.target}"
+    }
+  }
+}

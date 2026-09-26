@@ -1,0 +1,79 @@
+name: release
+
+# Publishes @hansenexus/tokens to npm with provenance over Trusted Publishing
+# (OIDC, no NPM_TOKEN). Same shape as hansenexus/nextup's release.yml; see the
+# notes there for the npm-side setup and the "Allowed actions" trap.
+#
+# npm side (npmjs.com > @hansenexus/tokens > Settings > Trusted Publisher):
+#   Organization hansenexus, Repository design, Workflow release.yml,
+#   Allowed actions: npm publish.
+#
+# Trigger: push a `tokens-v<version>` tag. Semver: a token rename or removal is
+# a major. The workflow refuses a tag that disagrees with package.json.
+
+on:
+  push:
+    tags: ["tokens-v*"]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Pack and validate, but do not publish"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-tokens
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # GitHub release
+      id-token: write # provenance attestation
+    defaults:
+      run:
+        working-directory: packages/tokens
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - name: npm supporting OIDC
+        run: npm install -g npm@latest
+      - run: bun install --frozen-lockfile
+
+      - name: Tag and package.json agree
+        if: startsWith(github.ref, 'refs/tags/tokens-v')
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME#tokens-v}"
+          pkg=$(node -p "require('./package.json').version")
+          if [ "$tag" != "$pkg" ]; then
+            echo "::error::tag tokens-v$tag does not match package.json $pkg"
+            exit 1
+          fi
+
+      - name: Gate
+        run: bun run build && bun run contrast && bun test
+
+      - name: Publish
+        if: ${{ github.event_name == 'push' || !inputs.dry_run }}
+        run: npm publish --access public --provenance
+
+      - name: Publish (dry run)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        run: npm publish --access public --dry-run
+
+      - name: GitHub release
+        if: startsWith(github.ref, 'refs/tags/tokens-v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes --verify-tag

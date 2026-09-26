@@ -1,0 +1,101 @@
+{
+  "palette": {
+    "$description": "Raw palette. Never emitted and never used by a component; semantics reference these.",
+    "$type": "color",
+    "warm": {
+      "25": {
+        "$value": "#fbf8f1"
+      },
+      "50": {
+        "$value": "#f4f0e6"
+      },
+      "100": {
+        "$value": "#ede8dc"
+      },
+      "125": {
+        "$value": "#ece7dc"
+      },
+      "200": {
+        "$value": "#d8cfbd"
+      },
+      "300": {
+        "$value": "#cdc6b6"
+      },
+      "400": {
+        "$value": "#a39c8c"
+      },
+      "500": {
+        "$value": "#8a8273",
+        "$description": "Aus (off) in dark"
+      },
+      "600": {
+        "$value": "#6b6456"
+      },
+      "700": {
+        "$value": "#3a352c"
+      },
+      "750": {
+        "$value": "#2a2620"
+      },
+      "800": {
+        "$value": "#201d18"
+      },
+      "850": {
+        "$value": "#1c1a15"
+      },
+      "900": {
+        "$value": "#16140f"
+      }
+    },
+    "lime": {
+      "100": {
+        "$value": "#e1ecd0",
+        "$description": "Tönung on light"
+      },
+      "300": {
+        "$value": "#8be45f"
+      },
+      "500": {
+        "$value": "#42c501",
+        "$description": "The only accent. Flat fill with dark text, or text on dark."
+      },
+      "700": {
+        "$value": "#2b7300",
+        "$description": "Lime as text on light"
+      },
+      "800": {
+        "$value": "#1f5500"
+      },
+      "950": {
+        "$value": "#253515",
+        "$description": "Tönung on dark"
+      }
+    },
+    "amber": {
+      "400": {
+        "$value": "#f0a53a"
+      },
+      "700": {
+        "$value": "#8a5200"
+      }
+    },
+    "coral": {
+      "400": {
+        "$value": "#ff7a66",
+        "$description": "Kritisch (crit) in dark"
+      },
+      "700": {
+        "$value": "#b3261e"
+      }
+    },
+    "sky": {
+      "300": {
+        "$value": "#8fb8ff",
+        "$description": "Läuft (busy) in dark"
+      },
+      "700": {
+        "$value": "#1f5fbf"
+      }
+    }
+  }
+}

@@ -1,0 +1,63 @@
+name: ci
+
+# `CI Result` is the one required check on main (ruleset). It aggregates every
+# job, so adding a job never needs a ruleset change: add it to `needs`.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      - run: bun install --frozen-lockfile
+      - name: Lint
+        run: bun run lint
+      - name: Typecheck
+        run: bun run typecheck
+      - name: Build
+        run: bun run build
+      - name: Contrast (WCAG 2.2 AA, every semantic pair, dark and light)
+        run: bun run contrast
+      - name: Test
+        run: bun run test
+
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      - run: bun install --frozen-lockfile
+      - name: Pack, install and compile with Tailwind v4
+        working-directory: packages/tokens
+        run: bun run build && scripts/smoke.sh "$RUNNER_TEMP/smoke"
+
+  result:
+    name: CI Result
+    if: always()
+    needs: [check, package]
+    runs-on: ubuntu-latest
+    steps:
+      - name: All jobs passed
+        run: |
+          echo '${{ toJSON(needs) }}'
+          if [ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}" = "true" ]; then
+            echo "::error::a required job did not pass"
+            exit 1
+          fi

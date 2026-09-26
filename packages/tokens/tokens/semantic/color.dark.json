@@ -1,0 +1,50 @@
+{
+  "surface": {
+    "$type": "color",
+    "page": { "$value": "{palette.warm.900}", "$description": "Grund" },
+    "band": { "$value": "{palette.warm.850}", "$description": "Band: rail, alternate sections" },
+    "card": { "$value": "{palette.warm.800}", "$description": "Fläche" },
+    "raised": { "$value": "{palette.warm.750}", "$description": "Erhöht: chips, active nav" },
+    "tint": { "$value": "{palette.lime.950}", "$description": "Tönung: icon ground" }
+  },
+  "ink": {
+    "$type": "color",
+    "primary": { "$value": "{palette.warm.50}", "$description": "Text: headings" },
+    "body": { "$value": "{palette.warm.300}", "$description": "gedämpft: running text" },
+    "muted": { "$value": "{palette.warm.400}", "$description": "leise: labels, meta" }
+  },
+  "line": {
+    "$type": "color",
+    "subtle": {
+      "$value": "{palette.warm.700}",
+      "$description": "Linie: dividers, decoration only"
+    },
+    "strong": {
+      "$value": "{palette.warm.500}",
+      "$description": "Rand stark: secondary borders. warm.600 fails 3:1 on band, card and raised."
+    }
+  },
+  "action": {
+    "$type": "color",
+    "primary": { "$value": "{palette.lime.500}", "$description": "Primary fill" },
+    "primary-hover": { "$value": "{palette.lime.300}" },
+    "primary-ink": { "$value": "{palette.warm.900}", "$description": "Text on the lime fill" },
+    "text": { "$value": "{palette.lime.500}", "$description": "Links, text actions" },
+    "text-hover": { "$value": "{palette.lime.300}" }
+  },
+  "status": {
+    "$type": "color",
+    "ok": { "$value": "{palette.lime.500}", "$description": "filled dot" },
+    "busy": { "$value": "{palette.sky.300}", "$description": "open ring" },
+    "warn": { "$value": "{palette.amber.400}", "$description": "triangle" },
+    "crit": { "$value": "{palette.coral.400}", "$description": "diamond" },
+    "off": {
+      "$value": "{palette.warm.500}",
+      "$description": "hollow circle. A shape colour only; label text uses ink.muted."
+    },
+    "unknown": { "$value": "{palette.warm.400}", "$description": "dashed circle" }
+  },
+  "focus": {
+    "ring": { "$type": "color", "$value": "{palette.lime.500}" }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "hansenexus-design",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "lint": "biome check .",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "build": "bun run --filter '*' build",
+    "contrast": "bun run --filter '*' contrast",
+    "test": "bun run --filter '*' test"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.14",
+    "@types/bun": "latest",
+    "typescript": "^5.9.3"
+  }
+}
