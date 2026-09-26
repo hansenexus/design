@@ -5,6 +5,7 @@ import { join, resolve } from "node:path";
 import { build } from "../scripts/build";
 import { checkAll, ratio } from "../scripts/contrast";
 import { TOKENS_DIR } from "../scripts/resolve";
+import { generateSwift, SWIFT_OUT } from "../scripts/swift";
 
 const CONTRAST = resolve(import.meta.dir, "../scripts/contrast.ts");
 
@@ -107,3 +108,47 @@ describe("build", () => {
     expect(mod.vars.surface.page).toBe("var(--hn-surface-page)");
   });
 });
+
+describe("swift", () => {
+  test("the committed Tokens.swift matches the generator (snapshot)", async () => {
+    // Stale after a token change: run `bun run swift` and commit the result.
+    expect(readFileSync(SWIFT_OUT, "utf8")).toBe(await generateSwift());
+  });
+
+  test("Tokens.swift carries every semantic token and no primitive", async () => {
+    const swift = await generateSwift();
+    expect(swift).toContain("static let kommandantDark = HNColors(");
+    expect(swift).toContain("page: HNRGBA(0x16140F)");
+    expect(swift).toContain("case .touch: return HNSize(row: 56, target: 44)");
+    expect(swift).toContain("public static let s4: Double = 16");
+    expect(swift).toContain('public static let mono: [String] = ["JetBrains Mono"');
+    expect(swift).toContain("HNShadowValue(color: HNRGBA(0x000000, alpha: 0xB3), x: 0, y: 30");
+    expect(swift).not.toMatch(/palette\.[a-z]|density\.[a-z]|Material/);
+    const colors = (
+      await build(undefined, mkdtempSync(join(tmpdir(), "hn-dist-")))
+    ).kommandant.light.filter((t) => t.type === "color");
+    for (const t of colors) expect(swift).toContain(`public let ${camel(t.path)}: HNRGBA`);
+  });
+
+  test("a token change shows up in the Swift output", async () => {
+    const dir = fixture("semantic/color.dark.json", (j) => {
+      setToken(j, "status", "crit", "#ff0000");
+    });
+    const swift = await generateSwift(dir);
+    expect(swift).toContain("crit: HNRGBA(0xFF0000)");
+    expect(swift).not.toBe(readFileSync(SWIFT_OUT, "utf8"));
+  });
+
+  test("a value Swift cannot express fails the generator", async () => {
+    const dir = fixture("semantic/scale.json", (j) => {
+      setToken(j, "space", "4", "1rem");
+    });
+    await expect(generateSwift(dir)).rejects.toThrow("space.4 (dimension) is not a px dimension");
+  });
+});
+
+/** "action.primary-hover" -> "primaryHover", the Swift property name. */
+function camel(path: string): string {
+  const leaf = path.split(".").pop() ?? "";
+  return leaf.replace(/-([a-z0-9])/g, (_, c: string) => c.toUpperCase());
+}

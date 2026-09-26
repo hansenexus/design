@@ -41,6 +41,7 @@
   "scripts": {
     "build": "bun scripts/build.ts",
     "contrast": "bun scripts/contrast.ts",
+    "swift": "bun scripts/swift.ts",
     "test": "bun test",
     "prepublishOnly": "bun scripts/build.ts && bun scripts/contrast.ts"
   },

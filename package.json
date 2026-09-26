@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "build": "bun run --filter '*' build",
     "contrast": "bun run --filter '*' contrast",
-    "test": "bun run --filter '*' test"
+    "test": "bun run --filter '*' test",
+    "swift": "bun run --filter @hansenexus/tokens swift"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",

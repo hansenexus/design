@@ -48,10 +48,29 @@ jobs:
         working-directory: packages/tokens
         run: bun run build && scripts/smoke.sh "$RUNNER_TEMP/smoke"
 
+  swift:
+    # Compiles and tests the SwiftPM package. Linux covers the Foundation-free token
+    # values; macOS also builds the SwiftUI adapters and compiles them for iOS.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - run: swift --version
+      - name: Build
+        run: swift build
+      - name: Test
+        run: swift test
+      - name: Build for iOS
+        if: runner.os == 'macOS'
+        run: xcodebuild build -scheme HansenexusTokens -destination 'generic/platform=iOS' -quiet
+
   result:
     name: CI Result
     if: always()
-    needs: [check, package]
+    needs: [check, package, swift]
     runs-on: ubuntu-latest
     steps:
       - name: All jobs passed
