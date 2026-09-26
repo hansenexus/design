@@ -27,12 +27,13 @@ jobs:
       - run: bun install --frozen-lockfile
       - name: Lint
         run: bun run lint
-      - name: Typecheck
-        run: bun run typecheck
       - name: Ratchet (no raw palette values outside packages/tokens)
         run: bun run ratchet
+      # Before typecheck: packages import each other through dist/ types (ui reads tokens).
       - name: Build
         run: bun run build
+      - name: Typecheck
+        run: bun run typecheck
       - name: Contrast (WCAG 2.2 AA, every semantic pair, dark and light)
         run: bun run contrast
       - name: Test
