@@ -16,10 +16,8 @@ renders it, so an app on Bauhaus skeletons passes the same way as one on `@hanse
 
 ## Install
 
-Until the npm trusted publisher is attached (design#6), install the release tarball:
-
 ```sh
-bun add -d https://github.com/hansenexus/design/releases/download/state-check-v0.2.0/hansenexus-state-check-0.2.0.tgz
+bun add -d @hansenexus/state-check
 ```
 
 ## Use
@@ -177,4 +175,6 @@ Rules implement `Rule` (`id`, `description`, `check(ctx) → { violations, stats
 ## Release
 
 Push a `state-check-v<version>` tag matching `package.json`. The `release-state-check` workflow
-runs the tests, packs the tarball and attaches it to a GitHub release.
+runs the tests, smoke-installs the packed tarball and publishes to npm with provenance over OIDC
+trusted publishing. `gh workflow run release-state-check.yml -f dry_run=true` does all of it
+without publishing.

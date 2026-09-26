@@ -1,17 +1,26 @@
 name: release-ui
 
-# A GitHub release carrying the packed @hansenexus/tokens and @hansenexus/ui, so consumers
-# can install a tagged version before npm trusted publishing is attached (design#6):
+# Publishes @hansenexus/ui to npm with provenance over Trusted Publishing
+# (OIDC, no NPM_TOKEN). Same shape as release.yml (tokens). @hansenexus/tokens is a
+# peer dependency and ships from release.yml on its own `tokens-v*` tag.
 #
-#   bun add https://github.com/hansenexus/design/releases/download/ui-v0.2.0/hansenexus-tokens-0.4.0.tgz \
-#           https://github.com/hansenexus/design/releases/download/ui-v0.2.0/hansenexus-ui-0.2.0.tgz
+# npm side (npmjs.com > @hansenexus/ui > Settings > Trusted Publisher):
+#   Organization hansenexus, Repository design, Workflow release-ui.yml,
+#   Allowed actions: npm publish.
 #
 # Trigger: push a `ui-v<version>` tag. The workflow refuses a tag that disagrees with
-# packages/ui/package.json. No npm publish here; that stays in release.yml (tokens-v*).
+# packages/ui/package.json. workflow_dispatch with dry_run packs and validates without
+# publishing.
 
 on:
   push:
     tags: ["ui-v*"]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Pack and validate, but do not publish"
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -21,42 +30,55 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  tarball:
+  release:
     runs-on: ubuntu-latest
     permissions:
       contents: write # GitHub release
+      id-token: write # provenance attestation
     steps:
       - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - name: npm supporting OIDC
+        run: npm install -g npm@latest
       - run: bun install --frozen-lockfile
 
       - name: Tag and packages/ui/package.json agree
+        if: startsWith(github.ref, 'refs/tags/ui-v')
         run: |
           set -euo pipefail
           tag="${GITHUB_REF_NAME#ui-v}"
-          pkg=$(bun -p "require('./packages/ui/package.json').version")
+          pkg=$(node -p "require('./packages/ui/package.json').version")
           if [ "$tag" != "$pkg" ]; then
             echo "::error::tag ui-v$tag does not match packages/ui/package.json $pkg"
             exit 1
           fi
 
+      # Root build: ui reads the built tokens.
       - name: Gate
         run: bun run build && bun run contrast && bun run test
 
       - name: Pack
-        run: |
-          set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/pack"
-          for pkg in tokens ui; do
-            (cd "packages/$pkg" && bun pm pack --destination "$RUNNER_TEMP/pack")
-          done
-          ls -l "$RUNNER_TEMP/pack"
+        working-directory: packages/ui
+        run: npm pack --dry-run
+
+      - name: Publish
+        if: ${{ github.event_name == 'push' || !inputs.dry_run }}
+        working-directory: packages/ui
+        run: npm publish --access public --provenance
+
+      - name: Publish (dry run)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        working-directory: packages/ui
+        run: npm publish --access public --dry-run
 
       - name: GitHub release
+        if: startsWith(github.ref, 'refs/tags/ui-v')
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release create "$GITHUB_REF_NAME" "$RUNNER_TEMP"/pack/*.tgz \
-            --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
+        run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes --verify-tag

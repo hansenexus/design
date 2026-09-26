@@ -24,12 +24,20 @@ may only shrink (`bun scripts/ratchet.ts --update`).
 
 ## Releases
 
-Until npm trusted publishing is attached (#6), a `ui-v<version>` tag builds, gates and
-attaches both packed packages to a GitHub release (`.github/workflows/release-ui.yml`):
+Each package publishes to npm with provenance over OIDC trusted publishing, from its own
+workflow on its own tag. The tag must match the package's `package.json` version.
+
+| Package | Tag | Workflow |
+| --- | --- | --- |
+| `@hansenexus/tokens` | `tokens-v<version>` | `.github/workflows/release.yml` |
+| `@hansenexus/ui` | `ui-v<version>` | `.github/workflows/release-ui.yml` |
+| `@hansenexus/state-check` | `state-check-v<version>` | `.github/workflows/release-state-check.yml` |
+
+Run a workflow by hand (`gh workflow run <file> -f dry_run=true`) to pack and validate without
+publishing.
 
 ```sh
-bun add https://github.com/hansenexus/design/releases/download/ui-v0.2.0/hansenexus-tokens-0.4.0.tgz \
-        https://github.com/hansenexus/design/releases/download/ui-v0.2.0/hansenexus-ui-0.2.0.tgz
+bun add @hansenexus/tokens @hansenexus/ui
 ```
 
 ## Licence and trademarks
