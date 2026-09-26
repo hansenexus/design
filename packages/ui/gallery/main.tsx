@@ -15,6 +15,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  EmptyState,
+  ErrorState,
   HansenexusMark,
   HansenexusWordmark,
   Input,
@@ -27,6 +29,8 @@ import {
   MenuShortcut,
   MenuTrigger,
   Meter,
+  Progress,
+  QueryState,
   RailItem,
   Select,
   SelectContent,
@@ -73,6 +77,7 @@ export const SCENES = [
   "toast",
   "brand",
   "loading",
+  "states",
 ] as const;
 type Scene = (typeof SCENES)[number];
 
@@ -450,8 +455,136 @@ function Loading() {
   );
 }
 
+/** A stand-in for an @hansenexus/illustrations motif: 40 px of line art in ink.muted. */
+function Art({ search = false }: { search?: boolean }) {
+  return (
+    <svg
+      width="40"
+      height="40"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {search ? (
+        <>
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3.5-3.5" />
+        </>
+      ) : (
+        <>
+          <path d="M22 12h-6l-2 3h-4l-2-3H2" />
+          <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+/** A fixed error, so the development view's stack is the same in every build. */
+const FAILURE = Object.assign(new Error("connect ECONNREFUSED speicher-db:5432"), {
+  digest: "2961537040",
+  stack:
+    "Error: connect ECONNREFUSED speicher-db:5432\n    at loadMachines (machines.ts:42:11)\n    at async MachinesPage (page.tsx:12:20)",
+});
+
+const QUAYS = ["kran-01", "kran-02", "pegel"];
+
+function Card({ children }: { children: ReactNode }) {
+  return (
+    <div className="rounded-hn-lg border border-hn-line-subtle bg-hn-surface-card p-4">
+      {children}
+    </div>
+  );
+}
+
+/**
+ * The states scene: EmptyState, ErrorState, Progress and QueryState in each of their states,
+ * German and English copy side by side. Screenshots disable animation, so the indeterminate
+ * Progress shows the skeleton base colour.
+ */
+function States() {
+  const machines = (query: string[] | undefined, error?: Error) => (
+    <QueryState query={query} error={error} onRetry={() => {}}>
+      {(rows) => (
+        <ul className="m-0 flex list-none flex-col gap-2 p-0 text-sm">
+          {rows.map((r) => (
+            <li key={r} className="font-hn-mono text-hn-ink-primary">
+              {r}
+            </li>
+          ))}
+        </ul>
+      )}
+    </QueryState>
+  );
+  return (
+    <main className="mx-auto flex max-w-[1280px] flex-col gap-10 px-4 py-10 sm:px-10">
+      <header className="flex flex-col gap-2">
+        <span className="text-sm font-semibold text-hn-ink-muted">@hansenexus/ui</span>
+        <h1 className="m-0 font-hn-display text-[32px] leading-tight font-semibold tracking-[-0.02em] sm:text-[44px]">
+          Empty, error and progress
+        </h1>
+      </header>
+      <div className="grid gap-x-8 gap-y-10 lg:grid-cols-2">
+        <Spec title="EmptyState: empty (en)">
+          <Card>
+            <EmptyState
+              illustration={<Art />}
+              titleAs="h3"
+              action={<Button>Add a machine</Button>}
+            />
+          </Card>
+        </Spec>
+        <Spec title="EmptyState: no-results (de)">
+          <Card>
+            <EmptyState
+              variant="no-results"
+              locale="de"
+              illustration={<Art search />}
+              titleAs="h3"
+              action={<Button variant="secondary">Filter zurücksetzen</Button>}
+            />
+          </Card>
+        </Spec>
+        <Spec title="ErrorState: production (en)">
+          <Card>
+            <ErrorState error={FAILURE} dev={false} onRetry={() => {}} titleAs="h3" />
+          </Card>
+        </Spec>
+        <Spec title="ErrorState: development (de)">
+          <Card>
+            <ErrorState error={FAILURE} dev locale="de" onRetry={() => {}} titleAs="h3" />
+          </Card>
+        </Spec>
+        <Spec title="Progress: determinate, complete, indeterminate" wide>
+          <Card>
+            <div className="flex flex-col gap-5">
+              <Progress value={40} label="Upload manifest.tar" showLabel />
+              <Progress value={100} label="Backup speicher-db" showLabel />
+              <Progress locale="de" showLabel valueText="unbekannte Dauer" />
+            </div>
+          </Card>
+        </Spec>
+        <Spec title="QueryState: loading, empty, data, error" wide>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Card>{machines(undefined)}</Card>
+            <Card>{machines([])}</Card>
+            <Card>{machines(QUAYS)}</Card>
+            <Card>{machines(QUAYS, FAILURE)}</Card>
+          </div>
+        </Spec>
+      </div>
+    </main>
+  );
+}
+
 function Scenes({ scene }: { scene: Scene }) {
   switch (scene) {
+    case "states":
+      return <States />;
     case "loading":
       return <Loading />;
     case "brand":

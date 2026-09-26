@@ -31,6 +31,15 @@ for (const mode of MODES) {
     });
   });
 
+  test(`states ${mode}`, async ({ page }, info) => {
+    await page.goto(`/gallery/?scene=states&mode=${mode}`);
+    await page.evaluate(() => document.fonts.ready);
+    await expect(page.locator('[role="progressbar"]')).toHaveCount(3);
+    await expect(page).toHaveScreenshot(`states-${info.project.name}-${mode}.png`, {
+      fullPage: true,
+    });
+  });
+
   for (const scene of OVERLAYS) {
     test(`${scene} ${mode}`, async ({ page }, info) => {
       await page.goto(`/gallery/?scene=${scene}&mode=${mode}`);

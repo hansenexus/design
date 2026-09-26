@@ -365,6 +365,84 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "state-copy",
+      "type": "registry:ui",
+      "title": "State copy",
+      "description": "German and English default copy of the state primitives, as plain objects.",
+      "registryDependencies": ["@hansenexus/tokens"],
+      "files": [
+        {
+          "path": "src/state-copy.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "empty-state",
+      "type": "registry:ui",
+      "title": "EmptyState",
+      "description": "Nothing to show (empty) or nothing matched (no-results): title, description, action, an aria-hidden illustration.",
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx", "@hansenexus/state-copy"],
+      "files": [
+        {
+          "path": "src/empty-state.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "error-state",
+      "type": "registry:ui",
+      "title": "ErrorState",
+      "description": "A failed surface: copy, the digest and a retry; message and stack only in development.",
+      "registryDependencies": [
+        "@hansenexus/tokens",
+        "@hansenexus/button",
+        "@hansenexus/cx",
+        "@hansenexus/empty-state",
+        "@hansenexus/state-copy"
+      ],
+      "files": [
+        {
+          "path": "src/error-state.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "progress",
+      "type": "registry:ui",
+      "title": "Progress",
+      "description": "Determinate or indeterminate progress bar; the pulse and transition stop under reduced motion.",
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx", "@hansenexus/state-copy"],
+      "files": [
+        {
+          "path": "src/progress.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "query-state",
+      "type": "registry:ui",
+      "title": "QueryState",
+      "description": "Renders a query result as loading, empty, error or data (undefined is loading), with aria-busy and a polite live region.",
+      "registryDependencies": [
+        "@hansenexus/tokens",
+        "@hansenexus/cx",
+        "@hansenexus/empty-state",
+        "@hansenexus/error-state",
+        "@hansenexus/skeleton",
+        "@hansenexus/state-copy"
+      ],
+      "files": [
+        {
+          "path": "src/query-state.tsx",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
