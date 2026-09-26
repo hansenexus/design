@@ -5,13 +5,18 @@ import { type ReactNode, StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import {
   Badge,
+  BRAND_VARIANTS,
+  type BrandVariant,
   Button,
+  cx,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  HansenexusMark,
+  HansenexusWordmark,
   Input,
   Kbd,
   Menu,
@@ -55,7 +60,7 @@ import {
 } from "../src";
 import { Bell, Check, Key, MapIcon, More, Restart, Server } from "./icons";
 
-export const SCENES = ["kit", "dialog", "menu", "select", "tooltip", "toast"] as const;
+export const SCENES = ["kit", "dialog", "menu", "select", "tooltip", "toast", "brand"] as const;
 type Scene = (typeof SCENES)[number];
 
 function Spec({
@@ -277,8 +282,95 @@ function Stage({ children }: { children: ReactNode }) {
   );
 }
 
+/** The ground each variant is made for; mono follows the page ink. */
+const GROUND: Record<BrandVariant, string> = {
+  lime: "bg-hn-brand-ink text-hn-brand-paper",
+  "lime-deep": "bg-hn-brand-paper text-hn-brand-ink",
+  ink: "bg-hn-brand-paper text-hn-brand-ink",
+  paper: "bg-hn-brand-ink text-hn-brand-paper",
+  mono: "bg-hn-surface-card text-hn-ink-primary",
+};
+
+/**
+ * The brand scene: mark and wordmark in every variant, the two app icon candidates at 16, 32
+ * and 1024 px (the generated PNGs from brand/assets), and the favicon and tray renders.
+ */
+function Brand() {
+  const icon = (kind: string, size: number) => (
+    <img
+      key={`${kind}-${size}`}
+      src={`./dist/brand/app-icon-${kind}-${size}.png`}
+      width={size}
+      height={size}
+      alt={`${kind} ${size} px`}
+      className={cx(
+        "outline outline-1 outline-hn-line-strong",
+        size === 1024 ? "h-auto w-full max-w-[512px]" : "[image-rendering:pixelated]"
+      )}
+    />
+  );
+  return (
+    <main className="mx-auto flex max-w-[1180px] flex-col gap-8 p-6 sm:p-10">
+      <header className="flex flex-col gap-2">
+        <h1 className="m-0 font-hn-display text-[28px] font-semibold">Brand</h1>
+        <p className="m-0 max-w-[60ch] text-hn-ink-body">
+          The mark and the wordmark, flat, in five variants. Lime stands on ink; on light surfaces
+          the mark is lime-deep.
+        </p>
+      </header>
+      <Spec title="mark and wordmark, per variant">
+        <div className="grid gap-3 sm:grid-cols-2">
+          {BRAND_VARIANTS.map((v) => (
+            <div
+              key={v}
+              className={`flex flex-col items-start gap-4 rounded-hn-md border border-hn-line-subtle p-5 ${GROUND[v]}`}
+            >
+              <span className="font-hn-mono text-[12px]">{v}</span>
+              <div className="flex items-end gap-5">
+                <HansenexusMark variant={v} size={48} />
+                <HansenexusMark variant={v} size={24} />
+                <HansenexusMark variant={v} size={12} />
+              </div>
+              <HansenexusWordmark variant={v} size={32} className="max-w-full" />
+              <HansenexusWordmark variant={v} size={16} />
+            </div>
+          ))}
+        </div>
+      </Spec>
+      <Spec title="app icon: lime on ink (chosen), ink on lime">
+        <div className="flex flex-wrap items-end gap-6">
+          {["lime-on-ink", "ink-on-lime"].map((kind) => (
+            <div key={kind} className="flex flex-col gap-3">
+              <span className="font-hn-mono text-[12px] text-hn-ink-muted">{kind}</span>
+              <div className="flex items-end gap-4">{[16, 32].map((s) => icon(kind, s))}</div>
+              {icon(kind, 1024)}
+            </div>
+          ))}
+        </div>
+      </Spec>
+      <Spec title="favicon and menu bar template">
+        <div className="flex flex-wrap items-center gap-6">
+          <img src="./dist/brand/favicon.svg" width={32} height={32} alt="favicon.svg" />
+          <img src="./dist/brand/favicon-32.png" width={32} height={32} alt="favicon 32 px" />
+          <img
+            src="./dist/brand/apple-touch-icon.png"
+            width={90}
+            height={90}
+            alt="apple touch icon"
+          />
+          <span className="rounded-hn-sm bg-hn-brand-paper p-2">
+            <img src="./dist/brand/trayTemplate@2x.png" width={16} height={16} alt="tray" />
+          </span>
+        </div>
+      </Spec>
+    </main>
+  );
+}
+
 function Scenes({ scene }: { scene: Scene }) {
   switch (scene) {
+    case "brand":
+      return <Brand />;
     case "kit":
       return <Kit />;
     case "dialog":

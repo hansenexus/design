@@ -11,6 +11,16 @@ for (const mode of MODES) {
     await expect(page).toHaveScreenshot(`kit-${info.project.name}-${mode}.png`, { fullPage: true });
   });
 
+  test(`brand ${mode}`, async ({ page }, info) => {
+    await page.goto(`/gallery/?scene=brand&mode=${mode}`);
+    await page.evaluate(() => document.fonts.ready);
+    await expect(page.locator("h1")).toBeVisible();
+    await page.waitForFunction(() => [...document.images].every((i) => i.complete));
+    await expect(page).toHaveScreenshot(`brand-${info.project.name}-${mode}.png`, {
+      fullPage: true,
+    });
+  });
+
   for (const scene of OVERLAYS) {
     test(`${scene} ${mode}`, async ({ page }, info) => {
       await page.goto(`/gallery/?scene=${scene}&mode=${mode}`);

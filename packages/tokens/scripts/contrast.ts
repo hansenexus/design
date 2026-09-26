@@ -44,6 +44,10 @@ export const RULES: Rule[] = [
     ],
     bg: SURFACES,
   },
+  // The mark is a graphic: 3:1 against the flat grounds it is allowed on (the app icon tile,
+  // paper). Lime on paper is not a pair on purpose; on light the mark is lime-deep.
+  { kind: "ui", fg: ["brand.lime", "brand.paper"], bg: ["brand.ink"] },
+  { kind: "ui", fg: ["brand.ink", "brand.lime-deep"], bg: ["brand.paper"] },
 ];
 
 /**

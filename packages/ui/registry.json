@@ -8,7 +8,7 @@
       "type": "registry:style",
       "title": "hansenexus tokens",
       "description": "Installs @hansenexus/tokens and imports its Tailwind v4 theme (--hn-* variables, dark and light).",
-      "dependencies": ["@hansenexus/tokens@^0.2.0"],
+      "dependencies": ["@hansenexus/tokens@^0.3.0"],
       "css": {
         "@import \"@hansenexus/tokens/tailwind.css\"": {}
       }
@@ -89,6 +89,54 @@
       "files": [
         {
           "path": "src/dialog.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "brand-geometry",
+      "type": "registry:lib",
+      "title": "brand geometry",
+      "description": "The hansenexus mark polygons and the outlined wordmark. Trademark: not covered by the MIT licence.",
+      "registryDependencies": ["@hansenexus/tokens"],
+      "files": [
+        {
+          "path": "src/brand-geometry.ts",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
+      "name": "hansenexus-mark",
+      "type": "registry:ui",
+      "title": "HansenexusMark",
+      "description": "The hansenexus mark: flat lime, lime-deep, ink, paper or currentColor. Trademark: not covered by the MIT licence.",
+      "registryDependencies": [
+        "@hansenexus/tokens",
+        "@hansenexus/brand-geometry",
+        "@hansenexus/cx"
+      ],
+      "files": [
+        {
+          "path": "src/hansenexus-mark.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "hansenexus-wordmark",
+      "type": "registry:ui",
+      "title": "HansenexusWordmark",
+      "description": "The mark and hansenexus in Fraunces, outlined, in the same variants. Trademark: not covered by the MIT licence.",
+      "registryDependencies": [
+        "@hansenexus/tokens",
+        "@hansenexus/brand-geometry",
+        "@hansenexus/cx",
+        "@hansenexus/hansenexus-mark"
+      ],
+      "files": [
+        {
+          "path": "src/hansenexus-wordmark.tsx",
           "type": "registry:ui"
         }
       ]

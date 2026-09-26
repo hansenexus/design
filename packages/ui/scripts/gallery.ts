@@ -1,11 +1,23 @@
 // Builds the kit gallery into gallery/dist/ and, with --serve, serves packages/ui on
 // 127.0.0.1 (default port 4410) at /gallery/?scene=kit&mode=dark.
 // Run: bun scripts/gallery.ts [--serve] [--port 4410]
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, extname, resolve, sep } from "node:path";
 
 const ROOT = resolve(import.meta.dir, "..");
 const OUT = resolve(ROOT, "gallery/dist");
+const BRAND = resolve(ROOT, "../../brand/assets");
+
+/** The generated brand files the brand scene shows as they ship (scripts/brand.ts). */
+const BRAND_FILES = [
+  ...["lime-on-ink", "ink-on-lime"].flatMap((k) =>
+    [16, 32, 1024].map((s) => `app-icon/app-icon-${k}-${s}.png`)
+  ),
+  "favicon/favicon.svg",
+  "favicon/favicon-32.png",
+  "favicon/apple-touch-icon.png",
+  "tray/trayTemplate@2x.png",
+];
 
 // Self-hosted fonts, so screenshots never depend on the network. The token stacks name the
 // families without "Variable", so the fontsource faces are re-registered under those names.
@@ -27,6 +39,10 @@ function fontsCss(): string {
 export async function buildGallery() {
   mkdirSync(OUT, { recursive: true });
   writeFileSync(resolve(OUT, "fonts.css"), fontsCss());
+  mkdirSync(resolve(OUT, "brand"), { recursive: true });
+  for (const file of BRAND_FILES) {
+    copyFileSync(resolve(BRAND, file), resolve(OUT, "brand", file.split("/").pop() ?? file));
+  }
   const js = await Bun.build({
     entrypoints: [resolve(ROOT, "gallery/main.tsx")],
     outdir: OUT,
@@ -51,6 +67,8 @@ const TYPES: Record<string, string> = {
   ".js": "text/javascript; charset=utf-8",
   ".css": "text/css; charset=utf-8",
   ".woff2": "font/woff2",
+  ".png": "image/png",
+  ".svg": "image/svg+xml",
   ".map": "application/json",
 };
 

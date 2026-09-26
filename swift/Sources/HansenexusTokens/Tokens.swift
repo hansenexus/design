@@ -44,6 +44,17 @@ public struct HNColors: Sendable, Equatable {
     public let textHover: HNRGBA
   }
 
+  public struct Brand: Sendable, Equatable {
+    /// Flat ink mark; the app icon ground
+    public let ink: HNRGBA
+    /// The mark, flat lime
+    public let lime: HNRGBA
+    /// The mark on light surfaces where lime would fall below 3:1
+    public let limeDeep: HNRGBA
+    /// Flat paper mark on ink
+    public let paper: HNRGBA
+  }
+
   public struct Focus: Sendable, Equatable {
     public let ring: HNRGBA
   }
@@ -93,6 +104,7 @@ public struct HNColors: Sendable, Equatable {
   }
 
   public let action: Action
+  public let brand: Brand
   public let focus: Focus
   public let ink: Ink
   public let line: Line
@@ -120,6 +132,12 @@ public struct HNColors: Sendable, Equatable {
       primaryInk: HNRGBA(0x16140F),
       text: HNRGBA(0x42C501),
       textHover: HNRGBA(0x8BE45F)
+    ),
+    brand: Brand(
+      ink: HNRGBA(0x16140F),
+      lime: HNRGBA(0x42C501),
+      limeDeep: HNRGBA(0x2B7300),
+      paper: HNRGBA(0xF4F0E6)
     ),
     focus: Focus(
       ring: HNRGBA(0x42C501)
@@ -160,6 +178,12 @@ public struct HNColors: Sendable, Equatable {
       text: HNRGBA(0x2B7300),
       textHover: HNRGBA(0x1F5500)
     ),
+    brand: Brand(
+      ink: HNRGBA(0x16140F),
+      lime: HNRGBA(0x42C501),
+      limeDeep: HNRGBA(0x2B7300),
+      paper: HNRGBA(0xF4F0E6)
+    ),
     focus: Focus(
       ring: HNRGBA(0x2B7300)
     ),
@@ -198,6 +222,12 @@ public struct HNColors: Sendable, Equatable {
       primaryInk: HNRGBA(0x16140F),
       text: HNRGBA(0x42C501),
       textHover: HNRGBA(0x8BE45F)
+    ),
+    brand: Brand(
+      ink: HNRGBA(0x16140F),
+      lime: HNRGBA(0x42C501),
+      limeDeep: HNRGBA(0x2B7300),
+      paper: HNRGBA(0xF4F0E6)
     ),
     focus: Focus(
       ring: HNRGBA(0x42C501)
@@ -238,6 +268,12 @@ public struct HNColors: Sendable, Equatable {
       text: HNRGBA(0x2B7300),
       textHover: HNRGBA(0x1F5500)
     ),
+    brand: Brand(
+      ink: HNRGBA(0x16140F),
+      lime: HNRGBA(0x42C501),
+      limeDeep: HNRGBA(0x2B7300),
+      paper: HNRGBA(0xF4F0E6)
+    ),
     focus: Focus(
       ring: HNRGBA(0x2B7300)
     ),
@@ -277,6 +313,12 @@ public struct HNColors: Sendable, Equatable {
       text: HNRGBA(0x42C501),
       textHover: HNRGBA(0x8BE45F)
     ),
+    brand: Brand(
+      ink: HNRGBA(0x16140F),
+      lime: HNRGBA(0x42C501),
+      limeDeep: HNRGBA(0x2B7300),
+      paper: HNRGBA(0xF4F0E6)
+    ),
     focus: Focus(
       ring: HNRGBA(0x42C501)
     ),
@@ -315,6 +357,12 @@ public struct HNColors: Sendable, Equatable {
       primaryInk: HNRGBA(0x16140F),
       text: HNRGBA(0x2B7300),
       textHover: HNRGBA(0x1F5500)
+    ),
+    brand: Brand(
+      ink: HNRGBA(0x16140F),
+      lime: HNRGBA(0x42C501),
+      limeDeep: HNRGBA(0x2B7300),
+      paper: HNRGBA(0xF4F0E6)
     ),
     focus: Focus(
       ring: HNRGBA(0x2B7300)

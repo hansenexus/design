@@ -48,5 +48,16 @@
   },
   "focus": {
     "ring": { "$type": "color", "$value": "{palette.lime.700}" }
+  },
+  "brand": {
+    "$type": "color",
+    "$description": "The mark and wordmark. The same in both modes: a logo does not follow the theme.",
+    "lime": { "$value": "{palette.lime.500}", "$description": "The mark, flat lime" },
+    "lime-deep": {
+      "$value": "{palette.lime.700}",
+      "$description": "The mark on light surfaces where lime would fall below 3:1"
+    },
+    "ink": { "$value": "{palette.warm.900}", "$description": "Flat ink mark; the app icon ground" },
+    "paper": { "$value": "{palette.warm.50}", "$description": "Flat paper mark on ink" }
   }
 }

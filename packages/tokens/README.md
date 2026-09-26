@@ -63,6 +63,8 @@ density.touch.target; // "44px"
   unknown dashed circle. `status.off` is a shape colour; its label uses `ink.muted`.
 - A destructive action is the flat `action.danger` fill with `action.danger-ink` on it.
 - `line.subtle` is decoration only; a control's boundary uses `line.strong`.
+- `brand.*` (lime, lime-deep, ink, paper) is for the mark and wordmark only, the same in both
+  modes. Usage in [brand/README.md](../../brand/README.md).
 
 ## Checks
 

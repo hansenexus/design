@@ -142,6 +142,45 @@ describe("markup", () => {
   });
 });
 
+describe("brand", () => {
+  test("the mark is named hansenexus and defaults to currentColor", () => {
+    const html = renderToStaticMarkup(<ui.HansenexusMark size={32} />);
+    expect(html).toContain('role="img"');
+    expect(html).toContain('aria-label="hansenexus"');
+    expect(html).toContain('height="32"');
+    expect(html).toContain("fill-current");
+    expect(html).toContain(`viewBox="0 0 ${ui.MARK.width} ${ui.MARK.height}"`);
+    expect(html.match(/<polygon /g)?.length).toBe(2);
+  });
+
+  test("every variant is one flat token fill, no gradient or filter", () => {
+    for (const variant of ui.BRAND_VARIANTS) {
+      for (const html of [
+        renderToStaticMarkup(<ui.HansenexusMark variant={variant} />),
+        renderToStaticMarkup(<ui.HansenexusWordmark variant={variant} />),
+      ]) {
+        expect(html).toContain(ui.BRAND_FILL[variant]);
+        expect(html).not.toMatch(/gradient|filter|stroke|opacity/i);
+      }
+    }
+  });
+
+  test("the lime wordmark sets paper text, lime-deep sets ink text", () => {
+    const lime = renderToStaticMarkup(<ui.HansenexusWordmark variant="lime" />);
+    expect(lime).toContain("fill-hn-brand-lime");
+    expect(lime).toContain("fill-hn-brand-paper");
+    const deep = renderToStaticMarkup(<ui.HansenexusWordmark variant="lime-deep" />);
+    expect(deep).toContain("fill-hn-brand-ink");
+  });
+
+  test("a custom label replaces the name; aria-hidden makes it decoration", () => {
+    expect(renderToStaticMarkup(<ui.HansenexusWordmark aria-label="hansenexus home" />)).toContain(
+      'aria-label="hansenexus home"'
+    );
+    expect(renderToStaticMarkup(<ui.HansenexusMark aria-hidden />)).toContain('aria-hidden="true"');
+  });
+});
+
 describe("styles", () => {
   test("Tailwind's own palette cannot compile next to the primitives", () => {
     // Inside node_modules so the probe resolves tailwindcss and @hansenexus/tokens like src/ does.
