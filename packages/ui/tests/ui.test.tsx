@@ -336,3 +336,148 @@ describe("styles", () => {
     );
   });
 });
+
+describe("state primitives", () => {
+  const boom = Object.assign(new Error("db password wrong for tenant 42"), {
+    digest: "4130985",
+    stack: "Error: db password wrong for tenant 42\n    at load (invoices.ts:42:11)",
+  });
+
+  test("German and English copy have the same keys, all filled", () => {
+    const shape = (o: object): string[] =>
+      Object.entries(o).flatMap(([k, v]) =>
+        typeof v === "object" ? shape(v).map((s) => `${k}.${s}`) : [k]
+      );
+    expect(shape(ui.STATE_COPY.de)).toEqual(shape(ui.STATE_COPY.en));
+    for (const locale of ui.STATE_LOCALES) {
+      const values = JSON.stringify(ui.STATE_COPY[locale]).match(/"[^"]*"/g) ?? [];
+      expect(values).not.toContain('""');
+    }
+  });
+
+  test("EmptyState: empty and no-results copy per locale, overridable per prop", () => {
+    expect(renderToStaticMarkup(<ui.EmptyState />)).toContain(ui.STATE_COPY.en.empty.title);
+    const de = renderToStaticMarkup(<ui.EmptyState variant="no-results" locale="de" />);
+    expect(de).toContain(ui.STATE_COPY.de.noResults.title);
+    expect(de).toContain('data-variant="no-results"');
+    const own = renderToStaticMarkup(
+      <ui.EmptyState title="No invoices" action={<ui.Button>New invoice</ui.Button>} />
+    );
+    expect(own).toContain("No invoices");
+    expect(own).not.toContain(ui.STATE_COPY.en.empty.title);
+    expect(own).toContain("New invoice");
+  });
+
+  test("illustrations are aria-hidden", () => {
+    const art = <svg data-art="" />;
+    for (const html of [
+      renderToStaticMarkup(<ui.EmptyState illustration={art} />),
+      renderToStaticMarkup(<ui.ErrorState illustration={art} />),
+    ])
+      expect(html).toMatch(/<div aria-hidden="true"[^>]*><svg data-art=""/);
+  });
+
+  test("ErrorState in production: copy, digest and retry, never the message or stack", () => {
+    const html = renderToStaticMarkup(<ui.ErrorState error={boom} onRetry={() => {}} />);
+    expect(html).toContain(ui.STATE_COPY.en.error.title);
+    expect(html).toContain("4130985");
+    expect(html).toContain(ui.STATE_COPY.en.error.retry);
+    expect(html).not.toContain("password");
+    expect(html).not.toContain("invoices.ts");
+  });
+
+  test("ErrorState defaults to production when NODE_ENV is not development", () => {
+    const before = process.env.NODE_ENV;
+    try {
+      process.env.NODE_ENV = "test";
+      expect(renderToStaticMarkup(<ui.ErrorState error={boom} />)).not.toContain("password");
+      process.env.NODE_ENV = "development";
+      expect(renderToStaticMarkup(<ui.ErrorState error={boom} />)).toContain("password");
+    } finally {
+      process.env.NODE_ENV = before;
+    }
+  });
+
+  test("ErrorState in development also shows the message and stack", () => {
+    const html = renderToStaticMarkup(<ui.ErrorState error={boom} dev locale="de" />);
+    expect(html).toContain(ui.STATE_COPY.de.error.title);
+    expect(html).toContain("db password wrong for tenant 42");
+    expect(html).toContain("invoices.ts:42:11");
+    expect(html).not.toContain(ui.STATE_COPY.de.error.retry);
+  });
+
+  test("Progress: determinate carries its value, indeterminate none, both stop under reduced motion", () => {
+    const det = renderToStaticMarkup(<ui.Progress value={40} label="Upload" />);
+    for (const attr of [
+      'role="progressbar"',
+      'aria-label="Upload"',
+      'aria-valuenow="40"',
+      'aria-valuetext="40%"',
+      "width:40%",
+      "motion-reduce:transition-none",
+    ])
+      expect(det).toContain(attr);
+    const ind = renderToStaticMarkup(<ui.Progress locale="de" />);
+    expect(ind).not.toContain("aria-valuenow");
+    expect(ind).toContain(`aria-label="${ui.STATE_COPY.de.progress}"`);
+    expect(ind).toContain('data-state="indeterminate"');
+    expect(ind).toContain("animate-hn-pulse motion-reduce:animate-none");
+    expect(renderToStaticMarkup(<ui.Progress value={140} />)).toContain('data-state="complete"');
+  });
+
+  test("queryStatus: undefined is loading, null and [] are empty, errors win", () => {
+    expect(ui.queryStatus(undefined)).toBe("loading");
+    expect(ui.queryStatus(null)).toBe("empty");
+    expect(ui.queryStatus([])).toBe("empty");
+    expect(ui.queryStatus([1])).toBe("data");
+    expect(ui.queryStatus(0)).toBe("data");
+    expect(ui.queryStatus({ rows: [] }, { isEmpty: (d) => d.rows.length === 0 })).toBe("empty");
+    expect(ui.queryStatus([1], { error: new Error("x") })).toBe("error");
+  });
+
+  test("QueryState renders each state, defaults to Skeleton and EmptyState", () => {
+    const list = (q: string[] | undefined, extra: Partial<ui.QueryStateProps<string[]>> = {}) =>
+      renderToStaticMarkup(
+        <ui.QueryState query={q} {...extra}>
+          {(rows) => (
+            <ul>
+              {rows.map((r) => (
+                <li key={r}>{r}</li>
+              ))}
+            </ul>
+          )}
+        </ui.QueryState>
+      );
+    const loading = list(undefined);
+    expect(loading).toContain('aria-busy="true"');
+    expect(loading).toContain("bg-hn-skeleton-base");
+    expect(list([])).toContain(ui.STATE_COPY.en.empty.title);
+    expect(list([])).not.toContain("aria-busy");
+    expect(list(["kran-01"])).toContain("<li>kran-01</li>");
+    expect(list(undefined, { loading: <p>custom</p> })).toContain("<p>custom</p>");
+    expect(list([], { empty: <p>none</p> })).toContain("<p>none</p>");
+    const failed = list(["kran-01"], { error: boom, locale: "de" });
+    expect(failed).toContain(ui.STATE_COPY.de.error.title);
+    expect(failed).toContain("4130985");
+    expect(failed).not.toContain("kran-01");
+  });
+
+  test("QueryState keeps a polite live region, silent on first render", () => {
+    const html = renderToStaticMarkup(
+      <ui.QueryState query={["a"]}>{(rows) => rows.join()}</ui.QueryState>
+    );
+    expect(html).toContain(
+      '<span role="status" aria-live="polite" aria-atomic="true" class="sr-only"></span>'
+    );
+  });
+
+  test("the live region speaks when data arrives or the query fails", () => {
+    const m = { loaded: "Loaded", error: "Failed" };
+    expect(ui.nextAnnouncement("loading", "data", m)).toBe("Loaded");
+    expect(ui.nextAnnouncement("loading", "empty", m)).toBe("Loaded");
+    expect(ui.nextAnnouncement("data", "error", m)).toBe("Failed");
+    expect(ui.nextAnnouncement("data", "loading", m)).toBe("");
+    expect(ui.nextAnnouncement("data", "empty", m)).toBeNull();
+    expect(ui.nextAnnouncement("data", "data", m)).toBeNull();
+  });
+});

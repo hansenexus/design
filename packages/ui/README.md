@@ -6,7 +6,8 @@ colour follows `data-mode`, `data-theme` and `data-density` on an ancestor.
 
 Button, Badge, StatusBadge, Switch, Dialog, Menu, Tabs, Table, Meter, Sparkline, Kbd, Toast,
 Tooltip, Input, Select, RailItem. For loading: Skeleton (block, text, circle), SkeletonGroup,
-Spinner and the `useDelayedVisibility` hook. Plus the brand: `HansenexusMark` and `HansenexusWordmark`
+Spinner and the `useDelayedVisibility` hook. For the other states: EmptyState, ErrorState, Progress
+and QueryState, with German and English default copy (`STATE_COPY`). Plus the brand: `HansenexusMark` and `HansenexusWordmark`
 (`variant` lime, lime-deep, ink, paper or mono, which is `currentColor` and the default; `size` is
 the height; named "hansenexus" unless `aria-label` or `aria-hidden` says otherwise). Usage rules in
 [brand/README.md](../../brand/README.md).
@@ -63,6 +64,40 @@ after `delay.pending` (200 ms), so fast work never flashes it, and then stays at
 `min-visible.pending` (400 ms). Skeletons pulse between `skeleton.base` and
 `skeleton.highlight`; under `prefers-reduced-motion: reduce` neither pulses nor spins. The pulse is
 the provisional style until the gallery vote (PRD hn-monorepo#2110, slice 5).
+
+### Empty, error, progress and QueryState
+
+```tsx
+import { EmptyState, ErrorState, Progress, QueryState } from "@hansenexus/ui";
+
+const machines = useQuery(api.machines.list);            // undefined while loading
+<QueryState query={machines} locale="de" isEmpty={(m) => m.length === 0}
+  empty={<EmptyState variant="empty" locale="de" action={<Button>Maschine anlegen</Button>} />}>
+  {(rows) => <MachineTable rows={rows} />}
+</QueryState>
+
+// app/[id]/error.tsx
+export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+  return <ErrorState error={error} onRetry={reset} locale="de" />;
+}
+
+<Progress value={40} label="Upload" showLabel />   {/* no value: indeterminate */}
+```
+
+- **Copy.** `STATE_COPY.de` and `STATE_COPY.en` are plain objects; `locale` picks one and every
+  text prop (`title`, `description`, `retryLabel`, `label`, `loadedMessage`) overrides it. No i18n
+  library: monorepo apps pass their `states.*` next-intl messages.
+- **EmptyState** has two variants: `empty` (nothing exists yet) and `no-results` (the search or
+  filter matched nothing). `illustration` is a slot and renders `aria-hidden`.
+- **ErrorState** shows the copy, the `digest` as a reference and a retry button when `onRetry` is
+  set. The raw message and stack show only when `NODE_ENV === "development"` (or `dev`); anything
+  else, including a browser without a bundler replacement, gets the production view.
+- **Progress** is a `progressbar`: determinate with `value` (busy colour, ok once complete),
+  indeterminate without; the pulse and the width transition stop under reduced motion.
+- **QueryState** reads `undefined` as loading, `null` and `[]` as empty (or your `isEmpty`), an
+  `error` prop as failed, and defaults to Skeleton, EmptyState and ErrorState. It imports no data
+  library. The container is `aria-busy` while loading, and a polite live region announces when
+  the data arrives ("Loaded") or the query fails; it stays silent when the data is already there.
 
 ## shadcn registry
 

@@ -6,7 +6,7 @@ hansenexus design system: DTCG tokens, UI primitives, the state-check and the Sw
 | --- | --- |
 | [`@hansenexus/tokens`](packages/tokens) | DTCG source, CSS variables, Tailwind v4 `@theme`, TS constants, contrast CI |
 | [`HansenexusTokens`](swift) | SwiftPM package: generated colours, fonts and spacing for SwiftUI |
-| [`@hansenexus/ui`](packages/ui) | 16 primitives on Radix, Skeleton, Spinner, `useDelayedVisibility`, semantic tokens only, shadcn registry, screenshot baselines; `HansenexusMark`, `HansenexusWordmark` |
+| [`@hansenexus/ui`](packages/ui) | 16 primitives on Radix, Skeleton, Spinner, `useDelayedVisibility`, EmptyState, ErrorState, Progress, QueryState (DE/EN copy), semantic tokens only, shadcn registry, screenshot baselines; `HansenexusMark`, `HansenexusWordmark` |
 | [`@hansenexus/state-check`](packages/state-check) | The frontend state contract as a CI ratchet: dynamic Next.js routes need `loading.tsx` or `<Suspense>`; CLI, per-app baseline |
 | [`brand/`](brand) | The mark and wordmark in every variant, favicons, app icon, menu bar template; usage rules |
 
