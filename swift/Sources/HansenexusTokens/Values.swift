@@ -41,3 +41,19 @@ public struct HNShadowValue: Sendable, Equatable {
 
   public var radius: Double { blur / 2 }
 }
+
+/// A CSS `cubic-bezier(x1, y1, x2, y2)` timing curve. In SwiftUI:
+/// `.timingCurve(e.x1, e.y1, e.x2, e.y2, duration: HNPulse.duration)`.
+public struct HNCubicBezier: Sendable, Equatable {
+  public let x1: Double
+  public let y1: Double
+  public let x2: Double
+  public let y2: Double
+
+  public init(_ x1: Double, _ y1: Double, _ x2: Double, _ y2: Double) {
+    self.x1 = x1
+    self.y1 = y1
+    self.x2 = x2
+    self.y2 = y2
+  }
+}

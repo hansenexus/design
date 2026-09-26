@@ -1,7 +1,8 @@
-import { describe, expect, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, jest, test } from "bun:test";
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { ms } from "@hansenexus/tokens";
 import { renderToStaticMarkup } from "react-dom/server";
 import { registryItemSchema } from "shadcn/schema";
 import { buildRegistry, loadRegistry } from "../scripts/registry";
@@ -142,6 +143,120 @@ describe("markup", () => {
   });
 });
 
+describe("delayed visibility", () => {
+  let seen: boolean[];
+  const start = (options?: ui.DelayedVisibilityOptions) =>
+    ui.createDelayedVisibility((v) => seen.push(v), options);
+
+  beforeEach(() => {
+    seen = [];
+    jest.useFakeTimers();
+  });
+  afterEach(() => jest.useRealTimers());
+
+  test("defaults come from the motion tokens", () => {
+    expect(ms.delay.pending).toBe(200);
+    expect(ms["min-visible"].pending).toBe(400);
+  });
+
+  test("work under 200 ms never shows the indicator", () => {
+    const c = start();
+    c.set(true);
+    jest.advanceTimersByTime(199);
+    c.set(false);
+    jest.advanceTimersByTime(1000);
+    expect(seen).toEqual([]);
+  });
+
+  test("shows at 200 ms, then stays at least 400 ms", () => {
+    const c = start();
+    c.set(true);
+    jest.advanceTimersByTime(200);
+    expect(seen).toEqual([true]);
+    jest.advanceTimersByTime(50);
+    c.set(false);
+    jest.advanceTimersByTime(349);
+    expect(seen).toEqual([true]);
+    jest.advanceTimersByTime(1);
+    expect(seen).toEqual([true, false]);
+  });
+
+  test("hides at once when it has already shown long enough", () => {
+    const c = start();
+    c.set(true);
+    jest.advanceTimersByTime(200 + 500);
+    c.set(false);
+    expect(seen).toEqual([true, false]);
+  });
+
+  test("work that resumes inside the minimum keeps the indicator without a flicker", () => {
+    const c = start();
+    c.set(true);
+    jest.advanceTimersByTime(200);
+    c.set(false);
+    jest.advanceTimersByTime(100);
+    c.set(true);
+    jest.advanceTimersByTime(1000);
+    expect(seen).toEqual([true]);
+  });
+
+  test("custom timings and dispose", () => {
+    const c = start({ delayMs: 50, minVisibleMs: 0 });
+    c.set(true);
+    jest.advanceTimersByTime(50);
+    c.set(false);
+    expect(seen).toEqual([true, false]);
+    c.set(true);
+    c.dispose();
+    jest.advanceTimersByTime(1000);
+    expect(seen).toEqual([true, false]);
+  });
+});
+
+describe("loading", () => {
+  test("Spinner renders nothing on first paint (the 200 ms delay)", () => {
+    expect(renderToStaticMarkup(<ui.Spinner />)).toBe("");
+  });
+
+  test("SpinnerGlyph is a named busy status that stops under reduced motion", () => {
+    const html = renderToStaticMarkup(<ui.SpinnerGlyph label="Sending" />);
+    for (const attr of ['role="status"', 'aria-busy="true"', 'aria-label="Sending"'])
+      expect(html).toContain(attr);
+    expect(html).toContain("animate-hn-spin");
+    expect(html).toContain("motion-reduce:animate-none");
+  });
+
+  test("Skeleton shapes are decorative, pulse on the skeleton tokens, stop under reduced motion", () => {
+    for (const shape of ui.SKELETON_SHAPES) {
+      const html = renderToStaticMarkup(<ui.Skeleton shape={shape} width={40} height={40} />);
+      expect(html).toContain('aria-hidden="true"');
+      expect(html).toContain(`data-shape="${shape}"`);
+      expect(html).toContain("bg-hn-skeleton-base");
+      expect(html).toContain("animate-hn-pulse motion-reduce:animate-none");
+    }
+    expect(renderToStaticMarkup(<ui.Skeleton shape="circle" width={32} />)).toContain(
+      "rounded-full"
+    );
+  });
+
+  test("a text skeleton draws its lines, the last one shorter", () => {
+    const html = renderToStaticMarkup(<ui.Skeleton shape="text" lines={3} />);
+    expect(html.match(/bg-hn-skeleton-base/g)?.length).toBe(3);
+    expect(html.match(/w-3\/5/g)?.length).toBe(1);
+  });
+
+  test("SkeletonGroup marks its container aria-busy", () => {
+    const html = renderToStaticMarkup(
+      <ui.SkeletonGroup>
+        <ui.Skeleton />
+      </ui.SkeletonGroup>
+    );
+    expect(html).toContain('aria-busy="true"');
+    expect(html).toContain('role="status"');
+    expect(html).toContain('aria-label="Loading"');
+  });
+});
+
 describe("brand", () => {
   test("the mark is named hansenexus and defaults to currentColor", () => {
     const html = renderToStaticMarkup(<ui.HansenexusMark size={32} />);
@@ -204,5 +319,20 @@ describe("styles", () => {
     expect(out).toContain(".bg-hn-surface-card");
     expect(out).not.toContain(".bg-red-500");
     expect(out).not.toContain(".text-white");
+  });
+
+  test("the loading animations compile and switch off under prefers-reduced-motion", () => {
+    const run = Bun.spawnSync(
+      ["bunx", "@tailwindcss/cli", "-i", "src/styles.css", "-o", "node_modules/.cache/motion.css"],
+      { cwd: ROOT }
+    );
+    expect(run.exitCode).toBe(0);
+    const css = readFileSync(resolve(ROOT, "node_modules/.cache/motion.css"), "utf8");
+    expect(css).toContain("@keyframes hn-pulse");
+    expect(css).toContain("@keyframes hn-spin");
+    expect(css).toContain(".animate-hn-pulse");
+    expect(css).toMatch(
+      /@media \(prefers-reduced-motion: reduce\) \{\s*\.motion-reduce\\:animate-none \{\s*animation: none;/
+    );
   });
 });

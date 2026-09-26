@@ -33,7 +33,11 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Skeleton,
+  SkeletonGroup,
   Sparkline,
+  Spinner,
+  SpinnerGlyph,
   STATUSES,
   StatusBadge,
   Switch,
@@ -60,7 +64,16 @@ import {
 } from "../src";
 import { Bell, Check, Key, MapIcon, More, Restart, Server } from "./icons";
 
-export const SCENES = ["kit", "dialog", "menu", "select", "tooltip", "toast", "brand"] as const;
+export const SCENES = [
+  "kit",
+  "dialog",
+  "menu",
+  "select",
+  "tooltip",
+  "toast",
+  "brand",
+  "loading",
+] as const;
 type Scene = (typeof SCENES)[number];
 
 function Spec({
@@ -367,8 +380,80 @@ function Brand() {
   );
 }
 
+const SURFACES = [
+  ["surface.page", "bg-hn-surface-page"],
+  ["surface.band", "bg-hn-surface-band"],
+  ["surface.card", "bg-hn-surface-card"],
+  ["surface.raised", "bg-hn-surface-raised"],
+] as const;
+
+/** A machine card while its data loads: avatar, title, two lines of copy, a chart block. */
+function CardSkeleton({ surface }: { surface: string }) {
+  return (
+    <SkeletonGroup
+      label="Loading kran-01"
+      className={cx("flex flex-col gap-3 rounded-hn-lg border border-hn-line-subtle p-4", surface)}
+    >
+      <div className="flex items-center gap-3">
+        <Skeleton shape="circle" width={32} />
+        <Skeleton shape="text" width="45%" className="text-base" />
+      </div>
+      <Skeleton shape="text" lines={2} className="text-sm" />
+      <Skeleton height={64} />
+    </SkeletonGroup>
+  );
+}
+
+/**
+ * The loading scene: Skeleton in every shape on every surface, and the Spinner. Screenshots
+ * disable animation, so the skeleton shows its base colour and the ring its start angle.
+ */
+function Loading() {
+  return (
+    <main className="mx-auto flex max-w-[1280px] flex-col gap-10 px-4 py-10 sm:px-10">
+      <header className="flex flex-col gap-2">
+        <span className="text-sm font-semibold text-hn-ink-muted">@hansenexus/ui</span>
+        <h1 className="m-0 font-hn-display text-[32px] leading-tight font-semibold tracking-[-0.02em] sm:text-[44px]">
+          Loading states
+        </h1>
+      </header>
+      <div className="grid gap-x-8 gap-y-10 lg:grid-cols-2">
+        <Spec title="Skeleton on each surface" wide>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {SURFACES.map(([name, surface]) => (
+              <div key={name} className="flex flex-col gap-2">
+                <span className="font-hn-mono text-xs text-hn-ink-muted">{name}</span>
+                <CardSkeleton surface={surface} />
+              </div>
+            ))}
+          </div>
+        </Spec>
+        <Spec title="Skeleton shapes: block, text, circle">
+          <div className="flex items-start gap-4 rounded-hn-lg bg-hn-surface-card p-4">
+            <Skeleton width={96} height={72} />
+            <Skeleton shape="text" lines={3} className="flex-1 text-sm" />
+            <Skeleton shape="circle" width={40} />
+          </div>
+        </Spec>
+        <Spec title="Spinner: after 200 ms, at least 400 ms">
+          <div className="flex items-center gap-6 rounded-hn-lg bg-hn-surface-card p-4">
+            <SpinnerGlyph size={16} />
+            <SpinnerGlyph size={24} />
+            <Button variant="secondary" disabled>
+              <Spinner label="Saving" />
+              Saving
+            </Button>
+          </div>
+        </Spec>
+      </div>
+    </main>
+  );
+}
+
 function Scenes({ scene }: { scene: Scene }) {
   switch (scene) {
+    case "loading":
+      return <Loading />;
     case "brand":
       return <Brand />;
     case "kit":

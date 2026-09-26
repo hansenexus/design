@@ -5,7 +5,8 @@ through the semantic tokens of [`@hansenexus/tokens`](../tokens). Dark and light
 colour follows `data-mode`, `data-theme` and `data-density` on an ancestor.
 
 Button, Badge, StatusBadge, Switch, Dialog, Menu, Tabs, Table, Meter, Sparkline, Kbd, Toast,
-Tooltip, Input, Select, RailItem. Plus the brand: `HansenexusMark` and `HansenexusWordmark`
+Tooltip, Input, Select, RailItem. For loading: Skeleton (block, text, circle), SkeletonGroup,
+Spinner and the `useDelayedVisibility` hook. Plus the brand: `HansenexusMark` and `HansenexusWordmark`
 (`variant` lime, lime-deep, ink, paper or mono, which is `currentColor` and the default; `size` is
 the height; named "hansenexus" unless `aria-label` or `aria-hidden` says otherwise). Usage rules in
 [brand/README.md](../../brand/README.md).
@@ -42,6 +43,27 @@ import { Button, StatusBadge, Meter } from "@hansenexus/ui";
 
 `className` is appended, not merged: to change a look, prefer a variant or wrap the component.
 
+### Loading
+
+```tsx
+import { Skeleton, SkeletonGroup, Spinner, useDelayedVisibility } from "@hansenexus/ui";
+
+<SkeletonGroup label="Loading invoices">       {/* role=status, aria-busy="true" */}
+  <Skeleton shape="circle" width={32} />
+  <Skeleton shape="text" lines={2} />
+  <Skeleton height={64} />
+</SkeletonGroup>
+
+<Spinner pending={isSaving} label="Saving" />  {/* keep it mounted, flip pending */}
+const show = useDelayedVisibility(isSaving);   // your own pending indicator
+```
+
+Route skeletons show at once. A Spinner (or anything behind `useDelayedVisibility`) shows only
+after `delay.pending` (200 ms), so fast work never flashes it, and then stays at least
+`min-visible.pending` (400 ms). Skeletons pulse between `skeleton.base` and
+`skeleton.highlight`; under `prefers-reduced-motion: reduce` neither pulses nor spins. The pulse is
+the provisional style until the gallery vote (PRD hn-monorepo#2110, slice 5).
+
 ## shadcn registry
 
 The same sources ship as a shadcn registry (`registry.json`; built items in `dist/r/`, also in the
@@ -70,8 +92,8 @@ bunx shadcn@latest add @hansenexus/button @hansenexus/status-badge
 
 ## Screenshot baselines
 
-`screenshots/baselines/` holds the kit gallery (`gallery/`, every primitive in its states) and each
-overlay at 390 and 1280 px, dark and light. Pixels depend on the OS and browser build, so
+`screenshots/baselines/` holds the kit gallery (`gallery/`, every primitive in its states), the
+loading scene (Skeleton and Spinner) and each overlay at 390 and 1280 px, dark and light. Pixels depend on the OS and browser build, so
 `scripts/screenshots.sh` runs Playwright inside the pinned `mcr.microsoft.com/playwright` image,
 the same one CI uses. It needs Docker.
 

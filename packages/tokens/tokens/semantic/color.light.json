@@ -46,6 +46,12 @@
     },
     "unknown": { "$value": "{palette.warm.600}", "$description": "dashed circle" }
   },
+  "skeleton": {
+    "$type": "color",
+    "$description": "Loading placeholders. A pulse runs from base to highlight; reduced motion keeps base.",
+    "base": { "$value": "{palette.warm.200}", "$description": "The resting placeholder fill" },
+    "highlight": { "$value": "{palette.warm.300}", "$description": "The pulse's far end" }
+  },
   "focus": {
     "ring": { "$type": "color", "$value": "{palette.lime.700}" }
   },

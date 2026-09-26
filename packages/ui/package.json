@@ -1,6 +1,6 @@
 {
   "name": "@hansenexus/ui",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "hansenexus UI primitives on Radix, styled only through the semantic tokens of @hansenexus/tokens. Dark and light.",
   "license": "MIT",
   "keywords": [
@@ -48,7 +48,7 @@
     "radix-ui": "1.6.7"
   },
   "peerDependencies": {
-    "@hansenexus/tokens": "^0.3.0",
+    "@hansenexus/tokens": "^0.4.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

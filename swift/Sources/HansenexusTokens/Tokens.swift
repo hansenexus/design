@@ -75,6 +75,13 @@ public struct HNColors: Sendable, Equatable {
     public let subtle: HNRGBA
   }
 
+  public struct Skeleton: Sendable, Equatable {
+    /// The resting placeholder fill
+    public let base: HNRGBA
+    /// The pulse's far end
+    public let highlight: HNRGBA
+  }
+
   public struct Status: Sendable, Equatable {
     /// open ring
     public let busy: HNRGBA
@@ -108,6 +115,7 @@ public struct HNColors: Sendable, Equatable {
   public let focus: Focus
   public let ink: Ink
   public let line: Line
+  public let skeleton: Skeleton
   public let status: Status
   public let surface: Surface
 
@@ -150,6 +158,10 @@ public struct HNColors: Sendable, Equatable {
     line: Line(
       strong: HNRGBA(0x8A8273),
       subtle: HNRGBA(0x3A352C)
+    ),
+    skeleton: Skeleton(
+      base: HNRGBA(0x3A352C),
+      highlight: HNRGBA(0x4A4439)
     ),
     status: Status(
       busy: HNRGBA(0x8FB8FF),
@@ -196,6 +208,10 @@ public struct HNColors: Sendable, Equatable {
       strong: HNRGBA(0x8A8273),
       subtle: HNRGBA(0xD8CFBD)
     ),
+    skeleton: Skeleton(
+      base: HNRGBA(0xD8CFBD),
+      highlight: HNRGBA(0xCDC6B6)
+    ),
     status: Status(
       busy: HNRGBA(0x1F5FBF),
       crit: HNRGBA(0xB3261E),
@@ -240,6 +256,10 @@ public struct HNColors: Sendable, Equatable {
     line: Line(
       strong: HNRGBA(0x8A8273),
       subtle: HNRGBA(0x3A352C)
+    ),
+    skeleton: Skeleton(
+      base: HNRGBA(0x3A352C),
+      highlight: HNRGBA(0x4A4439)
     ),
     status: Status(
       busy: HNRGBA(0x8FB8FF),
@@ -286,6 +306,10 @@ public struct HNColors: Sendable, Equatable {
       strong: HNRGBA(0x8A8273),
       subtle: HNRGBA(0xD8CFBD)
     ),
+    skeleton: Skeleton(
+      base: HNRGBA(0xD8CFBD),
+      highlight: HNRGBA(0xCDC6B6)
+    ),
     status: Status(
       busy: HNRGBA(0x1F5FBF),
       crit: HNRGBA(0xB3261E),
@@ -330,6 +354,10 @@ public struct HNColors: Sendable, Equatable {
     line: Line(
       strong: HNRGBA(0x8A8273),
       subtle: HNRGBA(0x3A352C)
+    ),
+    skeleton: Skeleton(
+      base: HNRGBA(0x3A352C),
+      highlight: HNRGBA(0x4A4439)
     ),
     status: Status(
       busy: HNRGBA(0x8FB8FF),
@@ -376,6 +404,10 @@ public struct HNColors: Sendable, Equatable {
       strong: HNRGBA(0x8A8273),
       subtle: HNRGBA(0xD8CFBD)
     ),
+    skeleton: Skeleton(
+      base: HNRGBA(0xD8CFBD),
+      highlight: HNRGBA(0xCDC6B6)
+    ),
     status: Status(
       busy: HNRGBA(0x1F5FBF),
       crit: HNRGBA(0xB3261E),
@@ -392,6 +424,12 @@ public struct HNColors: Sendable, Equatable {
       tint: HNRGBA(0xE1ECD0)
     )
   )
+}
+
+/// Waits in seconds before a pending indicator shows; faster work shows nothing.
+public enum HNDelay {
+  /// Wait before a spinner or pending indicator shows; faster work shows nothing
+  public static let pending: Double = 0.2
 }
 
 /// Animation durations in seconds. Motion only on real events.
@@ -425,6 +463,20 @@ public enum HNFontFamily {
   public static let sans: [String] = ["Instrument Sans", "system-ui", "sans-serif"]
 }
 
+/// Minimum time in seconds a pending indicator stays once shown.
+public enum HNMinVisible {
+  /// Once shown, a spinner or pending indicator stays at least this long
+  public static let pending: Double = 0.4
+}
+
+/// The skeleton pulse, base to highlight and back. Off under Reduce Motion.
+public enum HNPulse {
+  /// One skeleton pulse, base to highlight and back
+  public static let duration: Double = 1.6
+
+  public static let easing: HNCubicBezier = HNCubicBezier(0.4, 0, 0.6, 1)
+}
+
 /// Corner radii in points.
 public enum HNRadius {
   public static let lg: Double = 14
@@ -441,6 +493,14 @@ public enum HNRadius {
 public enum HNShadow {
   /// The one neutral lift. No coloured shadows, no glow.
   public static let lift: HNShadowValue = HNShadowValue(color: HNRGBA(0x000000, alpha: 0xB3), x: 0, y: 30, blur: 60, spread: -30)
+}
+
+/// The shimmer sweep. Off under Reduce Motion.
+public enum HNShimmer {
+  /// One shimmer sweep across a skeleton
+  public static let duration: Double = 1.8
+
+  public static let easing: HNCubicBezier = HNCubicBezier(0.4, 0, 0.2, 1)
 }
 
 /// Row height and minimum target in points, per theme or per density.
@@ -482,4 +542,13 @@ public enum HNSpace {
   public static let s8: Double = 32
 
   public static let s12: Double = 48
+}
+
+/// One spinner turn. Off under Reduce Motion.
+public enum HNSpin {
+  /// One spinner turn
+  public static let duration: Double = 0.8
+
+  /// Linear
+  public static let easing: HNCubicBezier = HNCubicBezier(0, 0, 1, 1)
 }

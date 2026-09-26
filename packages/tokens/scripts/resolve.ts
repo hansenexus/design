@@ -38,6 +38,7 @@ export async function resolveTokens(
   const source = [
     join(tokensDir, "primitives/*.json"),
     join(tokensDir, "semantic/scale.json"),
+    join(tokensDir, "semantic/motion.json"),
     join(tokensDir, `semantic/color.${mode}.json`),
     join(tokensDir, `themes/${theme}.json`),
   ];
@@ -52,7 +53,13 @@ export async function resolveTokens(
     platforms: {
       css: {
         prefix: "hn",
-        transforms: ["name/kebab", "color/css", "fontFamily/css", "shadow/css/shorthand"],
+        transforms: [
+          "name/kebab",
+          "color/css",
+          "fontFamily/css",
+          "cubicBezier/css",
+          "shadow/css/shorthand",
+        ],
       },
       // No value transforms: references resolved, values as authored (the Swift output).
       raw: { transforms: [] },

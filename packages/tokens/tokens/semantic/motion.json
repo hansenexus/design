@@ -1,0 +1,36 @@
+{
+  "delay": {
+    "$type": "duration",
+    "pending": {
+      "$value": "200ms",
+      "$description": "Wait before a spinner or pending indicator shows; faster work shows nothing"
+    }
+  },
+  "min-visible": {
+    "$type": "duration",
+    "pending": {
+      "$value": "400ms",
+      "$description": "Once shown, a spinner or pending indicator stays at least this long"
+    }
+  },
+  "pulse": {
+    "duration": {
+      "$type": "duration",
+      "$value": "1600ms",
+      "$description": "One skeleton pulse, base to highlight and back"
+    },
+    "easing": { "$type": "cubicBezier", "$value": [0.4, 0, 0.6, 1] }
+  },
+  "shimmer": {
+    "duration": {
+      "$type": "duration",
+      "$value": "1800ms",
+      "$description": "One shimmer sweep across a skeleton"
+    },
+    "easing": { "$type": "cubicBezier", "$value": [0.4, 0, 0.2, 1] }
+  },
+  "spin": {
+    "duration": { "$type": "duration", "$value": "800ms", "$description": "One spinner turn" },
+    "easing": { "$type": "cubicBezier", "$value": [0, 0, 1, 1], "$description": "Linear" }
+  }
+}

@@ -4,8 +4,12 @@
 // Run: bun scripts/contrast.ts [--tokens <dir>]
 import { MODES, type ResolvedToken, resolveTokens, THEMES } from "./resolve";
 
-/** 1.4.3 text: 4.5:1. 1.4.11 non-text UI (borders, focus, status shapes): 3:1. */
-export const AA = { text: 4.5, ui: 3 } as const;
+/**
+ * 1.4.3 text: 4.5:1. 1.4.11 non-text UI (borders, focus, status shapes): 3:1.
+ * placeholder is not a WCAG minimum: a loading skeleton carries no information (the container's
+ * aria-busy does), but it must still read as a shape on every surface, so it gets a floor.
+ */
+export const AA = { text: 4.5, ui: 3, placeholder: 1.2 } as const;
 
 const SURFACES = ["surface.page", "surface.band", "surface.card", "surface.raised"];
 
@@ -44,6 +48,7 @@ export const RULES: Rule[] = [
     ],
     bg: SURFACES,
   },
+  { kind: "placeholder", fg: ["skeleton.base", "skeleton.highlight"], bg: SURFACES },
   // The mark is a graphic: 3:1 against the flat grounds it is allowed on (the app icon tile,
   // paper). Lime on paper is not a pair on purpose; on light the mark is lime-deep.
   { kind: "ui", fg: ["brand.lime", "brand.paper"], bg: ["brand.ink"] },
