@@ -1,15 +1,24 @@
 name: release-state-check
 
-# Packs @hansenexus/state-check and attaches the tarball to a GitHub release. npm publish
-# follows once the trusted publisher is attached (design#6); until then consumers install
-# the release asset URL.
+# Publishes @hansenexus/state-check to npm with provenance over Trusted Publishing
+# (OIDC, no NPM_TOKEN). Same shape as release.yml (tokens).
+#
+# npm side (npmjs.com > @hansenexus/state-check > Settings > Trusted Publisher):
+#   Organization hansenexus, Repository design, Workflow release-state-check.yml,
+#   Allowed actions: npm publish.
 #
 # Trigger: push a `state-check-v<version>` tag. The workflow refuses a tag that disagrees
-# with package.json.
+# with package.json. workflow_dispatch with dry_run packs and validates without publishing.
 
 on:
   push:
     tags: ["state-check-v*"]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Pack and validate, but do not publish"
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -23,6 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write # GitHub release
+      id-token: write # provenance attestation
     defaults:
       run:
         working-directory: packages/state-check
@@ -34,9 +44,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          registry-url: https://registry.npmjs.org
+      - name: npm supporting OIDC
+        run: npm install -g npm@latest
       - run: bun install --frozen-lockfile
 
       - name: Tag and package.json agree
+        if: startsWith(github.ref, 'refs/tags/state-check-v')
         run: |
           set -euo pipefail
           tag="${GITHUB_REF_NAME#state-check-v}"
@@ -49,13 +63,11 @@ jobs:
       - name: Gate
         run: bun run build && bun test tests
 
-      - name: Pack
-        run: npm pack
-
-      - name: Smoke (install the tarball, run the bin under Node)
+      - name: Smoke (pack, install the tarball, run the bin under Node)
         run: |
           set -euo pipefail
-          tgz="$PWD/$(ls hansenexus-state-check-*.tgz)"
+          npm pack --pack-destination "$RUNNER_TEMP"
+          tgz=$(ls "$RUNNER_TEMP"/hansenexus-state-check-*.tgz)
           dir="$RUNNER_TEMP/smoke"
           mkdir -p "$dir/app/app/[id]"
           printf 'export default function P() { return null; }\n' > "$dir/app/app/[id]/page.tsx"
@@ -66,7 +78,16 @@ jobs:
           set -e
           test "$code" = 1
 
+      - name: Publish
+        if: ${{ github.event_name == 'push' || !inputs.dry_run }}
+        run: npm publish --access public --provenance
+
+      - name: Publish (dry run)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        run: npm publish --access public --dry-run
+
       - name: GitHub release
+        if: startsWith(github.ref, 'refs/tags/state-check-v')
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" hansenexus-state-check-*.tgz --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
+        run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes --verify-tag

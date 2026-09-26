@@ -159,6 +159,12 @@ decides: a lane prepares the board and stops at "Awaiting decision". Adopting th
 primitive (for skeleton-style: the default of `Skeleton`) is a separate change. The vote scenes
 have layout checks (`screenshots/vote.spec.ts`) but no pixel baselines, since a board is temporary.
 
+## Release
+
+Push a `ui-v<version>` tag matching `package.json`. The `release-ui` workflow builds, runs the
+contrast check and the tests, and publishes to npm with provenance over OIDC trusted publishing.
+`@hansenexus/tokens` ships separately on its own `tokens-v<version>` tag (`release.yml`).
+
 ## Licence
 
 MIT, except the hansenexus name, mark and wordmark (`brand-geometry`, `HansenexusMark`,
