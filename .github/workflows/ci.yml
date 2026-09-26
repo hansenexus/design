@@ -92,7 +92,11 @@ jobs:
         run: swift test
       - name: Build for iOS
         if: runner.os == 'macOS'
-        run: xcodebuild build -scheme HansenexusTokens -destination 'generic/platform=iOS' -quiet
+        run: |
+          # Xcode names the package scheme itself (not after the product); read it.
+          xcodebuild -list -json | tee schemes.json
+          scheme=$(python3 -c 'import json; s=json.load(open("schemes.json"))["workspace"]["schemes"]; print(next((x for x in s if x.endswith("-Package")), s[0]))')
+          xcodebuild build -scheme "$scheme" -destination 'generic/platform=iOS' -quiet
 
   result:
     name: CI Result
