@@ -1,0 +1,12 @@
+{
+  "size": {
+    "$description": "Theme kommandant: maps semantics to primitives where it differs from the shared set, and picks the compact density.",
+    "$type": "dimension",
+    "row": {
+      "$value": "{density.compact.row}"
+    },
+    "target": {
+      "$value": "{density.compact.target}"
+    }
+  }
+}

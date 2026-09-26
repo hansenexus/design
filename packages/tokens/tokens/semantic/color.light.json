@@ -1,0 +1,50 @@
+{
+  "surface": {
+    "$type": "color",
+    "page": { "$value": "{palette.warm.50}", "$description": "Grund" },
+    "band": { "$value": "{palette.warm.100}", "$description": "Band: rail, alternate sections" },
+    "card": { "$value": "{palette.warm.25}", "$description": "Fläche" },
+    "raised": { "$value": "{palette.warm.125}", "$description": "Erhöht: chips, active nav" },
+    "tint": { "$value": "{palette.lime.100}", "$description": "Tönung: icon ground" }
+  },
+  "ink": {
+    "$type": "color",
+    "primary": { "$value": "{palette.warm.900}", "$description": "Text: headings" },
+    "body": { "$value": "{palette.warm.700}", "$description": "gedämpft: running text" },
+    "muted": { "$value": "{palette.warm.600}", "$description": "leise: labels, meta" }
+  },
+  "line": {
+    "$type": "color",
+    "subtle": {
+      "$value": "{palette.warm.200}",
+      "$description": "Linie: dividers, decoration only"
+    },
+    "strong": { "$value": "{palette.warm.500}", "$description": "Rand stark: secondary borders" }
+  },
+  "action": {
+    "$type": "color",
+    "primary": {
+      "$value": "{palette.lime.500}",
+      "$description": "Primary fill, always with dark text"
+    },
+    "primary-hover": { "$value": "{palette.lime.300}" },
+    "primary-ink": { "$value": "{palette.warm.900}", "$description": "Text on the lime fill" },
+    "text": { "$value": "{palette.lime.700}", "$description": "Lime as text on light" },
+    "text-hover": { "$value": "{palette.lime.800}" }
+  },
+  "status": {
+    "$type": "color",
+    "ok": { "$value": "{palette.lime.700}", "$description": "filled dot" },
+    "busy": { "$value": "{palette.sky.700}", "$description": "open ring" },
+    "warn": { "$value": "{palette.amber.700}", "$description": "triangle" },
+    "crit": { "$value": "{palette.coral.700}", "$description": "diamond" },
+    "off": {
+      "$value": "{palette.warm.600}",
+      "$description": "hollow circle. A shape colour only; label text uses ink.muted."
+    },
+    "unknown": { "$value": "{palette.warm.600}", "$description": "dashed circle" }
+  },
+  "focus": {
+    "ring": { "$type": "color", "$value": "{palette.lime.700}" }
+  }
+}

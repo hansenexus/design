@@ -1,0 +1,50 @@
+{
+  "name": "@hansenexus/tokens",
+  "version": "0.1.0",
+  "description": "hansenexus design tokens: DTCG source, CSS variables (--hn-*), a Tailwind v4 @theme and TypeScript constants for dark and light.",
+  "license": "MIT",
+  "keywords": [
+    "design-tokens",
+    "dtcg",
+    "style-dictionary",
+    "tailwindcss",
+    "css-variables"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hansenexus/design.git",
+    "directory": "packages/tokens"
+  },
+  "bugs": "https://github.com/hansenexus/design/issues",
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./tokens.css": "./dist/tokens.css",
+    "./tailwind.css": "./dist/tailwind.css",
+    "./tokens/*": "./tokens/*"
+  },
+  "files": [
+    "dist/",
+    "tokens/",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "bun scripts/build.ts",
+    "contrast": "bun scripts/contrast.ts",
+    "test": "bun test",
+    "prepublishOnly": "bun scripts/build.ts && bun scripts/contrast.ts"
+  },
+  "devDependencies": {
+    "style-dictionary": "5.5.5"
+  }
+}

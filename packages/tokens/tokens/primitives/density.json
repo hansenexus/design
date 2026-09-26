@@ -1,0 +1,33 @@
+{
+  "density": {
+    "$description": "Density scales. Themes and [data-density] pick one; never emitted directly.",
+    "$type": "dimension",
+    "compact": {
+      "$description": "kommandant desktop: 36 px rows, 24 px minimum target (WCAG 2.5.8)",
+      "row": {
+        "$value": "36px"
+      },
+      "target": {
+        "$value": "24px"
+      }
+    },
+    "comfortable": {
+      "$description": "hansenexus.dev and the portal",
+      "row": {
+        "$value": "48px"
+      },
+      "target": {
+        "$value": "24px"
+      }
+    },
+    "touch": {
+      "$description": "phones and native iOS",
+      "row": {
+        "$value": "56px"
+      },
+      "target": {
+        "$value": "44px"
+      }
+    }
+  }
+}
