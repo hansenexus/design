@@ -41,6 +41,8 @@
     "build": "bun scripts/build.ts",
     "test": "bun test tests",
     "gallery": "bun scripts/gallery.ts",
+    "variants": "bun scripts/variants.ts list",
+    "decide": "bun scripts/variants.ts decide",
     "screenshots": "scripts/screenshots.sh",
     "screenshots:update": "scripts/screenshots.sh --update-snapshots"
   },

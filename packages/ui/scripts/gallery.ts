@@ -1,8 +1,11 @@
 // Builds the kit gallery into gallery/dist/ and, with --serve, serves packages/ui on
-// 127.0.0.1 (default port 4410) at /gallery/?scene=kit&mode=dark.
+// 127.0.0.1 (default port 4410) at /gallery/?scene=kit&mode=dark. Variant votes are at
+// /gallery/?scene=vote&category=<id>.
 // Run: bun scripts/gallery.ts [--serve] [--port 4410]
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, extname, resolve, sep } from "node:path";
+import type { BunPlugin } from "bun";
+import { registrySource } from "./variants";
 
 const ROOT = resolve(import.meta.dir, "..");
 const OUT = resolve(ROOT, "gallery/dist");
@@ -36,6 +39,21 @@ function fontsCss(): string {
   }).join("\n");
 }
 
+/** `virtual:variants`: every vote category, its variants and decision (scripts/variants.ts). */
+const variants: BunPlugin = {
+  name: "variants",
+  setup(build) {
+    build.onResolve({ filter: /^virtual:variants$/ }, (args) => ({
+      path: args.path,
+      namespace: "variants",
+    }));
+    build.onLoad({ filter: /.*/, namespace: "variants" }, () => ({
+      contents: registrySource(ROOT),
+      loader: "ts",
+    }));
+  },
+};
+
 export async function buildGallery() {
   mkdirSync(OUT, { recursive: true });
   writeFileSync(resolve(OUT, "fonts.css"), fontsCss());
@@ -49,6 +67,7 @@ export async function buildGallery() {
     target: "browser",
     format: "esm",
     minify: true,
+    plugins: [variants],
     define: { "process.env.NODE_ENV": JSON.stringify("production") },
   });
   if (!js.success) {
