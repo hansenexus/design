@@ -1,4 +1,5 @@
-// The kit gallery: every primitive in its board states, plus one scene per overlay.
+// The kit gallery: every primitive in its board states, plus one scene per overlay, and the
+// variant votes (vote.tsx).
 // Screenshot baselines are taken from this page (screenshots/kit.spec.ts).
 // Names are an invented estate: no real hostnames, IPs or people in a public repo.
 import { type ReactNode, StrictMode } from "react";
@@ -67,6 +68,7 @@ import {
   TooltipTrigger,
 } from "../src";
 import { Bell, Check, Key, MapIcon, More, Restart, Server } from "./icons";
+import { Vote } from "./vote";
 
 export const SCENES = [
   "kit",
@@ -78,6 +80,7 @@ export const SCENES = [
   "brand",
   "loading",
   "states",
+  "vote",
 ] as const;
 type Scene = (typeof SCENES)[number];
 
@@ -583,6 +586,8 @@ function States() {
 
 function Scenes({ scene }: { scene: Scene }) {
   switch (scene) {
+    case "vote":
+      return <Vote />;
     case "states":
       return <States />;
     case "loading":

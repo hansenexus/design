@@ -63,7 +63,7 @@ Route skeletons show at once. A Spinner (or anything behind `useDelayedVisibilit
 after `delay.pending` (200 ms), so fast work never flashes it, and then stays at least
 `min-visible.pending` (400 ms). Skeletons pulse between `skeleton.base` and
 `skeleton.highlight`; under `prefers-reduced-motion: reduce` neither pulses nor spins. The pulse is
-the provisional style until the gallery vote (PRD hn-monorepo#2110, slice 5).
+the provisional style until the gallery vote (PRD hn-monorepo#2110, slice 5; see Variant votes).
 
 ### Empty, error, progress and QueryState
 
@@ -138,6 +138,26 @@ bun run screenshots           # compare (from packages/ui)
 bun run screenshots:update    # rewrite after an intended change; review the PNG diff
 bun run gallery -- --serve    # look at it: http://127.0.0.1:4410/gallery/?scene=kit&mode=light
 ```
+
+## Variant votes
+
+Design-system alternatives are compared in the gallery, not in the monorepo variant preview
+(`dec_2026-09-26_global-frontend-state-contract`). A category is a folder
+`gallery/variants/<category>/`: `category.tsx` holds the fixtures, and each `<variant>.tsx` is one
+alternative drawn in all of them. The vote scene shows them side by side, columns at 1280 px and a
+swipe row per fixture at 390 px, in dark and light:
+
+```sh
+bun run gallery -- --serve    # http://127.0.0.1:4410/gallery/?scene=vote&category=skeleton-style
+bun run variants              # list categories, open or decided; fails on an inconsistent board
+bun run decide skeleton-style pulse --rationale "why the owner chose it"
+```
+
+`decide` writes `decisions/<category>.json` (`winner`, `date`, `rationale`, `considered`) and
+deletes the losing variant files, so a decided category keeps only its winner. Only the owner
+decides: a lane prepares the board and stops at "Awaiting decision". Adopting the winner into the
+primitive (for skeleton-style: the default of `Skeleton`) is a separate change. The vote scenes
+have layout checks (`screenshots/vote.spec.ts`) but no pixel baselines, since a board is temporary.
 
 ## Licence
 

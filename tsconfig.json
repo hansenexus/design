@@ -17,6 +17,7 @@
     "packages/*/tests/**/*.ts",
     "packages/*/src/**/*.ts",
     "packages/*/src/**/*.tsx",
+    "packages/*/gallery/**/*.ts",
     "packages/*/gallery/**/*.tsx",
     "packages/*/screenshots/**/*.ts",
     "packages/*/*.config.ts"
