@@ -8,9 +8,11 @@
   "scripts": {
     "lint": "biome check .",
     "typecheck": "tsc --noEmit -p tsconfig.json",
+    "ratchet": "bun scripts/ratchet.ts",
     "build": "bun run --filter '*' build",
     "contrast": "bun run --filter '*' contrast",
-    "test": "bun run --filter '*' test"
+    "test": "bun test scripts && bun run --filter '*' test",
+    "screenshots": "bun run --filter @hansenexus/ui screenshots"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",

@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en" data-theme="kommandant" data-mode="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@hansenexus/ui kit</title>
+    <link rel="stylesheet" href="./dist/fonts.css" />
+    <link rel="stylesheet" href="./dist/gallery.css" />
+    <script>
+      // Mode and scene come from the query: ?mode=light&scene=dialog
+      const q = new URLSearchParams(location.search);
+      document.documentElement.dataset.mode = q.get("mode") === "light" ? "light" : "dark";
+    </script>
+  </head>
+  <body class="bg-hn-surface-page text-hn-ink-primary font-hn-sans antialiased">
+    <div id="root"></div>
+    <script type="module" src="./dist/main.js"></script>
+  </body>
+</html>

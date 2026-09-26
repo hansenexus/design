@@ -1,0 +1,11 @@
+/*
+ * @hansenexus/ui/styles.css: every utility the primitives use, for apps without Tailwind.
+ * Tailwind v4 apps skip this file and add `@source` for the package instead (README).
+ * Built by scripts/build.ts. No preflight: the app keeps its own base styles.
+ */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
+@import "./no-palette.css";
+@import "@hansenexus/tokens/tailwind.css";
+@source "./";

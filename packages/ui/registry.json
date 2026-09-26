@@ -1,0 +1,278 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "hansenexus",
+  "homepage": "https://github.com/hansenexus/design",
+  "items": [
+    {
+      "name": "tokens",
+      "type": "registry:style",
+      "title": "hansenexus tokens",
+      "description": "Installs @hansenexus/tokens and imports its Tailwind v4 theme (--hn-* variables, dark and light).",
+      "dependencies": ["@hansenexus/tokens@^0.2.0"],
+      "css": {
+        "@import \"@hansenexus/tokens/tailwind.css\"": {}
+      }
+    },
+    {
+      "name": "cx",
+      "type": "registry:ui",
+      "title": "cx",
+      "description": "Class-name join and the shared focus ring.",
+      "registryDependencies": ["@hansenexus/tokens"],
+      "files": [
+        {
+          "path": "src/cx.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "icons",
+      "type": "registry:ui",
+      "title": "icons",
+      "description": "Check, chevron and close glyphs the primitives draw.",
+      "registryDependencies": ["@hansenexus/tokens"],
+      "files": [
+        {
+          "path": "src/icons.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "status-glyph",
+      "type": "registry:ui",
+      "title": "StatusGlyph",
+      "description": "Status shapes: ok dot, busy ring, warn triangle, crit diamond, off hollow circle, unknown dashed circle.",
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],
+      "files": [
+        {
+          "path": "src/status-glyph.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "badge",
+      "type": "registry:ui",
+      "title": "Badge",
+      "description": "A small neutral or accent pill for counts, kinds and tags.",
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],
+      "files": [
+        {
+          "path": "src/badge.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "button",
+      "type": "registry:ui",
+      "title": "Button",
+      "description": "Primary (flat lime), secondary, ghost and danger buttons in two sizes.",
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],
+      "files": [
+        {
+          "path": "src/button.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "dialog",
+      "type": "registry:ui",
+      "title": "Dialog",
+      "description": "A modal sheet on Radix Dialog.",
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx", "@hansenexus/icons"],
+      "files": [
+        {
+          "path": "src/dialog.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "input",
+      "type": "registry:ui",
+      "title": "Input",
+      "description": "A text input with an optional monospace face.",
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],
+      "files": [
+        {
+          "path": "src/input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "kbd",
+      "type": "registry:ui",
+      "title": "Kbd",
+      "description": "A key or shortcut.",
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],
+      "files": [
+        {
+          "path": "src/kbd.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "menu",
+      "type": "registry:ui",
+      "title": "Menu",
+      "description": "A dropdown menu on Radix DropdownMenu.",
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx", "@hansenexus/icons"],
+      "files": [
+        {
+          "path": "src/menu.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "meter",
+      "type": "registry:ui",
+      "title": "Meter",
+      "description": "A labelled gauge with the value always in text.",
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],
+      "files": [
+        {
+          "path": "src/meter.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "rail-item",
+      "type": "registry:ui",
+      "title": "RailItem",
+      "description": "One entry in the navigation rail.",
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],
+      "files": [
+        {
+          "path": "src/rail-item.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "select",
+      "type": "registry:ui",
+      "title": "Select",
+      "description": "A select on Radix Select.",
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx", "@hansenexus/icons"],
+      "files": [
+        {
+          "path": "src/select.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "sparkline",
+      "type": "registry:ui",
+      "title": "Sparkline",
+      "description": "A flat trend line.",
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],
+      "files": [
+        {
+          "path": "src/sparkline.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "status-badge",
+      "type": "registry:ui",
+      "title": "StatusBadge",
+      "description": "A status pill: shape plus label, never colour alone.",
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx", "@hansenexus/status-glyph"],
+      "files": [
+        {
+          "path": "src/status-badge.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "switch",
+      "type": "registry:ui",
+      "title": "Switch",
+      "description": "An on/off switch on Radix Switch.",
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],
+      "files": [
+        {
+          "path": "src/switch.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "table",
+      "type": "registry:ui",
+      "title": "Table",
+      "description": "A data table whose rows follow the density.",
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],
+      "files": [
+        {
+          "path": "src/table.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "tabs",
+      "type": "registry:ui",
+      "title": "Tabs",
+      "description": "Tabs on Radix Tabs.",
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],
+      "files": [
+        {
+          "path": "src/tabs.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "toast",
+      "type": "registry:ui",
+      "title": "Toast",
+      "description": "Event notices on Radix Toast.",
+      "dependencies": ["radix-ui"],
+      "registryDependencies": [
+        "@hansenexus/tokens",
+        "@hansenexus/cx",
+        "@hansenexus/icons",
+        "@hansenexus/status-glyph"
+      ],
+      "files": [
+        {
+          "path": "src/toast.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "tooltip",
+      "type": "registry:ui",
+      "title": "Tooltip",
+      "description": "A short hint on Radix Tooltip.",
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],
+      "files": [
+        {
+          "path": "src/tooltip.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    }
+  ]
+}
