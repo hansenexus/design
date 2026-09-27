@@ -62,3 +62,57 @@ export function InfoIcon(props: SVGProps<SVGSVGElement>) {
     </Icon>
   );
 }
+
+export function ChevronLeftIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="m15 18-6-6 6-6" />
+    </Icon>
+  );
+}
+
+export function ChevronRightIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="m9 18 6-6-6-6" />
+    </Icon>
+  );
+}
+
+export function ChevronsUpDownIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="m7 15 5 5 5-5" />
+      <path d="m7 9 5-5 5 5" />
+    </Icon>
+  );
+}
+
+export function ArrowUpIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="m5 12 7-7 7 7" />
+      <path d="M12 19V5" />
+    </Icon>
+  );
+}
+
+export function ArrowDownIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M12 5v14" />
+      <path d="m19 12-7 7-7-7" />
+    </Icon>
+  );
+}
+
+export function CalendarIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M8 2v4" />
+      <path d="M16 2v4" />
+      <rect width="18" height="18" x="3" y="4" rx="2" />
+      <path d="M3 10h18" />
+    </Icon>
+  );
+}
