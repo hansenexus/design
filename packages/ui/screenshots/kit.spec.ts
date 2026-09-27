@@ -60,6 +60,17 @@ for (const mode of MODES) {
     });
   });
 
+  test(`layout ${mode}`, async ({ page }, info) => {
+    await page.goto(`/gallery/?scene=layout&mode=${mode}`);
+    await page.evaluate(() => document.fonts.ready);
+    // Radix Avatar mounts the <img> only once it has loaded; the Spinner shows after 200 ms.
+    await expect(page.locator('[role="img"][aria-label="hansenexus"] img')).toBeVisible();
+    await expect(page.locator('svg[role="status"]')).toHaveCount(1);
+    await expect(page).toHaveScreenshot(`layout-${info.project.name}-${mode}.png`, {
+      fullPage: true,
+    });
+  });
+
   for (const scene of OVERLAYS) {
     test(`${scene} ${mode}`, async ({ page }, info) => {
       await page.goto(`/gallery/?scene=${scene}&mode=${mode}`);
@@ -69,3 +80,28 @@ for (const mode of MODES) {
     });
   }
 }
+
+test("layout: dismiss closes an alert, the accordion works from the keyboard", async ({ page }) => {
+  await page.goto("/gallery/?scene=layout");
+  const backup = page.getByRole("status").filter({ hasText: "Backup finished" });
+  await expect(backup).toBeVisible();
+  await backup.getByRole("button", { name: "Dismiss" }).click();
+  await expect(backup).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Schließen" })).toHaveCount(2);
+
+  const pods = page.getByRole("button", { name: /speicher-web/ });
+  const events = page.getByRole("button", { name: "Events" });
+  await expect(pods).toHaveAttribute("aria-expanded", "true");
+  await pods.focus();
+  await page.keyboard.press("Enter");
+  await expect(pods).toHaveAttribute("aria-expanded", "false");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowDown");
+  await expect(events).toBeFocused();
+  await page.keyboard.press("Space");
+  await expect(events).toHaveAttribute("aria-expanded", "true");
+  // The disabled item is skipped: End lands on Events, the last enabled header.
+  await page.keyboard.press("Home");
+  await page.keyboard.press("End");
+  await expect(events).toBeFocused();
+});

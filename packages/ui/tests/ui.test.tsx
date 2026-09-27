@@ -622,6 +622,137 @@ describe("forms", () => {
   });
 });
 
+describe("layout primitives", () => {
+  test("German and English layout copy have the same keys, all filled", () => {
+    const shape = (o: object): string[] =>
+      Object.entries(o).flatMap(([k, v]) =>
+        typeof v === "object" ? shape(v).map((s) => `${k}.${s}`) : [k]
+      );
+    expect(shape(ui.LAYOUT_COPY.de)).toEqual(shape(ui.LAYOUT_COPY.en));
+    for (const locale of ui.STATE_LOCALES) {
+      const values = JSON.stringify(ui.LAYOUT_COPY[locale]).match(/"[^"]*"/g) ?? [];
+      expect(values).not.toContain('""');
+    }
+  });
+
+  test("Card: header, body, footer; disabled is inert, pending is aria-busy", () => {
+    const html = renderToStaticMarkup(
+      <ui.Card>
+        <ui.CardHeader>
+          <ui.CardTitle as="h2">kran-01</ui.CardTitle>
+          <ui.CardDescription>Quay 3</ui.CardDescription>
+        </ui.CardHeader>
+        <ui.CardBody>Body</ui.CardBody>
+        <ui.CardFooter>
+          <ui.Button>Open</ui.Button>
+        </ui.CardFooter>
+      </ui.Card>
+    );
+    expect(html).toContain("<h2");
+    expect(html).toContain("bg-hn-surface-card");
+    expect(html).not.toContain("aria-busy");
+    expect(html).not.toContain("inert");
+    const disabled = renderToStaticMarkup(<ui.Card disabled>x</ui.Card>);
+    expect(disabled).toContain('aria-disabled="true"');
+    expect(disabled).toContain("inert");
+    expect(disabled).toContain("opacity-50");
+    expect(renderToStaticMarkup(<ui.Card pending>x</ui.Card>)).toContain('aria-busy="true"');
+  });
+
+  test("CardSkeleton is a busy status with a localised name, decorative placeholders", () => {
+    const html = renderToStaticMarkup(<ui.CardSkeleton avatar media footer locale="de" />);
+    expect(html).toContain('role="status"');
+    expect(html).toContain('aria-busy="true"');
+    expect(html).toContain(`aria-label="${ui.LAYOUT_COPY.de.loading}"`);
+    expect(html).toContain('data-shape="circle"');
+    expect(html.match(/data-shape="block"/g)?.length).toBe(2);
+    expect(renderToStaticMarkup(<ui.CardSkeleton label="Loading kran-01" />)).toContain(
+      'aria-label="Loading kran-01"'
+    );
+  });
+
+  test("Alert: critical is role=alert, the rest role=status, each with a tone word and shape", () => {
+    const glyphs = ui.ALERT_TONES.map((tone) => {
+      const html = renderToStaticMarkup(<ui.Alert tone={tone} title="t" />);
+      expect(html).toContain(`role="${tone === "critical" ? "alert" : "status"}"`);
+      expect(html).toContain(`<span class="sr-only">${ui.LAYOUT_COPY.en.tone[tone]}: </span>`);
+      return html.match(/<svg[^>]*>(.*?)<\/svg>/)?.[1];
+    });
+    expect(new Set(glyphs).size).toBe(4);
+    const de = renderToStaticMarkup(<ui.Alert tone="warning" locale="de" dismissible />);
+    expect(de).toContain(`${ui.LAYOUT_COPY.de.tone.warning}: `);
+    expect(de).toContain(`aria-label="${ui.LAYOUT_COPY.de.dismiss}"`);
+  });
+
+  test("Alert: no close button unless dismissible; open={false} renders nothing", () => {
+    expect(renderToStaticMarkup(<ui.Alert>x</ui.Alert>)).not.toContain("<button");
+    expect(renderToStaticMarkup(<ui.Alert dismissible>x</ui.Alert>)).toContain('type="button"');
+    expect(renderToStaticMarkup(<ui.Alert open={false}>x</ui.Alert>)).toBe("");
+  });
+
+  test("Banner is the square, full-width Alert layout", () => {
+    const html = renderToStaticMarkup(<ui.Banner tone="success">Deployed</ui.Banner>);
+    expect(html).toContain('data-layout="banner"');
+    expect(html).toContain("rounded-none");
+    expect(html).toContain("border-l-hn-status-ok");
+  });
+
+  test("initials: first and last word, uppercased", () => {
+    expect(ui.initials("Ada Lovelace")).toBe("AL");
+    expect(ui.initials("grace brewster murray hopper")).toBe("GH");
+    expect(ui.initials("kran-01")).toBe("K0");
+    expect(ui.initials("  ops ")).toBe("O");
+    expect(ui.initials("")).toBe("");
+  });
+
+  test("Avatar is one named image; initials before the image loads; a skeleton while loading", () => {
+    const html = renderToStaticMarkup(<ui.Avatar name="Ada Lovelace" src="/ada.png" size="lg" />);
+    expect(html).toContain('role="img"');
+    expect(html).toContain('aria-label="Ada Lovelace"');
+    expect(html).toContain("width:48px");
+    const fallback = renderToStaticMarkup(<ui.Avatar name="Ada Lovelace" />);
+    expect(fallback).toMatch(/<span aria-hidden="true"[^>]*>AL<\/span>/);
+    const loading = renderToStaticMarkup(<ui.Avatar name="Ada" loading locale="de" />);
+    expect(loading).toContain('aria-busy="true"');
+    expect(loading).toContain(`aria-label="${ui.LAYOUT_COPY.de.loading}"`);
+    expect(loading).toContain('data-shape="circle"');
+    expect(loading).not.toContain("Ada");
+  });
+
+  test("Separator is decorative by default, a vertical role=separator on request", () => {
+    const plain = renderToStaticMarkup(<ui.Separator />);
+    expect(plain).toContain('role="none"');
+    expect(plain).toContain("h-px");
+    const semantic = renderToStaticMarkup(
+      <ui.Separator decorative={false} orientation="vertical" tone="strong" />
+    );
+    expect(semantic).toContain('role="separator"');
+    expect(semantic).toContain('aria-orientation="vertical"');
+    expect(semantic).toContain("bg-hn-line-strong");
+  });
+
+  test("Accordion: header buttons with aria-expanded, disabled items, empty copy", () => {
+    const html = renderToStaticMarkup(
+      <ui.Accordion type="single" collapsible defaultValue="a">
+        <ui.AccordionItem value="a">
+          <ui.AccordionTrigger meta="3">Pods</ui.AccordionTrigger>
+          <ui.AccordionContent locale="de" />
+        </ui.AccordionItem>
+        <ui.AccordionItem value="b" disabled>
+          <ui.AccordionTrigger>Volumes</ui.AccordionTrigger>
+          <ui.AccordionContent>none</ui.AccordionContent>
+        </ui.AccordionItem>
+      </ui.Accordion>
+    );
+    expect(html.match(/<h3/g)?.length).toBe(2);
+    expect(html).toContain('aria-expanded="true"');
+    expect(html).toContain('aria-expanded="false"');
+    expect(html).toMatch(/<button[^>]*disabled=""/);
+    expect(html).toContain(ui.LAYOUT_COPY.de.empty);
+    expect(html).toContain('role="region"');
+  });
+});
+
 describe("dist", () => {
   // The npm build must use react/jsx-runtime: a production React exports jsxDEV as
   // undefined, so a dev-runtime dist crashes every production render (design#27).

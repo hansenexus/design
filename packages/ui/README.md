@@ -6,7 +6,8 @@ colour follows `data-mode`, `data-theme` and `data-density` on an ancestor.
 
 Button, Badge, StatusBadge, Switch, Dialog, Menu, Tabs, Table, Meter, Sparkline, Kbd, Toast,
 Tooltip, Input, Select, RailItem. For forms: Field, Label, FieldHelp, FieldError, Textarea,
-Checkbox, RadioGroup and FormAlert. For loading: Skeleton (block, text, circle), SkeletonGroup,
+Checkbox, RadioGroup and FormAlert. For layout: Card (CardHeader, CardTitle, CardDescription,
+CardBody, CardFooter, CardSkeleton), Alert and Banner, Avatar, Separator, Accordion. For loading: Skeleton (block, text, circle), SkeletonGroup,
 Spinner and the `useDelayedVisibility` hook. For the other states: EmptyState, ErrorState, Progress
 and QueryState, with German and English default copy (`STATE_COPY`). Plus the brand: `HansenexusMark` and `HansenexusWordmark`
 (`variant` lime, lime-deep, ink, paper or mono, which is `currentColor` and the default; `size` is
@@ -146,6 +147,40 @@ import { Button, Checkbox, Field, FormAlert, Input, RadioGroup, RadioGroupItem, 
   select.
 - **Copy.** `STATE_COPY[locale].form` holds `invalid`, `pending` and `serverError`; the props
   override it.
+
+### Layout
+
+```tsx
+import { Alert, Avatar, Banner, Card, CardBody, CardHeader, CardSkeleton, CardTitle } from "@hansenexus/ui";
+
+{machine === undefined ? (
+  <CardSkeleton avatar lines={2} locale="de" />             {/* role=status, aria-busy */}
+) : (
+  <Card pending={isRestarting}>                             {/* aria-busy; disabled = inert */}
+    <CardHeader><CardTitle>{machine.name}</CardTitle></CardHeader>
+    <CardBody>…</CardBody>
+  </Card>
+)}
+
+<Banner tone="warning" dismissible locale="de">Wartung heute Abend.</Banner>
+<Alert tone="critical" title="Scale refused" action={<Button variant="secondary">View audit</Button>} />
+<Avatar name="Ada Lovelace" src={url} />                    {/* initials until the image loads */}
+<Avatar name="Ada Lovelace" loading />                      {/* circle skeleton */}
+```
+
+- **Card** is the frame; `disabled` dims it and makes it `inert`, `pending` sets `aria-busy`
+  without moving anything. Put EmptyState or ErrorState in a CardBody for those states.
+- **Alert** tones are info, success, warning and critical, each with its own glyph shape and a
+  visually hidden tone word, so none rests on colour. Critical is `role=alert`, the rest
+  `role=status`. `dismissible` adds a close button (uncontrolled, or controlled with `open` and
+  `onDismiss`). **Banner** is the square, full-width layout for the top of a page or region.
+- **Avatar** is one `role=img` named by `name`; the image, the initials (`initials()`) or, with
+  `loading`, a circle skeleton.
+- **Separator** is decorative unless `decorative={false}`; `tone="strong"` between groups.
+- **Accordion** is Radix: Enter/Space toggle, arrows, Home and End move; disabled items are
+  skipped. An `AccordionContent` without children shows the locale's empty copy.
+- Default copy (tone words, "Dismiss", "Loading", the empty line) is `LAYOUT_COPY.de|en`; every
+  string has a prop.
 
 ## shadcn registry
 
