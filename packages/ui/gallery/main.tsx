@@ -101,6 +101,8 @@ import {
 } from "../src";
 import { Data } from "./data";
 import { Bell, Check, Key, MapIcon, More, Restart, Server } from "./icons";
+import { Navigation } from "./navigation";
+import { Overlays } from "./overlays";
 import { Vote } from "./vote";
 
 export const SCENES = [
@@ -117,6 +119,8 @@ export const SCENES = [
   "forms",
   "layout",
   "data",
+  "overlays",
+  "navigation",
   "vote",
 ] as const;
 type Scene = (typeof SCENES)[number];
@@ -1019,6 +1023,10 @@ function Scenes({ scene }: { scene: Scene }) {
       return <Layout />;
     case "data":
       return <Data />;
+    case "overlays":
+      return <Overlays />;
+    case "navigation":
+      return <Navigation />;
     case "loading":
       return <Loading />;
     case "brand":

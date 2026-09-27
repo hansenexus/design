@@ -43,11 +43,43 @@ export type StateCopy = {
     selectRow: string;
     clearFilters: string;
   };
+  /** Overlays: the close control of a Sheet. */
+  overlay: { close: string };
+  /** Breadcrumb and Pagination. `{page}` and `{count}` are filled by `fillCopy`. */
+  navigation: {
+    breadcrumb: string;
+    /** The collapsed middle of a Breadcrumb. */
+    more: string;
+    pagination: string;
+    previous: string;
+    next: string;
+    /** One page button's name. */
+    page: string;
+    /** Announced once a page has loaded. */
+    pageOf: string;
+    /** Announced while a requested page is still loading. */
+    loadingPage: string;
+  };
+  /** The command palette. `{query}` and `{count}` are filled by `fillCopy`. */
+  command: {
+    label: string;
+    placeholder: string;
+    /** Nothing typed and nothing to suggest. */
+    empty: string;
+    noResults: string;
+    results: { one: string; other: string };
+    /** The search itself failed. */
+    error: string;
+    /** The keyboard hints in the footer. */
+    hints: { navigate: string; select: string; close: string };
+  };
 };
 
-/** Replaces each `{name}` in a copy template with its value. */
-export function fillCopy(template: string, values: Record<string, string>): string {
-  return template.replace(/\{(\w+)\}/g, (whole, name: string) => values[name] ?? whole);
+/** Fills `{name}` placeholders in a copy string; unknown names stay as they are. */
+export function fillCopy(template: string, values: Record<string, string | number>): string {
+  return template.replace(/\{(\w+)\}/g, (match, name: string) =>
+    name in values ? String(values[name]) : match
+  );
 }
 
 /**
@@ -99,6 +131,26 @@ export const STATE_COPY: Record<StateLocale, StateCopy> = {
       selectRow: "Select {row}",
       clearFilters: "Clear filters",
     },
+    overlay: { close: "Close" },
+    navigation: {
+      breadcrumb: "Breadcrumb",
+      more: "Show hidden levels",
+      pagination: "Pagination",
+      previous: "Previous",
+      next: "Next",
+      page: "Page {page}",
+      pageOf: "Page {page} of {count}",
+      loadingPage: "Loading page {page}",
+    },
+    command: {
+      label: "Command palette",
+      placeholder: "Type a command or search",
+      empty: "Start typing to search.",
+      noResults: "Nothing matches “{query}”.",
+      results: { one: "1 result", other: "{count} results" },
+      error: "The search failed. Results may be missing.",
+      hints: { navigate: "navigate", select: "open", close: "close" },
+    },
   },
   de: {
     loading: "Wird geladen",
@@ -143,6 +195,26 @@ export const STATE_COPY: Record<StateLocale, StateCopy> = {
       selectAll: "Alle Zeilen auswählen",
       selectRow: "{row} auswählen",
       clearFilters: "Filter zurücksetzen",
+    },
+    overlay: { close: "Schließen" },
+    navigation: {
+      breadcrumb: "Seitenpfad",
+      more: "Ausgeblendete Ebenen zeigen",
+      pagination: "Seitennavigation",
+      previous: "Zurück",
+      next: "Weiter",
+      page: "Seite {page}",
+      pageOf: "Seite {page} von {count}",
+      loadingPage: "Seite {page} wird geladen",
+    },
+    command: {
+      label: "Befehlspalette",
+      placeholder: "Befehl oder Suchbegriff eingeben",
+      empty: "Zum Suchen tippen.",
+      noResults: "Nichts passt zu „{query}“.",
+      results: { one: "1 Treffer", other: "{count} Treffer" },
+      error: "Die Suche ist fehlgeschlagen. Es fehlen womöglich Treffer.",
+      hints: { navigate: "wählen", select: "öffnen", close: "schließen" },
     },
   },
 };
