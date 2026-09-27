@@ -42,6 +42,29 @@ publishing.
 bun add @hansenexus/tokens @hansenexus/ui
 ```
 
+## Hosted gallery
+
+Every push to main builds the `@hansenexus/ui` kit gallery into a static-server image,
+`registry.hansenexus.dev/design/kit-gallery:<sha>` (`.github/workflows/kit-gallery.yml`,
+`Dockerfile`). hn-infra `infrastructure/design` pins the sha and serves it at
+`design.hansenexus.dev/` behind Cloudflare Access; the private Lotse kit at `/lotse/` comes
+from design-ops. Pull requests that touch the image inputs build and smoke-test it without
+pushing.
+
+The image is [static-web-server](https://static-web-server.net) (pinned by digest, about 4 MB)
+serving the output of `bun scripts/gallery.ts --out <dir>`: `index.html` plus `dist/` with the
+bundle, CSS, brand files and self-hosted fonts, every URL relative. It listens on 8080 as uid 101
+and writes nothing, so it runs with a read-only root. Build and check it locally:
+
+```sh
+docker build --target kit-gallery -t kit-gallery .
+docker run --rm --read-only --user 101:101 -p 8080:8080 kit-gallery   # http://127.0.0.1:8080/?scene=kit
+```
+
+The push is gated on the repository variable `HARBOR_PUSH_ENABLED=true` plus the
+`HARBOR_USERNAME` / `HARBOR_PASSWORD` secrets (a push robot of the private Harbor project
+`design`). Until those exist, main builds the image and warns that it did not push it.
+
 ## Licence and trademarks
 
 The code is MIT ([LICENSE](LICENSE)). The hansenexus name, mark and wordmark are trademarks and

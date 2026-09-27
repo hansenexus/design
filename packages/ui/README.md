@@ -220,6 +220,7 @@ bun run build                 # tokens dist is needed by the gallery
 bun run screenshots           # compare (from packages/ui)
 bun run screenshots:update    # rewrite after an intended change; review the PNG diff
 bun run gallery -- --serve    # look at it: http://127.0.0.1:4410/gallery/?scene=kit&mode=light
+bun run gallery -- --out /tmp/kit-site   # the static site the hosted gallery serves (see the root README)
 ```
 
 ## Variant votes

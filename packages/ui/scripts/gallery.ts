@@ -1,8 +1,9 @@
 // Builds the kit gallery into gallery/dist/ and, with --serve, serves packages/ui on
 // 127.0.0.1 (default port 4410) at /gallery/?scene=kit&mode=dark. Variant votes are at
-// /gallery/?scene=vote&category=<id>.
-// Run: bun scripts/gallery.ts [--serve] [--port 4410]
-import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+// /gallery/?scene=vote&category=<id>. With --out <dir> it also writes the static site
+// (index.html plus dist/, every URL relative) that the kit-gallery image serves at /.
+// Run: bun scripts/gallery.ts [--serve] [--port 4410] [--out <dir>]
+import { copyFileSync, cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, extname, resolve, sep } from "node:path";
 import type { BunPlugin } from "bun";
 import { registrySource } from "./variants";
@@ -24,6 +25,7 @@ const BRAND_FILES = [
 
 // Self-hosted fonts, so screenshots never depend on the network. The token stacks name the
 // families without "Variable", so the fontsource faces are re-registered under those names.
+// The woff2 files are copied into dist/fonts/ so the built gallery is self-contained.
 const FONTS = [
   ["fraunces", "Fraunces"],
   ["instrument-sans", "Instrument Sans"],
@@ -31,11 +33,16 @@ const FONTS = [
 ] as const;
 
 function fontsCss(): string {
+  mkdirSync(resolve(OUT, "fonts"), { recursive: true });
   return FONTS.map(([pkg, family]) => {
     const dir = dirname(Bun.resolveSync(`@fontsource-variable/${pkg}/index.css`, ROOT));
-    return readFileSync(resolve(dir, "index.css"), "utf8")
+    const css = readFileSync(resolve(dir, "index.css"), "utf8");
+    for (const [, file] of css.matchAll(/url\(\.\/files\/([^)]+)\)/g)) {
+      if (file) copyFileSync(resolve(dir, "files", file), resolve(OUT, "fonts", file));
+    }
+    return css
       .replaceAll(`'${family} Variable'`, `'${family}'`)
-      .replaceAll("url(./files/", `url(/node_modules/@fontsource-variable/${pkg}/files/`);
+      .replaceAll("url(./files/", "url(./fonts/");
   }).join("\n");
 }
 
@@ -81,6 +88,15 @@ export async function buildGallery() {
   if (css.exitCode !== 0) throw new Error("gallery: tailwind failed");
 }
 
+/** Writes the deployable site: gallery/index.html at the root, the build under dist/. */
+export function exportSite(dir: string) {
+  const site = resolve(dir);
+  rmSync(site, { recursive: true, force: true });
+  mkdirSync(site, { recursive: true });
+  copyFileSync(resolve(ROOT, "gallery/index.html"), resolve(site, "index.html"));
+  cpSync(OUT, resolve(site, "dist"), { recursive: true });
+}
+
 const TYPES: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
@@ -112,6 +128,13 @@ export function serve(port: number) {
 if (import.meta.main) {
   await buildGallery();
   const args = process.argv.slice(2);
+  const o = args.indexOf("--out");
+  if (o >= 0) {
+    const dir = args[o + 1];
+    if (!dir) throw new Error("gallery: --out needs a directory");
+    exportSite(dir);
+    console.log(`gallery: wrote the static site to ${dir}`);
+  }
   if (args.includes("--serve")) {
     const i = args.indexOf("--port");
     const port = Number(i >= 0 ? args[i + 1] : 4410);

@@ -1,0 +1,106 @@
+name: kit-gallery
+
+# main → `registry.hansenexus.dev/design/kit-gallery:<sha>`, the public @hansenexus/ui kit gallery
+# as a static-server image (Dockerfile). hn-infra infrastructure/design pins the sha and serves it
+# at design.hansenexus.dev/ behind Cloudflare Access (hn-infra#248); that README holds the image
+# contract this job smoke-tests: port 8080, uid 101, read-only root, only /tmp writable.
+# Pull requests that touch the image inputs build and smoke-test it without pushing, so a broken
+# Dockerfile is red on its PR rather than on main. Shape copied from blaupause images.yml.
+#
+# Hosted runner, not the Hetzner fleet (dec_2026-09-17_global-ci-on-hetzner-fleet-no-hosted-minutes
+# exception): this repo is public, so hosted minutes are free and outside the org budget, and a
+# self-hosted runner on a public repo would run fork pull requests on an estate host. ci.yml
+# makes the same choice.
+#
+# NEVER write GitHub's literal skip-ci marker (square brackets, "skip ci") in a PR description:
+# the squash commit takes the PR body as its message and GitHub then skips this workflow on main.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - .github/workflows/kit-gallery.yml
+      - bun.lock
+      - package.json
+      - "packages/**"
+      - "brand/assets/**"
+  workflow_dispatch:
+
+# One main run at a time, never cancelled: each sha gets its image.
+concurrency:
+  group: kit-gallery-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  REGISTRY: registry.hansenexus.dev
+  IMAGE: registry.hansenexus.dev/design/kit-gallery
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Push only from main, and only once the registry is wired up: an unset variable is a
+      # deliberate "not yet" that reads clearly, an unset secret a baffling 401.
+      PUSH: ${{ github.ref == 'refs/heads/main' && vars.HARBOR_PUSH_ENABLED == 'true' }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Harbor
+        if: env.PUSH == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
+      # Tagged by commit sha only, never `latest`: hn-infra pins an explicit tag.
+      - name: Build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: kit-gallery
+          platforms: linux/amd64
+          load: true
+          push: false
+          tags: ${{ env.IMAGE }}:${{ github.sha }}
+          cache-from: type=gha,scope=kit-gallery
+          cache-to: type=gha,mode=max,scope=kit-gallery
+          provenance: false
+
+      - name: Smoke test under the deployment's constraints
+        run: |
+          set -euo pipefail
+          docker run -d --name kit-gallery -p 8080:8080 \
+            --read-only --tmpfs /tmp --user 101:101 --cap-drop ALL \
+            --security-opt no-new-privileges "$IMAGE:$GITHUB_SHA"
+          trap 'docker logs kit-gallery; docker rm -f kit-gallery >/dev/null' EXIT
+          for _ in $(seq 1 20); do curl -fs -o /dev/null http://127.0.0.1:8080/ && break; sleep 0.5; done
+          # The page and everything it loads, fonts and brand files included (self-contained).
+          for path in / /dist/main.js /dist/gallery.css /dist/fonts.css /dist/brand/favicon.svg; do
+            curl -fsS -o /dev/null -w "%{http_code} $path\n" "http://127.0.0.1:8080$path"
+          done
+          curl -fsS http://127.0.0.1:8080/dist/fonts.css \
+            | grep -oE 'url\(\./fonts/[^)]+\)' | sed -E 's#url\(\./(.*)\)#/dist/\1#' \
+            | while read -r font; do curl -fsS -o /dev/null "http://127.0.0.1:8080$font"; done
+          echo "fonts: every url() in fonts.css resolves"
+
+      - name: Push
+        if: env.PUSH == 'true'
+        run: docker push "$IMAGE:$GITHUB_SHA"
+
+      - name: Note that nothing was pushed
+        if: github.ref == 'refs/heads/main' && env.PUSH != 'true'
+        run: |
+          echo "::warning title=Image not pushed::Built design/kit-gallery:${GITHUB_SHA} but did not \
+          push it. Needs the private Harbor project 'design', a push robot as the HARBOR_USERNAME / \
+          HARBOR_PASSWORD secrets and the repository variable HARBOR_PUSH_ENABLED=true \
+          (hn-infra infrastructure/design/README.md, bring-up step 1)."
