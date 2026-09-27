@@ -19,7 +19,36 @@ export type StateCopy = {
     /** The server refused or failed; nothing was saved. */
     serverError: { title: string; description: string };
   };
+  /** DatePicker and Calendar. */
+  date: {
+    placeholder: string;
+    rangePlaceholder: string;
+    previousMonth: string;
+    nextMonth: string;
+    /** The popover's name. */
+    calendar: string;
+  };
+  /** Combobox: the list's own states. `{query}` is replaced by what was typed. */
+  combobox: {
+    placeholder: string;
+    loading: string;
+    empty: string;
+    noResults: string;
+    error: string;
+    retry: string;
+  };
+  /** DataTable selection and filters. `{row}` is replaced by the row's label. */
+  table: {
+    selectAll: string;
+    selectRow: string;
+    clearFilters: string;
+  };
 };
+
+/** Replaces each `{name}` in a copy template with its value. */
+export function fillCopy(template: string, values: Record<string, string>): string {
+  return template.replace(/\{(\w+)\}/g, (whole, name: string) => values[name] ?? whole);
+}
 
 /**
  * The default copy of the state primitives, as plain objects: no i18n library. Every string
@@ -50,6 +79,26 @@ export const STATE_COPY: Record<StateLocale, StateCopy> = {
         description: "The server did not accept this. Nothing was changed; please try again.",
       },
     },
+    date: {
+      placeholder: "Pick a date",
+      rangePlaceholder: "Pick a date range",
+      previousMonth: "Previous month",
+      nextMonth: "Next month",
+      calendar: "Calendar",
+    },
+    combobox: {
+      placeholder: "Search",
+      loading: "Loading options",
+      empty: "No options yet",
+      noResults: "Nothing matches “{query}”",
+      error: "The options could not be loaded.",
+      retry: "Try again",
+    },
+    table: {
+      selectAll: "Select all rows",
+      selectRow: "Select {row}",
+      clearFilters: "Clear filters",
+    },
   },
   de: {
     loading: "Wird geladen",
@@ -74,6 +123,26 @@ export const STATE_COPY: Record<StateLocale, StateCopy> = {
         description:
           "Der Server hat das nicht angenommen. Nichts wurde geändert; bitte erneut versuchen.",
       },
+    },
+    date: {
+      placeholder: "Datum wählen",
+      rangePlaceholder: "Zeitraum wählen",
+      previousMonth: "Vorheriger Monat",
+      nextMonth: "Nächster Monat",
+      calendar: "Kalender",
+    },
+    combobox: {
+      placeholder: "Suchen",
+      loading: "Optionen werden geladen",
+      empty: "Noch keine Optionen",
+      noResults: "Nichts passt zu „{query}“",
+      error: "Die Optionen konnten nicht geladen werden.",
+      retry: "Erneut versuchen",
+    },
+    table: {
+      selectAll: "Alle Zeilen auswählen",
+      selectRow: "{row} auswählen",
+      clearFilters: "Filter zurücksetzen",
     },
   },
 };

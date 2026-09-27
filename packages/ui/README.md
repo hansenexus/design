@@ -7,7 +7,8 @@ colour follows `data-mode`, `data-theme` and `data-density` on an ancestor.
 Button, Badge, StatusBadge, Switch, Dialog, Menu, Tabs, Table, Meter, Sparkline, Kbd, Toast,
 Tooltip, Input, Select, RailItem. For forms: Field, Label, FieldHelp, FieldError, Textarea,
 Checkbox, RadioGroup and FormAlert. For layout: Card (CardHeader, CardTitle, CardDescription,
-CardBody, CardFooter, CardSkeleton), Alert and Banner, Avatar, Separator, Accordion. For loading: Skeleton (block, text, circle), SkeletonGroup,
+CardBody, CardFooter, CardSkeleton), Alert and Banner, Avatar, Separator, Accordion. For dates and data: Popover, Calendar, DatePicker,
+Combobox and DataTable. For loading: Skeleton (block, text, circle), SkeletonGroup,
 Spinner and the `useDelayedVisibility` hook. For the other states: EmptyState, ErrorState, Progress
 and QueryState, with German and English default copy (`STATE_COPY`). Plus the brand: `HansenexusMark` and `HansenexusWordmark`
 (`variant` lime, lime-deep, ink, paper or mono, which is `currentColor` and the default; `size` is
@@ -182,6 +183,67 @@ import { Alert, Avatar, Banner, Card, CardBody, CardHeader, CardSkeleton, CardTi
 - Default copy (tone words, "Dismiss", "Loading", the empty line) is `LAYOUT_COPY.de|en`; every
   string has a prop.
 
+### Dates and data
+
+```tsx
+import { Combobox, DataTable, DatePicker, Field, Input } from "@hansenexus/ui";
+
+<Field label="Wartungsfenster" error={errors.day}>
+  <DatePicker locale="de" min={today} value={day} onValueChange={setDay} />
+</Field>
+<Field label="Zeitraum">
+  <DatePicker mode="range" locale="de" value={range} onValueChange={setRange} />
+</Field>
+
+<Field label="Maschine">
+  {/* options: undefined while the search runs; error when it failed */}
+  <Combobox locale="de" options={hosts} error={hostsError} onRetry={refetch}
+    onQueryChange={setSearch} filter={false} value={host} onValueChange={setHost} />
+</Field>
+
+<Input aria-label="Filter" value={query} onChange={(e) => setQuery(e.target.value)} />
+<DataTable
+  caption="Maschinen"
+  locale="de"
+  columns={[
+    { id: "host", header: "Host", cell: (m) => m.host, sortValue: (m) => m.host, mono: true },
+    { id: "cpu", header: "CPU %", cell: (m) => m.cpu, sortValue: (m) => m.cpu, align: "end" },
+  ]}
+  rows={machines}                       // undefined: loading
+  error={error} onRetry={refetch}
+  getRowId={(m) => m._id} getRowLabel={(m) => m.host}
+  query={query} onClearFilters={() => setQuery("")}
+  selectable selection={selected} onSelectionChange={setSelected}
+  pending={bulkActionRunning}
+/>
+```
+
+- **Calendar** is an ARIA grid with one Tab stop: the arrows move by day and week, Home/End to the
+  week's ends, PageUp/PageDown by month (Shift: by year), Enter or Space picks. Each day is named
+  by its full date, today carries `aria-current="date"`, picked days `aria-selected`. Days outside
+  `min`/`max` or `isDateDisabled` stay focusable with `aria-disabled`, struck through. Weeks start
+  on Monday (`weekStartsOn={0}` for Sunday). Values are local calendar days at midnight; pass
+  `today` for renders that must not depend on the clock.
+- **DatePicker** reads like Select and opens the Calendar in a Popover; a single day closes it on
+  pick, a range once both ends are set. `de` writes 14.09.2026 and 14.–18.09.2026, `en` is British
+  English (14 Sept 2026). States: empty (placeholder), invalid (`aria-invalid` from Field), pending
+  (busy, disabled, Spinner after 200 ms) and disabled.
+- **Combobox** follows the ARIA combobox pattern: focus stays in the input, the arrows move the
+  active option (`aria-activedescendant`), Enter picks, Escape closes, leaving the field restores
+  the selection's label. `options={undefined}` shows the loading row, `error` an error row with
+  retry (Enter retries too), an empty list says either "no options yet" or "nothing matches
+  “query”". Pass `filter={false}` when the server filters.
+- **DataTable** keeps the header in every state. Loading draws skeleton rows, empty and no-results
+  use EmptyState (no-results offers `onClearFilters`), error uses ErrorState with the digest, and
+  `pending` keeps the stale rows, sets `aria-busy`, locks sorting and selection, and dims after
+  200 ms. Sortable headers are buttons with `aria-sort` on the sorted column; strings sort by the
+  locale's collation with numbers in order (kran-2 before kran-10), empty values last. The header
+  checkbox selects or clears the visible rows and goes indeterminate in between. The pure helpers
+  (`sortRows`, `filterRows`, `nextSort`, `toggleAll`, `calendarKeyTarget`, `selectInRange`,
+  `filterOptions`, `nextOptionIndex`) are exported for server-side use and tests.
+- **Copy.** `STATE_COPY[locale].date`, `.combobox` and `.table`; `{query}` and `{row}` are filled
+  by `fillCopy`.
+
 ## shadcn registry
 
 The same sources ship as a shadcn registry (`registry.json`; built items in `dist/r/`, also in the
@@ -211,7 +273,7 @@ bunx shadcn@latest add @hansenexus/button @hansenexus/status-badge
 ## Screenshot baselines
 
 `screenshots/baselines/` holds the kit gallery (`gallery/`, every primitive in its states), the
-loading scene (Skeleton and Spinner), the states and illustrations scenes and each overlay at 390 and 1280 px, dark and light. Pixels depend on the OS and browser build, so
+loading scene (Skeleton and Spinner), the states, illustrations, forms, layout and data scenes and each overlay at 390 and 1280 px, dark and light. Pixels depend on the OS and browser build, so
 `scripts/screenshots.sh` runs Playwright inside the pinned `mcr.microsoft.com/playwright` image,
 the same one CI uses. It needs Docker.
 

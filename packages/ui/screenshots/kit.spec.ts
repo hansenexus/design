@@ -71,6 +71,19 @@ for (const mode of MODES) {
     });
   });
 
+  test(`data ${mode}`, async ({ page }, info) => {
+    await page.goto(`/gallery/?scene=data&mode=${mode}`);
+    await page.evaluate(() => document.fonts.ready);
+    await expect(page.locator('[role="grid"]')).toHaveCount(2);
+    // After their 200 ms delay: the loading Combobox, the pending DatePicker and the pending
+    // DataTable each show one Spinner.
+    await expect(page.locator('svg[role="status"]')).toHaveCount(3);
+    await expect(page.locator('[role="listbox"]')).toHaveCount(1);
+    await expect(page).toHaveScreenshot(`data-${info.project.name}-${mode}.png`, {
+      fullPage: true,
+    });
+  });
+
   for (const scene of OVERLAYS) {
     test(`${scene} ${mode}`, async ({ page }, info) => {
       await page.goto(`/gallery/?scene=${scene}&mode=${mode}`);

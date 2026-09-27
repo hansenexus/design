@@ -66,7 +66,7 @@ export function QueryState<T>({
 }: QueryStateProps<T>) {
   const status = queryStatus(query, { error, isEmpty });
   const copy = STATE_COPY[locale];
-  const announcement = useAnnouncement(status, {
+  const announcement = useStateAnnouncement(status, {
     loaded: loadedMessage ?? copy.loaded,
     error: copy.error.title,
   });
@@ -109,8 +109,14 @@ export function nextAnnouncement(
   return from === "loading" ? messages.loaded : null;
 }
 
-/** The live region's text. Starts empty, so a region that renders with its data says nothing. */
-function useAnnouncement(status: QueryStatus, messages: { loaded: string; error: string }) {
+/**
+ * The live region's text for a status. Starts empty, so a region that renders with its data
+ * says nothing. DataTable shares it with QueryState.
+ */
+export function useStateAnnouncement(
+  status: QueryStatus,
+  messages: { loaded: string; error: string }
+) {
   const [text, setText] = useState("");
   const previous = useRef(status);
   const { loaded, error } = messages;

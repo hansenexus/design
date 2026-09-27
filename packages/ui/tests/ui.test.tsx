@@ -753,6 +753,302 @@ describe("layout primitives", () => {
   });
 });
 
+describe("dates", () => {
+  const day = (m: number, d: number, y = 2026) => new Date(y, m - 1, d);
+  const ymd = (date: Date | null) =>
+    date ? `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}` : null;
+
+  test("monthGrid: six weeks from the week start before the 1st", () => {
+    // 1 Sep 2026 is a Tuesday.
+    const monday = ui.monthGrid(day(9, 1));
+    expect(monday).toHaveLength(42);
+    expect(ymd(monday[0] ?? null)).toBe("2026-8-31");
+    expect(ymd(monday[41] ?? null)).toBe("2026-10-11");
+    expect(ymd(ui.monthGrid(day(9, 1), 0)[0] ?? null)).toBe("2026-8-30");
+  });
+
+  test("calendarKeyTarget: days, weeks, week ends, months, years", () => {
+    const t = (d: Date, key: string, shiftKey = false) =>
+      ymd(ui.calendarKeyTarget(d, key, { shiftKey }));
+    expect(t(day(9, 30), "ArrowRight")).toBe("2026-10-1");
+    expect(t(day(9, 1), "ArrowLeft")).toBe("2026-8-31");
+    expect(t(day(9, 16), "ArrowUp")).toBe("2026-9-9");
+    expect(t(day(9, 16), "ArrowDown")).toBe("2026-9-23");
+    expect(t(day(9, 16), "Home")).toBe("2026-9-14");
+    expect(t(day(9, 16), "End")).toBe("2026-9-20");
+    expect(t(day(1, 31), "PageDown")).toBe("2026-2-28");
+    expect(t(day(9, 16), "PageUp", true)).toBe("2025-9-16");
+    expect(t(day(9, 16), "a")).toBeNull();
+    expect(ymd(ui.calendarKeyTarget(day(9, 16), "Home", { weekStartsOn: 0 }))).toBe("2026-9-13");
+  });
+
+  test("selectInRange: start, close in either direction, start over", () => {
+    const first = ui.selectInRange(null, day(9, 18));
+    expect([ymd(first.from), first.to]).toEqual(["2026-9-18", undefined]);
+    const back = ui.selectInRange(first, day(9, 14));
+    expect([ymd(back.from), ymd(back.to ?? null)]).toEqual(["2026-9-14", "2026-9-18"]);
+    const again = ui.selectInRange(back, day(9, 2));
+    expect([ymd(again.from), again.to]).toEqual(["2026-9-2", undefined]);
+  });
+
+  test("formatDate and formatDateRange write the locale's short form", () => {
+    expect(ui.formatDate(day(9, 14), "de")).toBe("14.09.2026");
+    expect(ui.formatDate(day(9, 14), "en")).toMatch(/^14 Sept? 2026$/);
+    expect(ui.formatDateRange({ from: day(9, 14), to: day(9, 18) }, "de")).toBe("14.–18.09.2026");
+    expect(ui.formatDateRange({ from: day(9, 14) }, "de")).toBe("14.09.2026 – …");
+  });
+
+  test("isDayDisabled: min, max and the predicate, by calendar day", () => {
+    const bounds = { min: day(9, 10), max: new Date(2026, 8, 20, 9, 30) };
+    expect(ui.isDayDisabled(new Date(2026, 8, 10, 23), bounds)).toBe(false);
+    expect(ui.isDayDisabled(day(9, 9), bounds)).toBe(true);
+    expect(ui.isDayDisabled(day(9, 20), bounds)).toBe(false);
+    expect(ui.isDayDisabled(day(9, 21), bounds)).toBe(true);
+    expect(ui.isDayDisabled(day(9, 12), { isDateDisabled: (d) => d.getDay() === 6 })).toBe(true);
+  });
+
+  test("Calendar: a labelled grid, one tab stop, today and the selection marked", () => {
+    const html = renderToStaticMarkup(
+      <ui.Calendar locale="de" today={day(9, 14)} selected={day(9, 18)} min={day(9, 3)} />
+    );
+    const title = html.match(/id="([^"]+-title)"[^>]*>([^<]+)</);
+    expect(title?.[2]).toBe("September 2026");
+    expect(html).toContain(`role="grid" aria-labelledby="${title?.[1]}"`);
+    expect(html.match(/role="gridcell"/g)).toHaveLength(42);
+    expect(html.match(/tabindex="0"/g)).toHaveLength(1);
+    expect(html).toMatch(/tabindex="0" aria-label="Freitag, 18. September 2026"/);
+    expect(html).toMatch(/aria-label="Montag, 14. September 2026" aria-current="date"/);
+    expect(html.match(/aria-selected="true"/g)).toHaveLength(1);
+    expect(html).toMatch(/aria-label="Mittwoch, 2. September 2026" aria-disabled="true"/);
+    expect(html).toContain('<th scope="col" abbr="Montag"');
+    expect(html).toContain(`aria-label="${ui.STATE_COPY.de.date.previousMonth}"`);
+  });
+
+  test("Calendar range: multiselectable, start, middle and end marked", () => {
+    const html = renderToStaticMarkup(
+      <ui.Calendar mode="range" today={day(9, 1)} selected={{ from: day(9, 14), to: day(9, 18) }} />
+    );
+    expect(html).toContain('aria-multiselectable="true"');
+    expect(html.match(/aria-selected="true"/g)).toHaveLength(5);
+    expect(html.match(/data-range="start"/g)).toHaveLength(1);
+    expect(html.match(/data-range="middle"/g)).toHaveLength(3);
+    expect(html.match(/data-range="end"/g)).toHaveLength(1);
+  });
+
+  test("DatePicker: placeholder, value and range in the locale, a dialog trigger", () => {
+    const empty = renderToStaticMarkup(<ui.DatePicker locale="de" />);
+    expect(empty).toContain(ui.STATE_COPY.de.date.placeholder);
+    expect(empty).toContain('aria-haspopup="dialog"');
+    expect(empty).toContain('data-placeholder=""');
+    const one = renderToStaticMarkup(<ui.DatePicker locale="de" defaultValue={day(9, 14)} />);
+    expect(one).toContain("14.09.2026");
+    expect(one).not.toContain('data-placeholder=""');
+    const range = renderToStaticMarkup(
+      <ui.DatePicker mode="range" locale="de" value={{ from: day(9, 14), to: day(9, 18) }} />
+    );
+    expect(range).toContain("14.–18.09.2026");
+    expect(renderToStaticMarkup(<ui.DatePicker mode="range" />)).toContain(
+      ui.STATE_COPY.en.date.rangePlaceholder
+    );
+  });
+
+  test("DatePicker in Field: labelled, invalid, disabled; pending is busy and disabled", () => {
+    const html = renderToStaticMarkup(
+      <ui.Field label="Wartungsfenster" error="Bitte ein Datum wählen." required>
+        <ui.DatePicker locale="de" />
+      </ui.Field>
+    );
+    const button = html.match(/<button[^>]*>/)?.[0] ?? "";
+    expect(button).toMatch(/aria-labelledby="[^"]+-label"/);
+    expect(button).toContain('aria-invalid="true"');
+    expect(button).toContain("aria-invalid:border-hn-status-crit");
+    const pending = renderToStaticMarkup(<ui.DatePicker pending />);
+    expect(pending).toContain('aria-busy="true"');
+    expect(pending).toContain('disabled=""');
+    expect(renderToStaticMarkup(<ui.DatePicker disabled />)).toContain('disabled=""');
+  });
+});
+
+describe("combobox", () => {
+  const HOSTS: ui.ComboboxOption[] = [
+    { value: "kran-01", label: "kran-01" },
+    { value: "kran-02", label: "kran-02", disabled: true },
+    { value: "pegel", label: "Pegel", description: "Tide gauge" },
+  ];
+
+  test("filterOptions: label contains the query, any case; filter false keeps all", () => {
+    expect(ui.filterOptions(HOSTS, "PEG").map((o) => o.value)).toEqual(["pegel"]);
+    expect(ui.filterOptions(HOSTS, "  ")).toHaveLength(3);
+    expect(ui.filterOptions(HOSTS, "zzz", false)).toHaveLength(3);
+    expect(
+      ui.filterOptions(HOSTS, "tide", (o, q) => !!o.description?.toLowerCase().includes(q))
+    ).toHaveLength(1);
+  });
+
+  test("nextOptionIndex skips disabled options and wraps", () => {
+    expect(ui.nextOptionIndex(HOSTS, -1, 1)).toBe(0);
+    expect(ui.nextOptionIndex(HOSTS, 0, 1)).toBe(2);
+    expect(ui.nextOptionIndex(HOSTS, 2, 1)).toBe(0);
+    expect(ui.nextOptionIndex(HOSTS, 0, -1)).toBe(2);
+    expect(ui.nextOptionIndex([{ value: "x", label: "x", disabled: true }], -1, 1)).toBe(-1);
+  });
+
+  test("comboboxStatus: loading, error, empty, no-results, options", () => {
+    const s = (options: ui.ComboboxOption[] | undefined, query = "", error?: unknown) =>
+      ui.comboboxStatus(options, ui.filterOptions(options ?? [], query), { error, query });
+    expect(s(undefined)).toBe("loading");
+    expect(s(HOSTS, "", new Error("x"))).toBe("error");
+    expect(s(undefined, "", new Error("x"))).toBe("error");
+    expect(s([])).toBe("empty");
+    expect(s([], "kran")).toBe("no-results");
+    expect(s(HOSTS, "zzz")).toBe("no-results");
+    expect(s(HOSTS, "kran")).toBe("options");
+  });
+
+  test("Combobox: an ARIA combobox input, the selection as its text, wired by Field", () => {
+    const html = renderToStaticMarkup(
+      <ui.Field label="Maschine" error="Bitte eine Maschine wählen.">
+        <ui.Combobox options={HOSTS} defaultValue="pegel" locale="de" />
+      </ui.Field>
+    );
+    const input = html.match(/<input[^>]*>/)?.[0] ?? "";
+    for (const attr of [
+      'role="combobox"',
+      'aria-autocomplete="list"',
+      'aria-expanded="false"',
+      'aria-invalid="true"',
+      'value="Pegel"',
+      `placeholder="${ui.STATE_COPY.de.combobox.placeholder}"`,
+    ])
+      expect(input).toContain(attr);
+    expect(input).toMatch(/aria-labelledby="[^"]+-label"/);
+    const loading = renderToStaticMarkup(<ui.Combobox options={undefined} aria-label="Host" />);
+    expect(loading).toContain('aria-busy="true"');
+  });
+});
+
+describe("data table", () => {
+  type Machine = { id: string; host: string; cpu: number | null; seen: Date; quay: string };
+  const M: Machine[] = [
+    { id: "a", host: "kran-10", cpu: 21, seen: new Date(2026, 8, 14), quay: "Nord" },
+    { id: "b", host: "kran-2", cpu: null, seen: new Date(2026, 8, 12), quay: "Süd" },
+    { id: "c", host: "Pegel", cpu: 88, seen: new Date(2026, 8, 13), quay: "Nord" },
+    { id: "d", host: "ärger-01", cpu: 21, seen: new Date(2026, 8, 11), quay: "Süd" },
+  ];
+  const COLUMNS: ui.DataTableColumn<Machine>[] = [
+    { id: "host", header: "Host", cell: (m) => m.host, sortValue: (m) => m.host, mono: true },
+    { id: "cpu", header: "CPU", cell: (m) => m.cpu ?? "–", sortValue: (m) => m.cpu, align: "end" },
+    { id: "seen", header: "Seen", cell: (m) => m.seen.getDate(), sortValue: (m) => m.seen },
+    { id: "quay", header: "Quay", cell: (m) => m.quay, filterValue: (m) => m.quay },
+  ];
+  const ids = (rows: Machine[]) => rows.map((r) => r.id).join("");
+  const sort = (id: string, direction: ui.SortDirection = "asc") =>
+    ids(ui.sortRows(M, COLUMNS, { id, direction }, "de"));
+
+  test("sortRows: collation with numbers, numbers, dates, empties last, stable", () => {
+    expect(sort("host")).toBe("dbac");
+    expect(sort("host", "desc")).toBe("cabd");
+    expect(sort("cpu")).toBe("adcb");
+    expect(sort("cpu", "desc")).toBe("cadb");
+    expect(sort("seen")).toBe("dbca");
+    expect(ids(ui.sortRows(M, COLUMNS, null))).toBe("abcd");
+    expect(ids(ui.sortRows(M, COLUMNS, { id: "quay", direction: "asc" }))).toBe("abcd");
+  });
+
+  test("filterRows: every word somewhere, any case, plus the predicate", () => {
+    expect(ids(ui.filterRows(M, COLUMNS, "KRAN"))).toBe("ab");
+    expect(ids(ui.filterRows(M, COLUMNS, "kran süd"))).toBe("b");
+    expect(ids(ui.filterRows(M, COLUMNS, "88"))).toBe("c");
+    expect(ids(ui.filterRows(M, COLUMNS, "", (m) => m.quay === "Nord"))).toBe("ac");
+    expect(ids(ui.filterRows(M, COLUMNS, "  "))).toBe("abcd");
+  });
+
+  test("nextSort, toggleAll and dataTableStatus", () => {
+    expect(ui.nextSort(null, "host")).toEqual({ id: "host", direction: "asc" });
+    expect(ui.nextSort({ id: "host", direction: "asc" }, "host").direction).toBe("desc");
+    expect(ui.nextSort({ id: "host", direction: "desc" }, "host").direction).toBe("asc");
+    expect(ui.nextSort({ id: "host", direction: "desc" }, "cpu")).toEqual({
+      id: "cpu",
+      direction: "asc",
+    });
+    expect([...ui.toggleAll(new Set(["a", "x"]), ["a", "b"])].sort()).toEqual(["a", "b", "x"]);
+    expect([...ui.toggleAll(new Set(["a", "b", "x"]), ["a", "b"])]).toEqual(["x"]);
+    expect(ui.dataTableStatus(undefined, [])).toBe("loading");
+    expect(ui.dataTableStatus([1], [1], new Error("x"))).toBe("error");
+    expect(ui.dataTableStatus([], [])).toBe("empty");
+    expect(ui.dataTableStatus([1], [])).toBe("no-results");
+    expect(ui.dataTableStatus([1], [1])).toBe("data");
+  });
+
+  const table = (props: Partial<ui.DataTableProps<Machine>> = {}) =>
+    renderToStaticMarkup(
+      <ui.DataTable columns={COLUMNS} rows={M} getRowId={(m) => m.id} {...props} />
+    );
+
+  test("sorted column carries aria-sort; sortable headers are buttons", () => {
+    const html = table({ defaultSort: { id: "cpu", direction: "desc" }, locale: "de" });
+    expect(html.match(/aria-sort=/g)).toHaveLength(1);
+    expect(html).toMatch(/<th scope="col"[^>]*aria-sort="descending"><button[^>]*>CPU</);
+    expect(html.match(/<th[^>]*><button/g)).toHaveLength(3);
+    expect(html.indexOf("Pegel")).toBeLessThan(html.indexOf("kran-10"));
+    expect(html.indexOf("kran-10")).toBeLessThan(html.indexOf("kran-2<"));
+  });
+
+  test("selection: a named box per row, tri-state header, selected rows marked", () => {
+    const html = table({
+      selectable: true,
+      defaultSelection: ["a"],
+      getRowLabel: (m) => m.host,
+      locale: "de",
+    });
+    expect(html).toContain(`aria-label="${ui.STATE_COPY.de.table.selectAll}"`);
+    expect(html).toContain('aria-label="kran-10 auswählen"');
+    expect(html.match(/<tr[^>]*data-state="selected"/g)).toHaveLength(1);
+    expect(html).toMatch(/aria-checked="mixed"[^>]*aria-label="Alle Zeilen auswählen"/);
+    const all = table({ selectable: true, selection: new Set(["a", "b", "c", "d"]) });
+    expect(all).toMatch(/aria-checked="true"[^>]*aria-label="Select all rows"/);
+  });
+
+  test("loading keeps the header, draws skeleton rows and is busy", () => {
+    const html = table({ rows: undefined, loadingRows: 3 });
+    expect(html).toContain('aria-busy="true"');
+    expect(html).toContain("Host");
+    expect(html.match(/<tr[^>]*aria-hidden="true"/g)).toHaveLength(3);
+    expect(html).toContain('data-state="loading"');
+  });
+
+  test("empty, no-results with clear filters, error with digest and retry", () => {
+    expect(table({ rows: [], locale: "de" })).toContain(ui.STATE_COPY.de.empty.title);
+    const none = table({ query: "zzz", onClearFilters: () => {} });
+    expect(none).toContain(ui.STATE_COPY.en.noResults.title);
+    expect(none).toContain(ui.STATE_COPY.en.table.clearFilters);
+    expect(none).toContain('data-state="no-results"');
+    expect(none).toMatch(/<td[^>]*colSpan="4"/);
+    const failed = table({
+      error: Object.assign(new Error("secret"), { digest: "77" }),
+      onRetry: () => {},
+    });
+    expect(failed).toContain(ui.STATE_COPY.en.error.title);
+    expect(failed).toContain("77");
+    expect(failed).toContain(ui.STATE_COPY.en.error.retry);
+    expect(failed).not.toContain("kran-10");
+  });
+
+  test("pending keeps the rows, is busy, locks sorting and selection", () => {
+    const html = table({ pending: true, selectable: true });
+    expect(html).toContain('aria-busy="true"');
+    expect(html).toContain("kran-10");
+    expect(html).toContain("data-pending");
+    // Three sort buttons and the select-all box.
+    expect(html.match(/<th[^>]*><button[^>]*disabled=""/g)).toHaveLength(4);
+  });
+
+  test("fillCopy fills named slots and keeps unknown ones", () => {
+    expect(ui.fillCopy("{row} auswählen", { row: "kran-01" })).toBe("kran-01 auswählen");
+    expect(ui.fillCopy("{a} {b}", { a: "x" })).toBe("x {b}");
+  });
+});
+
 describe("dist", () => {
   // The npm build must use react/jsx-runtime: a production React exports jsxDEV as
   // undefined, so a dev-runtime dist crashes every production render (design#27).

@@ -99,6 +99,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../src";
+import { Data } from "./data";
 import { Bell, Check, Key, MapIcon, More, Restart, Server } from "./icons";
 import { Vote } from "./vote";
 
@@ -115,6 +116,7 @@ export const SCENES = [
   "illustrations",
   "forms",
   "layout",
+  "data",
   "vote",
 ] as const;
 type Scene = (typeof SCENES)[number];
@@ -1015,6 +1017,8 @@ function Scenes({ scene }: { scene: Scene }) {
       return <Forms />;
     case "layout":
       return <Layout />;
+    case "data":
+      return <Data />;
     case "loading":
       return <Loading />;
     case "brand":
