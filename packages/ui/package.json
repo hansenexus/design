@@ -1,6 +1,6 @@
 {
   "name": "@hansenexus/ui",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "hansenexus UI primitives on Radix, styled only through the semantic tokens of @hansenexus/tokens. Dark and light.",
   "license": "MIT",
   "keywords": [

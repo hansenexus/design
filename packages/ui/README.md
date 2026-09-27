@@ -169,6 +169,8 @@ have layout checks (`screenshots/vote.spec.ts`) but no pixel baselines, since a 
 
 Push a `ui-v<version>` tag matching `package.json`. The `release-ui` workflow builds, runs the
 contrast check and the tests, and publishes to npm with provenance over OIDC trusted publishing.
+`dist/index.js` is bundled with the production JSX runtime (`react/jsx-runtime`); the build and
+the `dist` tests fail if it contains `jsx-dev-runtime` or `jsxDEV` (fixed in 0.2.1, design#27).
 `@hansenexus/tokens` ships separately on its own `tokens-v<version>` tag (`release.yml`).
 
 ## Licence

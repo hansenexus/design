@@ -481,3 +481,28 @@ describe("state primitives", () => {
     expect(ui.nextAnnouncement("data", "data", m)).toBeNull();
   });
 });
+
+describe("dist", () => {
+  // The npm build must use react/jsx-runtime: a production React exports jsxDEV as
+  // undefined, so a dev-runtime dist crashes every production render (design#27).
+  const DIST_JS = join(ROOT, "dist/index.js");
+
+  test("dist/index.js uses the production JSX runtime", () => {
+    const js = readFileSync(DIST_JS, "utf8");
+    expect(js.match(/jsx-dev-runtime|jsxDEV/g) ?? []).toEqual([]);
+    expect(js).toContain("react/jsx-runtime");
+  });
+
+  test("dist/index.js renders under NODE_ENV=production", () => {
+    const script = `import { createElement } from "react";
+      import { renderToStaticMarkup } from "react-dom/server";
+      import { Skeleton } from ${JSON.stringify(DIST_JS)};
+      process.stdout.write(renderToStaticMarkup(createElement(Skeleton)));`;
+    const proc = Bun.spawnSync([process.execPath, "-e", script], {
+      cwd: ROOT,
+      env: { ...process.env, NODE_ENV: "production" },
+    });
+    expect(proc.stderr.toString()).toBe("");
+    expect(proc.stdout.toString()).toContain('data-shape="block"');
+  });
+});
