@@ -156,7 +156,12 @@ bun run decide skeleton-style pulse --rationale "why the owner chose it"
 `decide` writes `decisions/<category>.json` (`winner`, `date`, `rationale`, `considered`) and
 deletes the losing variant files, so a decided category keeps only its winner. Only the owner
 decides: a lane prepares the board and stops at "Awaiting decision". Adopting the winner into the
-primitive (for skeleton-style: the default of `Skeleton`) is a separate change. The vote scenes
+primitive is a separate change.
+
+| Category | Winner | Decided | In the kit |
+| --- | --- | --- | --- |
+| `skeleton-style` | pulse | 2026-09-27 | `Skeleton` pulses by default; reduced motion holds it on skeleton.base |
+ The vote scenes
 have layout checks (`screenshots/vote.spec.ts`) but no pixel baselines, since a board is temporary.
 
 ## Release

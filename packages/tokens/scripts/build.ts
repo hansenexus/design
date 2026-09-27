@@ -102,7 +102,7 @@ const TAILWIND_NAMESPACE: Record<string, (rest: string) => string> = {
 // The loading animations from the motion tokens: animate-hn-pulse (skeleton base to highlight)
 // and animate-hn-spin. Keyframes move between token values only; motion-reduce:animate-none
 // switches them off. Shimmer has tokens but no animation: its sweep needs a gradient, which the
-// brand rules forbid until the skeleton-style vote decides otherwise.
+// brand rules forbid; the skeleton-style vote chose pulse (packages/ui/decisions).
 const ANIMATIONS = [
   "  --animate-hn-pulse: hn-pulse var(--hn-pulse-duration) var(--hn-pulse-easing) infinite;",
   "  --animate-hn-spin: hn-spin var(--hn-spin-duration) var(--hn-spin-easing) infinite;",

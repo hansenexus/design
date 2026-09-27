@@ -1,0 +1,7 @@
+{
+  "category": "skeleton-style",
+  "winner": "pulse",
+  "date": "2026-09-27",
+  "rationale": "Familiar motion and a clear signal that content is still loading; under reduced motion it falls back to static blocks.",
+  "considered": ["progressive", "pulse", "static"]
+}
