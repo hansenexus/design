@@ -493,6 +493,19 @@ describe("dist", () => {
     expect(js).toContain("react/jsx-runtime");
   });
 
+  test("dist/index.js imports as ESM in Node with every src export", () => {
+    // Node links ESM strictly: an export without a declaration (Bun 1.4.0 bundled
+    // `MARK2 as MARK`) is a SyntaxError there, which is what a Next.js consumer hits.
+    const script = `const m = await import(process.argv[1]);
+      process.stdout.write(JSON.stringify(Object.keys(m).sort()));`;
+    const proc = Bun.spawnSync(["node", "--input-type=module", "-e", script, DIST_JS], {
+      cwd: ROOT,
+      env: { ...process.env, NODE_ENV: "production" },
+    });
+    expect(proc.stderr.toString()).toBe("");
+    expect(JSON.parse(proc.stdout.toString())).toEqual(Object.keys(ui).sort());
+  });
+
   test("dist/index.js renders under NODE_ENV=production", () => {
     const script = `import { createElement } from "react";
       import { renderToStaticMarkup } from "react-dom/server";
