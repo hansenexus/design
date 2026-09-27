@@ -64,8 +64,8 @@ hand, and `scripts/brand.test.ts` checks that the fill is `brand.ink`, that noth
 gradient, and that `Assets/hansenexus-mark-lime.svg` is byte for byte the generated
 `assets/mark/hansenexus-mark-lime.svg` (after `bun run brand` changes the mark, copy it again).
 
-- Fill: solid `brand.ink` (#16140f), no gradient.
-- One group, one layer: the lime mark (`brand.lime`, #42c501), flat, scaled to 640 of 1024 points
+- Fill: solid `brand.ink`, no gradient.
+- One group, one layer: the lime mark (`brand.lime`), flat, scaled to 640 of 1024 points
   (62.5 %, as the PNG master), centred.
 - Glass, shadow (neutral) and translucency stay at the Icon Composer defaults. No added glow,
   coloured shadow or gradient.
