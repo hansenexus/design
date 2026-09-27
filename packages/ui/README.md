@@ -7,8 +7,10 @@ colour follows `data-mode`, `data-theme` and `data-density` on an ancestor.
 Button, Badge, StatusBadge, Switch, Dialog, Menu, Tabs, Table, Meter, Sparkline, Kbd, Toast,
 Tooltip, Input, Select, RailItem. For forms: Field, Label, FieldHelp, FieldError, Textarea,
 Checkbox, RadioGroup and FormAlert. For layout: Card (CardHeader, CardTitle, CardDescription,
-CardBody, CardFooter, CardSkeleton), Alert and Banner, Avatar, Separator, Accordion. For dates and data: Popover, Calendar, DatePicker,
-Combobox and DataTable. For loading: Skeleton (block, text, circle), SkeletonGroup,
+CardBody, CardFooter, CardSkeleton), Alert and Banner, Avatar, Separator, Accordion. For dates and
+data: Popover, Calendar, DatePicker, Combobox and DataTable. Overlays and navigation: Sheet,
+Breadcrumb, Pagination and the command palette (Command, CommandDialog, `useCommandShortcut`). For
+loading: Skeleton (block, text, circle), SkeletonGroup,
 Spinner and the `useDelayedVisibility` hook. For the other states: EmptyState, ErrorState, Progress
 and QueryState, with German and English default copy (`STATE_COPY`). Plus the brand: `HansenexusMark` and `HansenexusWordmark`
 (`variant` lime, lime-deep, ink, paper or mono, which is `currentColor` and the default; `size` is
@@ -244,6 +246,73 @@ import { Combobox, DataTable, DatePicker, Field, Input } from "@hansenexus/ui";
 - **Copy.** `STATE_COPY[locale].date`, `.combobox` and `.table`; `{query}` and `{row}` are filled
   by `fillCopy`.
 
+### Overlays and navigation
+
+```tsx
+import {
+  Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator,
+  CommandDialog, Pagination, Popover, PopoverContent, PopoverTitle, PopoverTrigger,
+  Sheet, SheetBody, SheetContent, SheetHeader, SheetTitle, SheetTrigger, useCommandShortcut,
+} from "@hansenexus/ui";
+
+<Sheet>
+  <SheetTrigger asChild><Button variant="secondary">Details</Button></SheetTrigger>
+  <SheetContent side="right" locale="de" pending={saving}>   {/* bottom sheet below 640 px */}
+    <SheetHeader><SheetTitle>kran-04</SheetTitle></SheetHeader>
+    <SheetBody>…</SheetBody>
+  </SheetContent>
+</Sheet>
+
+<Popover>
+  <PopoverTrigger asChild><Button variant="secondary">Snooze</Button></PopoverTrigger>
+  <PopoverContent className="w-72 p-4" aria-labelledby="snooze"><PopoverTitle id="snooze">Snooze alerts</PopoverTitle>…</PopoverContent>
+</Popover>
+
+<Breadcrumb locale="de">
+  <BreadcrumbList>
+    <BreadcrumbItem><BreadcrumbLink href="/">Bestand</BreadcrumbLink></BreadcrumbItem>
+    <BreadcrumbSeparator />
+    <BreadcrumbItem><BreadcrumbPage>kran-04</BreadcrumbPage></BreadcrumbItem>
+  </BreadcrumbList>
+</Breadcrumb>
+
+<Pagination page={page} pageCount={12} pendingPage={requested} onPageChange={load} />
+
+const [open, setOpen] = useState(false);
+useCommandShortcut(() => setOpen((o) => !o));               // ⌘K / Ctrl+K
+<CommandDialog open={open} onOpenChange={setOpen} groups={groups} onSelect={run}
+  query={q} onQueryChange={setQ} filter={false} loading={searching} error={failed} onRetry={retry} />
+```
+
+- **Sheet** is a Radix Dialog from the right, left or bottom edge. A side sheet becomes a bottom
+  sheet below 640 px (`bottomOnMobile`, on by default) with a grab handle. `pending` makes it
+  `aria-busy` and undismissable (Escape, outside click and the close button are off), so it never
+  closes before the server answered. The close button is named from `STATE_COPY[locale].overlay`.
+- **Popover** is non-modal, anchored to its trigger, a `dialog` you name with `aria-labelledby`
+  (PopoverTitle). It has no padding of its own (Combobox and DatePicker run edge to edge), so
+  give free content `p-4`. Escape or an outside click closes it and focus returns to the trigger.
+- **Breadcrumb** is a `nav` landmark ("Breadcrumb" / "Seitenpfad") around an `ol`; the current
+  page is text with `aria-current="page"`; separators are hidden from assistive tech;
+  BreadcrumbEllipsis is a button to put inside `MenuTrigger asChild` for the hidden levels. While
+  the current page's name loads, put a text Skeleton in its item.
+- **Pagination** shows first, last, the current page with `siblings` around it and an ellipsis per
+  gap, always the same number of slots (`paginationRange`). **Loading between pages:** pass the
+  requested page as `pendingPage` and move `page` only once its data arrived. The nav is
+  `aria-busy`, the requested button shows the Spinner after 200 ms (then at least 400 ms), and
+  `aria-current` stays on the page on screen, so it never claims a page that has not loaded. A
+  polite live region says "Page 3 of 12" once it has. `href` renders links, `disabled` turns it
+  off, fewer than two pages render nothing. Previous and next are icon-only below 640 px.
+- **Command** is the palette body (inline) and **CommandDialog** the palette in a modal. The input
+  is a `combobox` that owns a `listbox`; the arrow keys move the active option
+  (`aria-activedescendant`, disabled items are skipped), Page Up/Down jump to the ends, Enter
+  selects, Escape closes and focus goes back to where it was. States: `loading` shows skeleton rows
+  until there is something to show, then keeps the results with a delayed Spinner; no results is
+  claimed only after loading; `error` shows the crit diamond, the message and a retry. A polite
+  live region says the result count. The default filter matches every word against the label and
+  `keywords`, ignoring case and accents; `filter={false}` for server-side search.
+- **Copy.** `STATE_COPY[locale].overlay`, `.navigation` and `.command`; `{page}`, `{count}` and
+  `{query}` are filled by `fillCopy`.
+
 ## shadcn registry
 
 The same sources ship as a shadcn registry (`registry.json`; built items in `dist/r/`, also in the
@@ -273,9 +342,10 @@ bunx shadcn@latest add @hansenexus/button @hansenexus/status-badge
 ## Screenshot baselines
 
 `screenshots/baselines/` holds the kit gallery (`gallery/`, every primitive in its states), the
-loading scene (Skeleton and Spinner), the states, illustrations, forms, layout and data scenes and each overlay at 390 and 1280 px, dark and light. Pixels depend on the OS and browser build, so
+loading scene (Skeleton and Spinner), the states, illustrations, forms, layout, data, overlays and navigation scenes and each overlay at 390 and 1280 px, dark and light. Pixels depend on the OS and browser build, so
 `scripts/screenshots.sh` runs Playwright inside the pinned `mcr.microsoft.com/playwright` image,
-the same one CI uses. It needs Docker.
+the same one CI uses. It needs Docker. `screenshots/interaction.spec.ts` drives the live palette, sheet,
+popover and pager in the same run (keyboard, focus return, `aria-current` after load).
 
 ```sh
 bun run build                 # tokens dist is needed by the gallery

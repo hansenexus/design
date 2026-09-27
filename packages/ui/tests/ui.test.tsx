@@ -1049,6 +1049,176 @@ describe("data table", () => {
   });
 });
 
+describe("overlays and navigation", () => {
+  const tag = (html: string, marker: string) =>
+    html.match(new RegExp(`<[a-z]+[^>]*${marker}[^>]*>`))?.[0] ?? "";
+
+  test("the set is exported and in the registry", () => {
+    const names = ["PopoverContent", "SheetContent", "Breadcrumb", "Pagination", "Command"];
+    const exported = ui as Record<string, unknown>;
+    expect(names.filter((n) => typeof exported[n] !== "function")).toEqual([]);
+    const items = new Set(loadRegistry().items.map((i) => i.name));
+    for (const n of ["popover", "sheet", "breadcrumb", "pagination", "command"])
+      expect(items.has(n)).toBe(true);
+  });
+
+  test("fillCopy fills known names and keeps the rest", () => {
+    expect(ui.fillCopy("Page {page} of {count}", { page: 3, count: 12 })).toBe("Page 3 of 12");
+    expect(ui.fillCopy("{a} {b}", { a: 1 })).toBe("1 {b}");
+  });
+
+  test("de and en copy have the same keys", () => {
+    const keys = (o: object, p = ""): string[] =>
+      Object.entries(o).flatMap(([k, v]) =>
+        typeof v === "object" && v !== null ? keys(v, `${p}${k}.`) : [`${p}${k}`]
+      );
+    expect(keys(ui.STATE_COPY.de).sort()).toEqual(keys(ui.STATE_COPY.en).sort());
+  });
+
+  test("paginationRange: all pages when few, fixed length with gaps when many", () => {
+    expect(ui.paginationRange(1, 1)).toEqual([1]);
+    expect(ui.paginationRange(1, 0)).toEqual([]);
+    expect(ui.paginationRange(3, 7)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(ui.paginationRange(1, 12)).toEqual([1, 2, 3, 4, 5, "ellipsis", 12]);
+    expect(ui.paginationRange(6, 12)).toEqual([1, "ellipsis", 5, 6, 7, "ellipsis", 12]);
+    expect(ui.paginationRange(12, 12)).toEqual([1, "ellipsis", 8, 9, 10, 11, 12]);
+    for (let p = 1; p <= 40; p++) expect(ui.paginationRange(p, 40)).toHaveLength(7);
+    expect(ui.paginationRange(10, 40, 2)).toHaveLength(9);
+  });
+
+  test("Pagination: nav landmark, aria-current, edges off, nothing for one page", () => {
+    const html = renderToStaticMarkup(<ui.Pagination page={1} pageCount={12} locale="de" />);
+    expect(html).toContain('<nav aria-label="Seitennavigation"');
+    expect(tag(html, 'aria-current="page"')).toContain('aria-label="Seite 1"');
+    expect(tag(html, 'aria-label="Zurück"')).toContain('disabled=""');
+    expect(tag(html, 'aria-label="Weiter"')).not.toContain('disabled=""');
+    expect(html).toContain('role="status"');
+    expect(renderToStaticMarkup(<ui.Pagination page={1} pageCount={1} />)).toBe("");
+  });
+
+  test("Pagination: a pending page keeps aria-current and marks the nav busy", () => {
+    const html = renderToStaticMarkup(<ui.Pagination page={4} pageCount={12} pendingPage={5} />);
+    expect(html).toMatch(/<nav[^>]*aria-busy="true"/);
+    expect(tag(html, 'aria-current="page"')).toContain('aria-label="Page 4"');
+    // The spinner waits for the pending delay, so the first render shows the number.
+    expect(html).not.toContain("data-pending");
+  });
+
+  test("Pagination: links, disabled", () => {
+    const links = renderToStaticMarkup(
+      <ui.Pagination page={2} pageCount={4} href={(p) => `/list?page=${p}`} />
+    );
+    expect(links).toContain('href="/list?page=3"');
+    expect(tag(links, 'aria-current="page"')).toMatch(/^<a /);
+    const off = renderToStaticMarkup(<ui.Pagination page={2} pageCount={4} disabled />);
+    expect(off.match(/disabled=""/g)?.length).toBe(6);
+  });
+
+  test("Breadcrumb: named nav, current page, hidden separators, ellipsis button", () => {
+    const html = renderToStaticMarkup(
+      <ui.Breadcrumb locale="de">
+        <ui.BreadcrumbList>
+          <ui.BreadcrumbItem>
+            <ui.BreadcrumbLink href="/">Bestand</ui.BreadcrumbLink>
+          </ui.BreadcrumbItem>
+          <ui.BreadcrumbSeparator />
+          <ui.BreadcrumbItem>
+            <ui.BreadcrumbEllipsis locale="de" />
+          </ui.BreadcrumbItem>
+          <ui.BreadcrumbSeparator />
+          <ui.BreadcrumbItem>
+            <ui.BreadcrumbPage>kran-04</ui.BreadcrumbPage>
+          </ui.BreadcrumbItem>
+        </ui.BreadcrumbList>
+      </ui.Breadcrumb>
+    );
+    expect(html).toContain('<nav aria-label="Seitenpfad"');
+    expect(html).toContain("<ol");
+    expect(tag(html, 'aria-current="page"')).toMatch(/^<span /);
+    expect(html.match(/role="presentation" aria-hidden="true"/g)?.length).toBe(2);
+    expect(html).toContain(`aria-label="${ui.STATE_COPY.de.navigation.more}"`);
+    expect(html).toMatch(/<button type="button"/);
+  });
+
+  const GROUPS: ui.CommandGroup[] = [
+    {
+      id: "m",
+      heading: "Machines",
+      items: [
+        { id: "a", label: "kran-01", keywords: ["crane"] },
+        { id: "b", label: "Über-Kai", disabled: true },
+        { id: "c", label: "pegel" },
+      ],
+    },
+    { id: "x", heading: "Actions", items: [{ id: "d", label: "Restart deployment" }] },
+  ];
+
+  test("filterCommandGroups: words, keywords, accents, empty groups dropped", () => {
+    const labels = (q: string) =>
+      ui.filterCommandGroups(GROUPS, q).flatMap((g) => g.items.map((i) => i.label));
+    expect(labels("")).toHaveLength(4);
+    expect(labels("crane")).toEqual(["kran-01"]);
+    expect(labels("uber")).toEqual(["Über-Kai"]);
+    expect(labels("restart dep")).toEqual(["Restart deployment"]);
+    expect(ui.filterCommandGroups(GROUPS, "restart").map((g) => g.id)).toEqual(["x"]);
+    expect(labels("zzz")).toEqual([]);
+  });
+
+  test("commandStatus: error wins, loading only without results, no-results needs a query", () => {
+    expect(ui.commandStatus({ count: 3, query: "k", error: true })).toBe("error");
+    expect(ui.commandStatus({ count: 3, query: "k", loading: true })).toBe("results");
+    expect(ui.commandStatus({ count: 0, query: "k", loading: true })).toBe("loading");
+    expect(ui.commandStatus({ count: 0, query: "k" })).toBe("no-results");
+    expect(ui.commandStatus({ count: 0, query: "  " })).toBe("empty");
+  });
+
+  test("Command: combobox owns the listbox, first enabled option active, disabled marked", () => {
+    const html = renderToStaticMarkup(<ui.Command groups={GROUPS} locale="de" />);
+    const input = tag(html, 'role="combobox"');
+    expect(input).toContain('aria-expanded="true"');
+    expect(input).toContain('aria-autocomplete="list"');
+    expect(input).toContain(`aria-label="${ui.STATE_COPY.de.command.label}"`);
+    const list = input.match(/aria-controls="([^"]+)"/)?.[1] ?? "";
+    expect(tag(html, `id="${list}"`)).toContain('role="listbox"');
+    const active = input.match(/aria-activedescendant="([^"]+)"/)?.[1] ?? "";
+    expect(tag(html, `id="${active}"`)).toContain('aria-selected="true"');
+    expect(html.match(/role="option"/g)?.length).toBe(4);
+    expect(html.match(/aria-disabled="true"/g)?.length).toBe(1);
+    expect(html.match(/role="group" aria-labelledby=/g)?.length).toBe(2);
+    expect(html).toContain("4 Treffer");
+  });
+
+  test("Command: loading, no-results, error and empty states", () => {
+    const loading = renderToStaticMarkup(
+      <ui.Command groups={[]} filter={false} defaultQuery="x" loading />
+    );
+    expect(loading).toContain('data-state="loading"');
+    expect(loading).toContain('data-shape="text"');
+    expect(tag(loading, 'role="combobox"')).toContain('aria-busy="true"');
+    expect(tag(loading, 'role="combobox"')).toContain('aria-expanded="false"');
+    const none = renderToStaticMarkup(<ui.Command groups={GROUPS} defaultQuery="zzz" />);
+    expect(none).toContain('data-state="no-results"');
+    expect(none).toContain("Nothing matches “zzz”.");
+    const error = renderToStaticMarkup(
+      <ui.Command groups={GROUPS} error onRetry={() => {}} locale="de" />
+    );
+    expect(tag(error, 'role="alert"')).not.toBe("");
+    expect(error).toContain(ui.STATE_COPY.de.error.retry);
+    expect(error).toContain('data-status="crit"');
+    const empty = renderToStaticMarkup(<ui.Command groups={[]} />);
+    expect(empty).toContain(ui.STATE_COPY.en.command.empty);
+  });
+
+  test("isCommandShortcut: ⌘K or Ctrl+K only", () => {
+    const k = { key: "k", metaKey: false, ctrlKey: false, altKey: false, shiftKey: false };
+    expect(ui.isCommandShortcut({ ...k, metaKey: true })).toBe(true);
+    expect(ui.isCommandShortcut({ ...k, ctrlKey: true, key: "K" })).toBe(true);
+    expect(ui.isCommandShortcut(k)).toBe(false);
+    expect(ui.isCommandShortcut({ ...k, metaKey: true, shiftKey: true })).toBe(false);
+    expect(ui.isCommandShortcut({ ...k, ctrlKey: true, key: "p" }, "p")).toBe(true);
+  });
+});
+
 describe("dist", () => {
   // The npm build must use react/jsx-runtime: a production React exports jsxDEV as
   // undefined, so a dev-runtime dist crashes every production render (design#27).

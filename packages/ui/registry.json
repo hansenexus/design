@@ -743,6 +743,89 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "sheet",
+      "type": "registry:ui",
+      "title": "Sheet",
+      "description": "A modal panel from a screen edge on Radix Dialog; a side sheet turns into a bottom sheet below 640 px, and a pending sheet cannot be dismissed.",
+      "dependencies": ["radix-ui"],
+      "registryDependencies": [
+        "@hansenexus/tokens",
+        "@hansenexus/cx",
+        "@hansenexus/icons",
+        "@hansenexus/state-copy"
+      ],
+      "files": [
+        {
+          "path": "src/sheet.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "breadcrumb",
+      "type": "registry:ui",
+      "title": "Breadcrumb",
+      "description": "Where the page sits: a nav landmark, links, the current page with aria-current, separators and a collapsed middle.",
+      "dependencies": ["radix-ui"],
+      "registryDependencies": [
+        "@hansenexus/tokens",
+        "@hansenexus/cx",
+        "@hansenexus/icons",
+        "@hansenexus/state-copy"
+      ],
+      "files": [
+        {
+          "path": "src/breadcrumb.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "pagination",
+      "type": "registry:ui",
+      "title": "Pagination",
+      "description": "Page through a long list; the pending page shows the delayed Spinner and aria-current moves only once it loaded.",
+      "registryDependencies": [
+        "@hansenexus/tokens",
+        "@hansenexus/cx",
+        "@hansenexus/delayed-visibility",
+        "@hansenexus/icons",
+        "@hansenexus/spinner",
+        "@hansenexus/state-copy"
+      ],
+      "files": [
+        {
+          "path": "src/pagination.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "command",
+      "type": "registry:ui",
+      "title": "Command",
+      "description": "Command palette: a combobox over grouped results with loading, empty, no-results and error states, inline or in a dialog, plus the ⌘K hook.",
+      "dependencies": ["radix-ui"],
+      "registryDependencies": [
+        "@hansenexus/tokens",
+        "@hansenexus/cx",
+        "@hansenexus/button",
+        "@hansenexus/dialog",
+        "@hansenexus/icons",
+        "@hansenexus/kbd",
+        "@hansenexus/skeleton",
+        "@hansenexus/spinner",
+        "@hansenexus/state-copy",
+        "@hansenexus/status-glyph"
+      ],
+      "files": [
+        {
+          "path": "src/command.tsx",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }

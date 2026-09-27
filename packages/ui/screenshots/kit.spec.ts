@@ -84,6 +84,27 @@ for (const mode of MODES) {
     });
   });
 
+  test(`overlays ${mode}`, async ({ page }, info) => {
+    await page.goto(`/gallery/?scene=overlays&mode=${mode}`);
+    await page.evaluate(() => document.fonts.ready);
+    await expect(page.locator("[data-frame] [role=dialog]")).toHaveCount(3);
+    // The pending sheet's Spinner and the loading palette's appear after their 200 ms delay.
+    await expect(page.locator('[data-frame] svg[role="status"]')).toHaveCount(1);
+    await expect(page.locator('[data-command="loading"] svg[role="status"]')).toHaveCount(1);
+    await expect(page).toHaveScreenshot(`overlays-${info.project.name}-${mode}.png`, {
+      fullPage: true,
+    });
+  });
+
+  test(`navigation ${mode}`, async ({ page }, info) => {
+    await page.goto(`/gallery/?scene=navigation&mode=${mode}`);
+    await page.evaluate(() => document.fonts.ready);
+    await expect(page.locator('[data-pagination="pending"] [data-pending]')).toHaveCount(1);
+    await expect(page).toHaveScreenshot(`navigation-${info.project.name}-${mode}.png`, {
+      fullPage: true,
+    });
+  });
+
   for (const scene of OVERLAYS) {
     test(`${scene} ${mode}`, async ({ page }, info) => {
       await page.goto(`/gallery/?scene=${scene}&mode=${mode}`);
