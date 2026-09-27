@@ -161,6 +161,7 @@ primitive is a separate change.
 | Category | Winner | Decided | In the kit |
 | --- | --- | --- | --- |
 | `skeleton-style` | pulse | 2026-09-27 | `Skeleton` pulses by default; reduced motion holds it on skeleton.base |
+| `illustration-style` | open: geometric or line-art | | Empty and error in the EmptyState/ErrorState slot; the winner is drawn for all eight motifs of `@hansenexus/illustrations` (design#17) |
  The vote scenes
 have layout checks (`screenshots/vote.spec.ts`) but no pixel baselines, since a board is temporary.
 
