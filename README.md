@@ -1,12 +1,13 @@
 # design
 
-hansenexus design system: DTCG tokens, UI primitives, the state-check and the Swift package. Open core (MIT).
+hansenexus design system: DTCG tokens, UI primitives, state illustrations, the state-check and the Swift package. Open core (MIT).
 
 | Package | What |
 | --- | --- |
 | [`@hansenexus/tokens`](packages/tokens) | DTCG source, CSS variables, Tailwind v4 `@theme`, TS constants, contrast CI |
 | [`HansenexusTokens`](swift) | SwiftPM package: generated colours, fonts and spacing for SwiftUI |
 | [`@hansenexus/ui`](packages/ui) | 16 primitives on Radix, Skeleton, Spinner, `useDelayedVisibility`, EmptyState, ErrorState, Progress, QueryState (DE/EN copy), semantic tokens only, shadcn registry, screenshot baselines; `HansenexusMark`, `HansenexusWordmark` |
+| [`@hansenexus/illustrations`](packages/illustrations) | Eight geometric state motifs (empty, no-results, error, 404, offline, no-permission, success, maintenance) as React SVG, one import path each, colour only through `currentColor` and `--hn-*`, ≤ 3 KB gzip each |
 | [`@hansenexus/state-check`](packages/state-check) | The frontend state contract as a CI ratchet: dynamic Next.js routes need `loading.tsx` or `<Suspense>`; opt-in Convex `useQuery` loading-branch and pending-action rules; CLI, config, per-app baseline |
 | [`brand/`](brand) | The mark and wordmark in every variant, favicons, app icon, menu bar template; usage rules |
 
@@ -32,6 +33,7 @@ workflow on its own tag. The tag must match the package's `package.json` version
 | `@hansenexus/tokens` | `tokens-v<version>` | `.github/workflows/release.yml` |
 | `@hansenexus/ui` | `ui-v<version>` | `.github/workflows/release-ui.yml` |
 | `@hansenexus/state-check` | `state-check-v<version>` | `.github/workflows/release-state-check.yml` |
+| `@hansenexus/illustrations` | `illustrations-v<version>` | `.github/workflows/release-illustrations.yml` |
 
 Run a workflow by hand (`gh workflow run <file> -f dry_run=true`) to pack and validate without
 publishing.

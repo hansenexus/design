@@ -10,9 +10,24 @@
         "typescript": "^5.9.3",
       },
     },
+    "packages/illustrations": {
+      "name": "@hansenexus/illustrations",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@hansenexus/tokens": "workspace:*",
+        "@types/react": "19.3.0",
+        "@types/react-dom": "19.3.0",
+        "react": "19.3.0",
+        "react-dom": "19.3.0",
+      },
+      "peerDependencies": {
+        "@hansenexus/tokens": "^0.4.0",
+        "react": "^19.0.0",
+      },
+    },
     "packages/state-check": {
       "name": "@hansenexus/state-check",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "bin": {
         "state-check": "./dist/cli.js",
       },
@@ -22,14 +37,14 @@
     },
     "packages/tokens": {
       "name": "@hansenexus/tokens",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "devDependencies": {
         "style-dictionary": "5.5.5",
       },
     },
     "packages/ui": {
       "name": "@hansenexus/ui",
-      "version": "0.1.0",
+      "version": "0.2.1",
       "dependencies": {
         "radix-ui": "1.6.7",
       },
@@ -37,6 +52,7 @@
         "@fontsource-variable/fraunces": "5.3.0",
         "@fontsource-variable/instrument-sans": "5.3.0",
         "@fontsource-variable/jetbrains-mono": "5.3.0",
+        "@hansenexus/illustrations": "workspace:*",
         "@hansenexus/tokens": "workspace:*",
         "@playwright/test": "1.63.0",
         "@tailwindcss/cli": "4.3.3",
@@ -48,7 +64,7 @@
         "tailwindcss": "4.3.3",
       },
       "peerDependencies": {
-        "@hansenexus/tokens": "^0.3.0",
+        "@hansenexus/tokens": "^0.4.0",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
       },
@@ -152,6 +168,8 @@
     "@fontsource-variable/instrument-sans": ["@fontsource-variable/instrument-sans@5.3.0", "", {}, "sha512-u4gKbDBTNFGkg997tfQn3eHOhHuquWUFTRT/rwzuKtrxX5P2ekfs2x+LgBPP4P32+cC+vUwF1Cr+IdRoPQbrGw=="],
 
     "@fontsource-variable/jetbrains-mono": ["@fontsource-variable/jetbrains-mono@5.3.0", "", {}, "sha512-F32xpS2NsGYoQi2ADSkKTgpJj7ozajsGgDJ8woTnqjmIB+dxDIqImjl4pXZVEExu8UFZ2ndhmX18EBS/hdz3Lw=="],
+
+    "@hansenexus/illustrations": ["@hansenexus/illustrations@workspace:packages/illustrations"],
 
     "@hansenexus/state-check": ["@hansenexus/state-check@workspace:packages/state-check"],
 

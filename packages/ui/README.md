@@ -88,8 +88,10 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
   text prop (`title`, `description`, `retryLabel`, `label`, `loadedMessage`) overrides it. No i18n
   library: monorepo apps pass their `states.*` next-intl messages.
 - **EmptyState** has two variants: `empty` (nothing exists yet) and `no-results` (the search or
-  filter matched nothing). `illustration` is a slot and renders `aria-hidden`.
-- **ErrorState** shows the copy, the `digest` as a reference and a retry button when `onRetry` is
+  filter matched nothing). `illustration` is a slot and renders `aria-hidden` in `ink.muted`; fill
+  it with a motif from [`@hansenexus/illustrations`](../illustrations), e.g.
+  `illustration={<EmptyIllustration />}` from `@hansenexus/illustrations/empty`.
+- **ErrorState** takes the same `illustration` slot (`@hansenexus/illustrations/error`) and shows the copy, the `digest` as a reference and a retry button when `onRetry` is
   set. The raw message and stack show only when `NODE_ENV === "development"` (or `dev`); anything
   else, including a browser without a bundler replacement, gets the production view.
 - **Progress** is a `progressbar`: determinate with `value` (busy colour, ok once complete),
@@ -128,7 +130,7 @@ bunx shadcn@latest add @hansenexus/button @hansenexus/status-badge
 ## Screenshot baselines
 
 `screenshots/baselines/` holds the kit gallery (`gallery/`, every primitive in its states), the
-loading scene (Skeleton and Spinner) and each overlay at 390 and 1280 px, dark and light. Pixels depend on the OS and browser build, so
+loading scene (Skeleton and Spinner), the states and illustrations scenes and each overlay at 390 and 1280 px, dark and light. Pixels depend on the OS and browser build, so
 `scripts/screenshots.sh` runs Playwright inside the pinned `mcr.microsoft.com/playwright` image,
 the same one CI uses. It needs Docker.
 
@@ -161,8 +163,9 @@ primitive is a separate change.
 | Category | Winner | Decided | In the kit |
 | --- | --- | --- | --- |
 | `skeleton-style` | pulse | 2026-09-27 | `Skeleton` pulses by default; reduced motion holds it on skeleton.base |
-| `illustration-style` | open: geometric or line-art | | Empty and error in the EmptyState/ErrorState slot; the winner is drawn for all eight motifs of `@hansenexus/illustrations` (design#17) |
- The vote scenes
+| `illustration-style` | geometric | 2026-09-27 | All eight motifs of [`@hansenexus/illustrations`](../illustrations); the gallery's `states` scene fills the EmptyState/ErrorState slot with them |
+
+The vote scenes
 have layout checks (`screenshots/vote.spec.ts`) but no pixel baselines, since a board is temporary.
 
 ## Release

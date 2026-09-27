@@ -2,6 +2,9 @@ import { afterEach, beforeEach, describe, expect, jest, test } from "bun:test";
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { EmptyIllustration } from "@hansenexus/illustrations/empty";
+import { ErrorIllustration } from "@hansenexus/illustrations/error";
+import { NoResultsIllustration } from "@hansenexus/illustrations/no-results";
 import { ms } from "@hansenexus/tokens";
 import { renderToStaticMarkup } from "react-dom/server";
 import { registryItemSchema } from "shadcn/schema";
@@ -375,6 +378,19 @@ describe("state primitives", () => {
       renderToStaticMarkup(<ui.ErrorState illustration={art} />),
     ])
       expect(html).toMatch(/<div aria-hidden="true"[^>]*><svg data-art=""/);
+  });
+
+  test("the @hansenexus/illustrations motifs fill the slot, in ink.muted", () => {
+    for (const html of [
+      renderToStaticMarkup(<ui.EmptyState illustration={<EmptyIllustration />} />),
+      renderToStaticMarkup(
+        <ui.EmptyState variant="no-results" illustration={<NoResultsIllustration />} />
+      ),
+      renderToStaticMarkup(<ui.ErrorState illustration={<ErrorIllustration />} />),
+    ])
+      expect(html).toMatch(
+        /<div aria-hidden="true" class="mb-1 text-hn-ink-muted"><svg viewBox="0 0 160 120"/
+      );
   });
 
   test("ErrorState in production: copy, digest and retry, never the message or stack", () => {

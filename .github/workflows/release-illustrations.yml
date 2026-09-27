@@ -1,0 +1,84 @@
+name: release-illustrations
+
+# Publishes @hansenexus/illustrations to npm with provenance over Trusted Publishing
+# (OIDC, no NPM_TOKEN). Same shape as release.yml (tokens). @hansenexus/tokens is a
+# peer dependency and ships from release.yml on its own `tokens-v*` tag.
+#
+# npm side (npmjs.com > @hansenexus/illustrations > Settings > Trusted Publisher):
+#   Organization hansenexus, Repository design, Workflow release-illustrations.yml,
+#   Allowed actions: npm publish.
+#
+# Trigger: push an `illustrations-v<version>` tag. The workflow refuses a tag that disagrees
+# with packages/illustrations/package.json. workflow_dispatch with dry_run packs and validates
+# without publishing.
+
+on:
+  push:
+    tags: ["illustrations-v*"]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Pack and validate, but do not publish"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-illustrations
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # GitHub release
+      id-token: write # provenance attestation
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - name: npm supporting OIDC
+        run: npm install -g npm@latest
+      - run: bun install --frozen-lockfile
+
+      - name: Tag and packages/illustrations/package.json agree
+        if: startsWith(github.ref, 'refs/tags/illustrations-v')
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME#illustrations-v}"
+          pkg=$(node -p "require('./packages/illustrations/package.json').version")
+          if [ "$tag" != "$pkg" ]; then
+            echo "::error::tag illustrations-v$tag does not match packages/illustrations/package.json $pkg"
+            exit 1
+          fi
+
+      # Root build: the tests render the motifs and gzip the built dist/<motif>.js (<= 3 KB).
+      - name: Gate
+        run: bun run build && bun run contrast && bun run test
+
+      - name: Pack
+        working-directory: packages/illustrations
+        run: npm pack --dry-run
+
+      - name: Publish
+        if: ${{ github.event_name == 'push' || !inputs.dry_run }}
+        working-directory: packages/illustrations
+        run: npm publish --access public --provenance
+
+      - name: Publish (dry run)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        working-directory: packages/illustrations
+        run: npm publish --access public --dry-run
+
+      - name: GitHub release
+        if: startsWith(github.ref, 'refs/tags/illustrations-v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
