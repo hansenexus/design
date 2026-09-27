@@ -49,6 +49,17 @@ for (const mode of MODES) {
     });
   });
 
+  test(`forms ${mode}`, async ({ page }, info) => {
+    await page.goto(`/gallery/?scene=forms&mode=${mode}`);
+    await page.evaluate(() => document.fonts.ready);
+    // The pending form's Spinner appears after its 200 ms delay.
+    await expect(page.locator('[data-phase="pending"] svg[role="status"]')).toHaveCount(1);
+    await expect(page.locator('[role="alert"]')).toHaveCount(2);
+    await expect(page).toHaveScreenshot(`forms-${info.project.name}-${mode}.png`, {
+      fullPage: true,
+    });
+  });
+
   for (const scene of OVERLAYS) {
     test(`${scene} ${mode}`, async ({ page }, info) => {
       await page.goto(`/gallery/?scene=${scene}&mode=${mode}`);

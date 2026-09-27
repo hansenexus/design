@@ -18,6 +18,7 @@ import {
   BRAND_VARIANTS,
   type BrandVariant,
   Button,
+  Checkbox,
   cx,
   Dialog,
   DialogContent,
@@ -27,6 +28,8 @@ import {
   DialogTitle,
   EmptyState,
   ErrorState,
+  Field,
+  FormAlert,
   HansenexusMark,
   HansenexusWordmark,
   Input,
@@ -41,6 +44,8 @@ import {
   Meter,
   Progress,
   QueryState,
+  RadioGroup,
+  RadioGroupItem,
   RailItem,
   Select,
   SelectContent,
@@ -52,7 +57,9 @@ import {
   Sparkline,
   Spinner,
   SpinnerGlyph,
+  STATE_COPY,
   STATUSES,
+  type StateLocale,
   StatusBadge,
   Switch,
   Table,
@@ -65,6 +72,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  Textarea,
   Toast,
   ToastAction,
   ToastDescription,
@@ -90,6 +98,7 @@ export const SCENES = [
   "loading",
   "states",
   "illustrations",
+  "forms",
   "vote",
 ] as const;
 type Scene = (typeof SCENES)[number];
@@ -613,6 +622,194 @@ function Illustrations() {
   );
 }
 
+type FormPhase = "idle" | "invalid" | "pending" | "server-error";
+
+/** The form scene's own copy; the state messages come from STATE_COPY.form. */
+const MACHINE_FORM: Record<
+  StateLocale,
+  {
+    name: string;
+    nameHelp: string;
+    nameTaken: string;
+    env: string;
+    envs: [string, string][];
+    envMissing: string;
+    notes: string;
+    notesHelp: string;
+    page: string;
+    confirm: string;
+    confirmMissing: string;
+    save: string;
+    cancel: string;
+  }
+> = {
+  en: {
+    name: "Machine name",
+    nameHelp: "Lowercase letters, digits and dashes.",
+    nameTaken: "kran-01 already exists. Pick another name.",
+    env: "Environment",
+    envs: [
+      ["production", "Production"],
+      ["staging", "Staging"],
+      ["lab", "Lab"],
+    ],
+    envMissing: "Choose an environment.",
+    notes: "Notes",
+    notesHelp: "Shown on the machine card.",
+    page: "Page on-call when it goes offline",
+    confirm: "The agent may restart services on this machine",
+    confirmMissing: "Needed before the agent can be enrolled.",
+    save: "Add machine",
+    cancel: "Cancel",
+  },
+  de: {
+    name: "Maschinenname",
+    nameHelp: "Kleinbuchstaben, Ziffern und Bindestriche.",
+    nameTaken: "kran-01 gibt es schon. Bitte einen anderen Namen wählen.",
+    env: "Umgebung",
+    envs: [
+      ["production", "Produktion"],
+      ["staging", "Staging"],
+      ["lab", "Labor"],
+    ],
+    envMissing: "Bitte eine Umgebung wählen.",
+    notes: "Notizen",
+    notesHelp: "Erscheint auf der Maschinenkarte.",
+    page: "Bereitschaft alarmieren, wenn sie offline geht",
+    confirm: "Der Agent darf Dienste auf dieser Maschine neu starten",
+    confirmMissing: "Nötig, bevor der Agent eingebunden wird.",
+    save: "Maschine anlegen",
+    cancel: "Abbrechen",
+  },
+};
+
+/**
+ * One form in one phase. Pending disables the whole fieldset (every control, labels dimmed) and
+ * marks the form aria-busy; the button keeps its width and shows the delayed Spinner. Errors
+ * render only after a submit: field errors plus a summary, or the server's refusal with the
+ * entered values kept.
+ */
+function MachineForm({ phase, locale }: { phase: FormPhase; locale: StateLocale }) {
+  const t = MACHINE_FORM[locale];
+  const invalid = phase === "invalid";
+  const pending = phase === "pending";
+  const filled = phase !== "idle";
+  return (
+    <form
+      noValidate
+      aria-busy={pending || undefined}
+      aria-label={t.save}
+      onSubmit={(e) => e.preventDefault()}
+      className="flex flex-col gap-5"
+    >
+      {invalid ? <FormAlert kind="invalid" locale={locale} /> : null}
+      {phase === "server-error" ? <FormAlert kind="server-error" locale={locale} /> : null}
+      <fieldset disabled={pending} className="m-0 flex min-w-0 flex-col gap-5 border-0 p-0">
+        <Field label={t.name} help={t.nameHelp} error={invalid ? t.nameTaken : undefined} required>
+          <Input mono defaultValue={filled ? (invalid ? "kran-01" : "kran-04") : ""} />
+        </Field>
+        <Field label={t.env} error={invalid ? t.envMissing : undefined} required>
+          <RadioGroup
+            orientation="horizontal"
+            defaultValue={filled && !invalid ? "staging" : undefined}
+          >
+            {t.envs.map(([value, label]) => (
+              <RadioGroupItem key={value} value={value} label={label} />
+            ))}
+          </RadioGroup>
+        </Field>
+        <Field label={t.notes} help={t.notesHelp}>
+          <Textarea rows={3} defaultValue={filled ? "Quay 4, crane controller." : ""} />
+        </Field>
+        <div className="flex flex-col gap-1">
+          <Field label={t.page} layout="inline">
+            <Checkbox defaultChecked={filled} />
+          </Field>
+          <Field
+            label={t.confirm}
+            layout="inline"
+            error={invalid ? t.confirmMissing : undefined}
+            required
+          >
+            <Checkbox defaultChecked={filled && !invalid} />
+          </Field>
+        </div>
+      </fieldset>
+      <div className="flex flex-wrap items-center gap-2.5">
+        <Button type="submit" disabled={pending}>
+          {pending ? <Spinner label={STATE_COPY[locale].form.pending} /> : null}
+          {pending ? STATE_COPY[locale].form.pending : t.save}
+        </Button>
+        <Button variant="ghost" disabled={pending}>
+          {t.cancel}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+const FORM_PHASES: [FormPhase, StateLocale][] = [
+  ["idle", "en"],
+  ["invalid", "de"],
+  ["pending", "en"],
+  ["server-error", "de"],
+];
+
+/**
+ * The forms scene: one form in idle, invalid, pending and server-error, German and English, and
+ * the controls in each of their own states.
+ */
+function Forms() {
+  return (
+    <main className="mx-auto flex max-w-[1280px] flex-col gap-10 px-4 py-10 sm:px-10">
+      <header className="flex flex-col gap-2">
+        <span className="text-sm font-semibold text-hn-ink-muted">@hansenexus/ui</span>
+        <h1 className="m-0 font-hn-display text-[32px] leading-tight font-semibold tracking-[-0.02em] sm:text-[44px]">
+          Forms
+        </h1>
+      </header>
+      <div className="grid gap-x-8 gap-y-10 lg:grid-cols-2">
+        {FORM_PHASES.map(([phase, locale]) => (
+          <Spec key={phase} title={`${phase} (${locale})`}>
+            <div data-phase={phase}>
+              <Card>
+                <MachineForm phase={phase} locale={locale} />
+              </Card>
+            </div>
+          </Spec>
+        ))}
+        <Spec title="Checkbox: off, on, indeterminate, disabled, invalid">
+          <Card>
+            <div className="flex flex-col">
+              <Checkbox label="Drain first" />
+              <Checkbox label="Drain first" defaultChecked />
+              <Checkbox label="All quays" checked="indeterminate" />
+              <Checkbox label="Drain first (offline)" disabled defaultChecked />
+              <Checkbox label="Accept the maintenance window" aria-invalid />
+            </div>
+          </Card>
+        </Spec>
+        <Spec title="RadioGroup, Textarea: disabled item, invalid, read-only">
+          <Card>
+            <div className="flex flex-col gap-4">
+              <RadioGroup defaultValue="compact" aria-label="Density">
+                <RadioGroupItem value="compact" label="Compact" />
+                <RadioGroupItem value="comfortable" label="Comfortable" />
+                <RadioGroupItem value="touch" label="Touch (not on this device)" disabled />
+              </RadioGroup>
+              <RadioGroup orientation="horizontal" aria-label="Region" aria-invalid>
+                <RadioGroupItem value="north" label="North quay" />
+                <RadioGroupItem value="south" label="South quay" />
+              </RadioGroup>
+              <Textarea aria-label="Manifest" mono readOnly rows={2} defaultValue="replicas: 2" />
+            </div>
+          </Card>
+        </Spec>
+      </div>
+    </main>
+  );
+}
+
 function Scenes({ scene }: { scene: Scene }) {
   switch (scene) {
     case "vote":
@@ -621,6 +818,8 @@ function Scenes({ scene }: { scene: Scene }) {
       return <States />;
     case "illustrations":
       return <Illustrations />;
+    case "forms":
+      return <Forms />;
     case "loading":
       return <Loading />;
     case "brand":
