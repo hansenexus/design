@@ -1,7 +1,7 @@
 // Builds dist/: index.js (ESM, dependencies external), index.d.ts and friends, styles.css
 // (the utilities the primitives use, Tailwind v4) and r/*.json (the shadcn registry).
 // Run: bun scripts/build.ts
-import { rmSync } from "node:fs";
+import { readFileSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
 import { buildRegistry } from "./registry";
 
@@ -22,10 +22,17 @@ const js = await Bun.build({
   format: "esm",
   packages: "external",
   sourcemap: "linked",
+  // Production JSX runtime (react/jsx-runtime). Bun defaults to react/jsx-dev-runtime unless
+  // NODE_ENV=production, and a production React exports jsxDEV as undefined (design#27).
+  jsx: { runtime: "automatic", development: false },
 });
 if (!js.success) {
   for (const log of js.logs) console.error(log);
   throw new Error("build: bundling src/index.ts failed");
+}
+
+if (/jsx-dev-runtime|jsxDEV/.test(readFileSync(resolve(DIST, "index.js"), "utf8"))) {
+  throw new Error("build: dist/index.js uses the development JSX runtime (jsxDEV)");
 }
 
 run(["bunx", "tsc", "-p", "tsconfig.build.json"]);

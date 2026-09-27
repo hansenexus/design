@@ -481,3 +481,41 @@ describe("state primitives", () => {
     expect(ui.nextAnnouncement("data", "data", m)).toBeNull();
   });
 });
+
+describe("dist", () => {
+  // The npm build must use react/jsx-runtime: a production React exports jsxDEV as
+  // undefined, so a dev-runtime dist crashes every production render (design#27).
+  const DIST_JS = join(ROOT, "dist/index.js");
+
+  test("dist/index.js uses the production JSX runtime", () => {
+    const js = readFileSync(DIST_JS, "utf8");
+    expect(js.match(/jsx-dev-runtime|jsxDEV/g) ?? []).toEqual([]);
+    expect(js).toContain("react/jsx-runtime");
+  });
+
+  test("dist/index.js imports as ESM in Node with every src export", () => {
+    // Node links ESM strictly: an export without a declaration (Bun 1.4.0 bundled
+    // `MARK2 as MARK`) is a SyntaxError there, which is what a Next.js consumer hits.
+    const script = `const m = await import(process.argv[1]);
+      process.stdout.write(JSON.stringify(Object.keys(m).sort()));`;
+    const proc = Bun.spawnSync(["node", "--input-type=module", "-e", script, DIST_JS], {
+      cwd: ROOT,
+      env: { ...process.env, NODE_ENV: "production" },
+    });
+    expect(proc.stderr.toString()).toBe("");
+    expect(JSON.parse(proc.stdout.toString())).toEqual(Object.keys(ui).sort());
+  });
+
+  test("dist/index.js renders under NODE_ENV=production", () => {
+    const script = `import { createElement } from "react";
+      import { renderToStaticMarkup } from "react-dom/server";
+      import { Skeleton } from ${JSON.stringify(DIST_JS)};
+      process.stdout.write(renderToStaticMarkup(createElement(Skeleton)));`;
+    const proc = Bun.spawnSync([process.execPath, "-e", script], {
+      cwd: ROOT,
+      env: { ...process.env, NODE_ENV: "production" },
+    });
+    expect(proc.stderr.toString()).toBe("");
+    expect(proc.stdout.toString()).toContain('data-shape="block"');
+  });
+});
