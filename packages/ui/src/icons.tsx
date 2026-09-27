@@ -52,3 +52,13 @@ export function MinusIcon(props: SVGProps<SVGSVGElement>) {
     </Icon>
   );
 }
+
+export function InfoIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 16v-4" />
+      <path d="M12 8h.01" />
+    </Icon>
+  );
+}

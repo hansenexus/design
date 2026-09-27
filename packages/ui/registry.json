@@ -30,7 +30,7 @@
       "name": "icons",
       "type": "registry:ui",
       "title": "icons",
-      "description": "Check, chevron and close glyphs the primitives draw.",
+      "description": "Check, chevron, close, minus and info glyphs the primitives draw.",
       "registryDependencies": ["@hansenexus/tokens"],
       "files": [
         {
@@ -531,6 +531,112 @@
       "files": [
         {
           "path": "src/radio-group.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "layout-copy",
+      "type": "registry:ui",
+      "title": "LAYOUT_COPY",
+      "description": "German and English default copy of the layout primitives: alert tones, dismiss, loading, empty.",
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/state-copy"],
+      "files": [
+        {
+          "path": "src/layout-copy.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "card",
+      "type": "registry:ui",
+      "title": "Card",
+      "description": "A bordered surface with header, body and footer; disabled and pending states, and CardSkeleton for loading.",
+      "registryDependencies": [
+        "@hansenexus/tokens",
+        "@hansenexus/cx",
+        "@hansenexus/layout-copy",
+        "@hansenexus/skeleton",
+        "@hansenexus/state-copy"
+      ],
+      "files": [
+        {
+          "path": "src/card.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "alert",
+      "type": "registry:ui",
+      "title": "Alert",
+      "description": "Info, success, warning and critical messages, inline or as a page-wide Banner, optionally dismissible.",
+      "registryDependencies": [
+        "@hansenexus/tokens",
+        "@hansenexus/cx",
+        "@hansenexus/icons",
+        "@hansenexus/layout-copy",
+        "@hansenexus/status-glyph",
+        "@hansenexus/state-copy"
+      ],
+      "files": [
+        {
+          "path": "src/alert.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "avatar",
+      "type": "registry:ui",
+      "title": "Avatar",
+      "description": "A round image with an initials fallback and a loading skeleton, on Radix Avatar.",
+      "dependencies": ["radix-ui"],
+      "registryDependencies": [
+        "@hansenexus/tokens",
+        "@hansenexus/cx",
+        "@hansenexus/layout-copy",
+        "@hansenexus/skeleton",
+        "@hansenexus/state-copy"
+      ],
+      "files": [
+        {
+          "path": "src/avatar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "separator",
+      "type": "registry:ui",
+      "title": "Separator",
+      "description": "A 1 px horizontal or vertical rule, decorative by default, on Radix Separator.",
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],
+      "files": [
+        {
+          "path": "src/separator.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "accordion",
+      "type": "registry:ui",
+      "title": "Accordion",
+      "description": "Sections that open and close, keyboard-navigable, with empty copy, on Radix Accordion.",
+      "dependencies": ["radix-ui"],
+      "registryDependencies": [
+        "@hansenexus/tokens",
+        "@hansenexus/cx",
+        "@hansenexus/icons",
+        "@hansenexus/layout-copy",
+        "@hansenexus/state-copy"
+      ],
+      "files": [
+        {
+          "path": "src/accordion.tsx",
           "type": "registry:ui"
         }
       ]

@@ -14,10 +14,24 @@ import { SuccessIllustration } from "@hansenexus/illustrations/success";
 import { type ComponentType, type ReactNode, StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+  Alert,
+  Avatar,
   Badge,
+  Banner,
   BRAND_VARIANTS,
   type BrandVariant,
   Button,
+  Card,
+  CardBody,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardSkeleton,
+  CardTitle,
   Checkbox,
   cx,
   Dialog,
@@ -52,6 +66,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Separator,
   Skeleton,
   SkeletonGroup,
   Sparkline,
@@ -99,6 +114,7 @@ export const SCENES = [
   "states",
   "illustrations",
   "forms",
+  "layout",
   "vote",
 ] as const;
 type Scene = (typeof SCENES)[number];
@@ -415,7 +431,7 @@ const SURFACES = [
 ] as const;
 
 /** A machine card while its data loads: avatar, title, two lines of copy, a chart block. */
-function CardSkeleton({ surface }: { surface: string }) {
+function MachineSkeleton({ surface }: { surface: string }) {
   return (
     <SkeletonGroup
       label="Loading kran-01"
@@ -450,7 +466,7 @@ function Loading() {
             {SURFACES.map(([name, surface]) => (
               <div key={name} className="flex flex-col gap-2">
                 <span className="font-hn-mono text-xs text-hn-ink-muted">{name}</span>
-                <CardSkeleton surface={surface} />
+                <MachineSkeleton surface={surface} />
               </div>
             ))}
           </div>
@@ -486,7 +502,7 @@ const FAILURE = Object.assign(new Error("connect ECONNREFUSED speicher-db:5432")
 
 const QUAYS = ["kran-01", "kran-02", "pegel"];
 
-function Card({ children }: { children: ReactNode }) {
+function Frame({ children }: { children: ReactNode }) {
   return (
     <div className="rounded-hn-lg border border-hn-line-subtle bg-hn-surface-card p-4">
       {children}
@@ -523,16 +539,16 @@ function States() {
       </header>
       <div className="grid gap-x-8 gap-y-10 lg:grid-cols-2">
         <Spec title="EmptyState: empty (en)">
-          <Card>
+          <Frame>
             <EmptyState
               illustration={<EmptyIllustration />}
               titleAs="h3"
               action={<Button>Add a machine</Button>}
             />
-          </Card>
+          </Frame>
         </Spec>
         <Spec title="EmptyState: no-results (de)">
-          <Card>
+          <Frame>
             <EmptyState
               variant="no-results"
               locale="de"
@@ -540,10 +556,10 @@ function States() {
               titleAs="h3"
               action={<Button variant="secondary">Filter zurücksetzen</Button>}
             />
-          </Card>
+          </Frame>
         </Spec>
         <Spec title="ErrorState: production (en)">
-          <Card>
+          <Frame>
             <ErrorState
               error={FAILURE}
               dev={false}
@@ -551,28 +567,28 @@ function States() {
               illustration={<ErrorIllustration />}
               titleAs="h3"
             />
-          </Card>
+          </Frame>
         </Spec>
         <Spec title="ErrorState: development (de)">
-          <Card>
+          <Frame>
             <ErrorState error={FAILURE} dev locale="de" onRetry={() => {}} titleAs="h3" />
-          </Card>
+          </Frame>
         </Spec>
         <Spec title="Progress: determinate, complete, indeterminate" wide>
-          <Card>
+          <Frame>
             <div className="flex flex-col gap-5">
               <Progress value={40} label="Upload manifest.tar" showLabel />
               <Progress value={100} label="Backup speicher-db" showLabel />
               <Progress locale="de" showLabel valueText="unbekannte Dauer" />
             </div>
-          </Card>
+          </Frame>
         </Spec>
         <Spec title="QueryState: loading, empty, data, error" wide>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card>{machines(undefined)}</Card>
-            <Card>{machines([])}</Card>
-            <Card>{machines(QUAYS)}</Card>
-            <Card>{machines(QUAYS, FAILURE)}</Card>
+            <Frame>{machines(undefined)}</Frame>
+            <Frame>{machines([])}</Frame>
+            <Frame>{machines(QUAYS)}</Frame>
+            <Frame>{machines(QUAYS, FAILURE)}</Frame>
           </div>
         </Spec>
       </div>
@@ -772,14 +788,14 @@ function Forms() {
         {FORM_PHASES.map(([phase, locale]) => (
           <Spec key={phase} title={`${phase} (${locale})`}>
             <div data-phase={phase}>
-              <Card>
+              <Frame>
                 <MachineForm phase={phase} locale={locale} />
-              </Card>
+              </Frame>
             </div>
           </Spec>
         ))}
         <Spec title="Checkbox: off, on, indeterminate, disabled, invalid">
-          <Card>
+          <Frame>
             <div className="flex flex-col">
               <Checkbox label="Drain first" />
               <Checkbox label="Drain first" defaultChecked />
@@ -787,10 +803,10 @@ function Forms() {
               <Checkbox label="Drain first (offline)" disabled defaultChecked />
               <Checkbox label="Accept the maintenance window" aria-invalid />
             </div>
-          </Card>
+          </Frame>
         </Spec>
         <Spec title="RadioGroup, Textarea: disabled item, invalid, read-only">
-          <Card>
+          <Frame>
             <div className="flex flex-col gap-4">
               <RadioGroup defaultValue="compact" aria-label="Density">
                 <RadioGroupItem value="compact" label="Compact" />
@@ -803,8 +819,185 @@ function Forms() {
               </RadioGroup>
               <Textarea aria-label="Manifest" mono readOnly rows={2} defaultValue="replicas: 2" />
             </div>
-          </Card>
+          </Frame>
         </Spec>
+      </div>
+    </main>
+  );
+}
+
+/**
+ * The layout scene: Card (with CardSkeleton, disabled, pending, empty), Alert in every tone and
+ * the Banner, Avatar (image, initials, loading), Separator and Accordion, German and English.
+ */
+function Layout() {
+  return (
+    <main className="flex flex-col">
+      <Banner tone="warning" dismissible action={<Button variant="secondary">View window</Button>}>
+        Maintenance on quay 3 tonight, 22:00 to 23:00. kran-01 and kran-02 pause.
+      </Banner>
+      <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-10 px-4 py-10 sm:px-10">
+        <header className="flex flex-col gap-2">
+          <span className="text-sm font-semibold text-hn-ink-muted">@hansenexus/ui</span>
+          <h1 className="m-0 font-hn-display text-[32px] leading-tight font-semibold tracking-[-0.02em] sm:text-[44px]">
+            Layout
+          </h1>
+        </header>
+        <div className="grid gap-x-8 gap-y-10 lg:grid-cols-2">
+          <Spec title="Card: header, body, footer">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Avatar name="kran 01" size="sm" />
+                  <CardTitle>kran-01</CardTitle>
+                  <StatusBadge status="ok" className="ml-auto" />
+                </div>
+                <CardDescription>Quay 3, crane controller, agent 2.14</CardDescription>
+              </CardHeader>
+              <CardBody>
+                <Meter label="Memory" value={64} />
+              </CardBody>
+              <CardFooter>
+                <Button variant="ghost">Logs</Button>
+                <Button variant="secondary">Poll now</Button>
+              </CardFooter>
+            </Card>
+          </Spec>
+          <Spec title="CardSkeleton (de)">
+            <CardSkeleton avatar media footer locale="de" />
+          </Spec>
+          <Spec title="Card: pending, disabled, raised">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <Card pending>
+                <CardHeader>
+                  <CardTitle>pegel</CardTitle>
+                  <CardDescription>Restarting</CardDescription>
+                </CardHeader>
+                <CardFooter>
+                  <Button variant="secondary" disabled>
+                    <Spinner label="Restarting" />
+                    Restart
+                  </Button>
+                </CardFooter>
+              </Card>
+              <Card disabled>
+                <CardHeader>
+                  <CardTitle>speicher-db</CardTitle>
+                  <CardDescription>Offline</CardDescription>
+                </CardHeader>
+                <CardFooter>
+                  <Button variant="secondary">Restart</Button>
+                </CardFooter>
+              </Card>
+              <Card surface="raised">
+                <CardHeader>
+                  <CardTitle>lotsen-api</CardTitle>
+                  <CardDescription>surface.raised</CardDescription>
+                </CardHeader>
+                <CardBody className="text-[13px]">2 replicas</CardBody>
+              </Card>
+            </div>
+          </Spec>
+          <Spec title="Card: empty, error">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Card>
+                <EmptyState titleAs="h3" className="py-6" action={<Button>Add a machine</Button>} />
+              </Card>
+              <Card>
+                <ErrorState
+                  titleAs="h3"
+                  locale="de"
+                  className="py-6"
+                  onRetry={() => {}}
+                  dev={false}
+                  digest="2961537040"
+                />
+              </Card>
+            </div>
+          </Spec>
+          <Spec title="Alert: info, success, warning, critical (en)" wide>
+            <div className="grid gap-3 lg:grid-cols-2">
+              <Alert tone="info" title="New agent version">
+                2.15 rolls out to every quay over the next hour.
+              </Alert>
+              <Alert tone="success" title="Backup finished" dismissible>
+                speicher-db, 4.2 GB, verified.
+              </Alert>
+              <Alert tone="warning" title="Disk at 88 %">
+                pegel has room for about two days of logs.
+              </Alert>
+              <Alert
+                tone="critical"
+                title="Scale refused"
+                dismissible
+                action={<Button variant="secondary">View audit</Button>}
+              >
+                deny layer: role. Nothing changed.
+              </Alert>
+            </div>
+          </Spec>
+          <Spec title="Alert (de)" wide>
+            <div className="grid gap-3 lg:grid-cols-2">
+              <Alert tone="info" locale="de" dismissible>
+                Neue Agent-Version wird ausgerollt.
+              </Alert>
+              <Alert tone="critical" locale="de" title="Verbindung verloren" dismissible>
+                kran-02 meldet sich seit 5 Minuten nicht.
+              </Alert>
+            </div>
+          </Spec>
+          <Spec title="Avatar: sizes, image, initials, loading">
+            <div className="flex flex-wrap items-center gap-4">
+              <Avatar name="hansenexus" src="./dist/brand/apple-touch-icon.png" size="lg" />
+              <Avatar name="Ada Lovelace" size="lg" />
+              <Avatar name="Grace Hopper" />
+              <Avatar name="ops" size="sm" />
+              <Avatar name="Ada Lovelace" size="lg" loading />
+              <Avatar name="Grace Hopper" loading locale="de" />
+            </div>
+          </Spec>
+          <Spec title="Separator: subtle, strong, vertical">
+            <div className="flex flex-col gap-3 text-sm text-hn-ink-body">
+              <span>Machines</span>
+              <Separator />
+              <span>Map</span>
+              <Separator tone="strong" decorative={false} />
+              <div className="flex h-6 items-center gap-3">
+                <span>12 up</span>
+                <Separator orientation="vertical" />
+                <span>1 down</span>
+                <Separator orientation="vertical" />
+                <span>2 off</span>
+              </div>
+            </div>
+          </Spec>
+          <Spec title="Accordion: open, closed, disabled, empty" wide>
+            <Accordion type="multiple" defaultValue={["pods", "volumes"]}>
+              <AccordionItem value="pods">
+                <AccordionTrigger meta="3 pods">speicher-web</AccordionTrigger>
+                <AccordionContent>
+                  <ul className="m-0 flex list-none flex-col gap-1.5 p-0 font-hn-mono text-[13px]">
+                    <li>speicher-web-7f3a</li>
+                    <li>speicher-web-51c0</li>
+                    <li>speicher-web-22ab</li>
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="volumes">
+                <AccordionTrigger meta="0">Volumes</AccordionTrigger>
+                <AccordionContent locale="de" />
+              </AccordionItem>
+              <AccordionItem value="events">
+                <AccordionTrigger>Events</AccordionTrigger>
+                <AccordionContent>Scaled to 3, 15:12.</AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="secrets" disabled>
+                <AccordionTrigger meta="no permission">Secrets</AccordionTrigger>
+                <AccordionContent>hidden</AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </Spec>
+        </div>
       </div>
     </main>
   );
@@ -820,6 +1013,8 @@ function Scenes({ scene }: { scene: Scene }) {
       return <Illustrations />;
     case "forms":
       return <Forms />;
+    case "layout":
+      return <Layout />;
     case "loading":
       return <Loading />;
     case "brand":
