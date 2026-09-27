@@ -443,6 +443,97 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "label",
+      "type": "registry:ui",
+      "title": "Label",
+      "description": "A control's visible name on Radix Label, with an optional required marker.",
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],
+      "files": [
+        {
+          "path": "src/label.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "field",
+      "type": "registry:ui",
+      "title": "Field",
+      "description": "Label, help and error around one control; wires aria-labelledby, aria-describedby, aria-invalid and aria-required.",
+      "registryDependencies": [
+        "@hansenexus/tokens",
+        "@hansenexus/cx",
+        "@hansenexus/label",
+        "@hansenexus/status-glyph"
+      ],
+      "files": [
+        {
+          "path": "src/field.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "form-alert",
+      "type": "registry:ui",
+      "title": "FormAlert",
+      "description": "The form-level message after a failed submit (invalid or server error), announced as an alert.",
+      "registryDependencies": [
+        "@hansenexus/tokens",
+        "@hansenexus/cx",
+        "@hansenexus/state-copy",
+        "@hansenexus/status-glyph"
+      ],
+      "files": [
+        {
+          "path": "src/form-alert.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "textarea",
+      "type": "registry:ui",
+      "title": "Textarea",
+      "description": "Multi-line text with an optional monospace face, vertical resize only.",
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],
+      "files": [
+        {
+          "path": "src/textarea.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "checkbox",
+      "type": "registry:ui",
+      "title": "Checkbox",
+      "description": "A checkbox on Radix Checkbox, with an indeterminate state and an optional label.",
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx", "@hansenexus/icons"],
+      "files": [
+        {
+          "path": "src/checkbox.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "radio-group",
+      "type": "registry:ui",
+      "title": "RadioGroup",
+      "description": "One choice out of a few on Radix RadioGroup, arrow keys move and select.",
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],
+      "files": [
+        {
+          "path": "src/radio-group.tsx",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }

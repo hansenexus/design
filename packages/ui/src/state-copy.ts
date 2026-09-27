@@ -10,6 +10,15 @@ export type StateCopy = {
   error: { title: string; description: string; retry: string; digest: string };
   /** The name of a Progress bar without its own label. */
   progress: string;
+  /** Form states: the field-level and form-level messages of the form set. */
+  form: {
+    /** After a submit with field errors: the form-level summary. */
+    invalid: string;
+    /** On the submit button while the server has not answered. */
+    pending: string;
+    /** The server refused or failed; nothing was saved. */
+    serverError: { title: string; description: string };
+  };
 };
 
 /**
@@ -33,6 +42,14 @@ export const STATE_COPY: Record<StateLocale, StateCopy> = {
       digest: "Reference",
     },
     progress: "Progress",
+    form: {
+      invalid: "Some fields need attention. Check the marked fields.",
+      pending: "Saving",
+      serverError: {
+        title: "Not saved",
+        description: "The server did not accept this. Nothing was changed; please try again.",
+      },
+    },
   },
   de: {
     loading: "Wird geladen",
@@ -49,6 +66,15 @@ export const STATE_COPY: Record<StateLocale, StateCopy> = {
       digest: "Referenz",
     },
     progress: "Fortschritt",
+    form: {
+      invalid: "Einige Angaben fehlen oder stimmen nicht. Bitte die markierten Felder prüfen.",
+      pending: "Wird gespeichert",
+      serverError: {
+        title: "Nicht gespeichert",
+        description:
+          "Der Server hat das nicht angenommen. Nichts wurde geändert; bitte erneut versuchen.",
+      },
+    },
   },
 };
 

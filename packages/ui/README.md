@@ -5,7 +5,8 @@ through the semantic tokens of [`@hansenexus/tokens`](../tokens). Dark and light
 colour follows `data-mode`, `data-theme` and `data-density` on an ancestor.
 
 Button, Badge, StatusBadge, Switch, Dialog, Menu, Tabs, Table, Meter, Sparkline, Kbd, Toast,
-Tooltip, Input, Select, RailItem. For loading: Skeleton (block, text, circle), SkeletonGroup,
+Tooltip, Input, Select, RailItem. For forms: Field, Label, FieldHelp, FieldError, Textarea,
+Checkbox, RadioGroup and FormAlert. For loading: Skeleton (block, text, circle), SkeletonGroup,
 Spinner and the `useDelayedVisibility` hook. For the other states: EmptyState, ErrorState, Progress
 and QueryState, with German and English default copy (`STATE_COPY`). Plus the brand: `HansenexusMark` and `HansenexusWordmark`
 (`variant` lime, lime-deep, ink, paper or mono, which is `currentColor` and the default; `size` is
@@ -100,6 +101,51 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
   `error` prop as failed, and defaults to Skeleton, EmptyState and ErrorState. It imports no data
   library. The container is `aria-busy` while loading, and a polite live region announces when
   the data arrives ("Loaded") or the query fails; it stays silent when the data is already there.
+
+### Forms
+
+```tsx
+import { Button, Checkbox, Field, FormAlert, Input, RadioGroup, RadioGroupItem, Spinner } from "@hansenexus/ui";
+
+<form noValidate aria-busy={pending || undefined} onSubmit={submit}>
+  {result === "invalid" && <FormAlert kind="invalid" locale="de" />}
+  {result === "server-error" && <FormAlert kind="server-error" locale="de" />}
+  <fieldset disabled={pending}>                        {/* pending: every control off */}
+    <Field label="Maschinenname" help="Kleinbuchstaben und Bindestriche." error={errors.name} required>
+      <Input mono name="name" />
+    </Field>
+    <Field label="Umgebung" error={errors.env} required>
+      <RadioGroup name="env" orientation="horizontal">
+        <RadioGroupItem value="production" label="Produktion" />
+        <RadioGroupItem value="lab" label="Labor" />
+      </RadioGroup>
+    </Field>
+    <Field label="Bereitschaft alarmieren" layout="inline">
+      <Checkbox name="page" />
+    </Field>
+  </fieldset>
+  <Button type="submit" disabled={pending}>
+    {pending && <Spinner label={STATE_COPY.de.form.pending} />}
+    {pending ? STATE_COPY.de.form.pending : "Maschine anlegen"}
+  </Button>
+</form>
+```
+
+- **Field** takes one control and gives it `id`, `aria-labelledby` (the label), `aria-describedby`
+  (help, then error, after any the control already has), `aria-invalid` while `error` is set,
+  `aria-required` and `disabled`. It works for Input, Textarea, SelectTrigger, Checkbox, Switch
+  and RadioGroup. `layout="inline"` puts the control before its label (Checkbox, Switch).
+- **Errors** are never colour alone: FieldError and FormAlert carry the crit diamond, and their
+  text is `status.crit`, which meets AA as text on every surface.
+- **Pending** disables the `fieldset`: native controls and the Radix buttons inside switch off,
+  and Label dims with them. Keep the Spinner mounted and flip `pending` (200 ms delay, 400 ms
+  minimum).
+- **Honest success.** Show FormAlert or a success toast only after the server answered. The
+  `server-error` alert keeps the entered values and says nothing was changed.
+- **Keyboard.** Checkbox toggles with Space; RadioGroup is one Tab stop, the arrow keys move and
+  select.
+- **Copy.** `STATE_COPY[locale].form` holds `invalid`, `pending` and `serverError`; the props
+  override it.
 
 ## shadcn registry
 

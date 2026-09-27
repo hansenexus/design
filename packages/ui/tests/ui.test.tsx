@@ -498,6 +498,130 @@ describe("state primitives", () => {
   });
 });
 
+describe("forms", () => {
+  /** The attributes of the first tag whose attributes contain `marker`. */
+  const tag = (html: string, marker: string) =>
+    html.match(new RegExp(`<[a-z]+[^>]*${marker}[^>]*>`))?.[0] ?? "";
+  /** The first opening tag of element `name`. */
+  const el = (html: string, name: string) => html.match(new RegExp(`<${name}\\b[^>]*>`))?.[0] ?? "";
+
+  test("Field wires label, help and error to the control", () => {
+    const html = renderToStaticMarkup(
+      <ui.Field label="Hostname" help="Lowercase, no dots." error="Already taken." required>
+        <ui.Input />
+      </ui.Field>
+    );
+    const input = el(html, "input");
+    const id = input.match(/ id="([^"]+)"/)?.[1] ?? "";
+    expect(id).not.toBe("");
+    expect(input).toContain(`aria-labelledby="${id}-label"`);
+    expect(input).toContain(`aria-describedby="${id}-help ${id}-error"`);
+    expect(input).toContain('aria-invalid="true"');
+    expect(input).toContain('aria-required="true"');
+    expect(el(html, "label")).toContain(`id="${id}-label" for="${id}"`);
+    expect(html).toMatch(new RegExp(`id="${id}-help">Lowercase, no dots.</p>`));
+    expect(tag(html, `id="${id}-error"`)).toContain('data-state="error"');
+    // The error is never colour alone: it carries the crit diamond.
+    expect(tag(html, 'data-state="error"')).toContain("text-hn-status-crit");
+    expect(html).toContain('data-status="crit"');
+    expect(html).toContain('<span aria-hidden="true" class="ml-0.5 text-hn-ink-muted">*</span>');
+    expect(html).toContain("data-invalid");
+  });
+
+  test("Field keeps the control's own id and description and only marks errors", () => {
+    const html = renderToStaticMarkup(
+      <ui.Field label="Notes">
+        <ui.Textarea id="notes" aria-describedby="counter" />
+      </ui.Field>
+    );
+    const area = el(html, "textarea");
+    expect(area).toContain('id="notes"');
+    expect(area).toContain('aria-describedby="counter"');
+    expect(area).not.toContain("aria-invalid=");
+    expect(area).not.toContain("aria-required=");
+    expect(html).not.toContain("data-invalid");
+  });
+
+  test("Field disabled disables the control and dims the label", () => {
+    const html = renderToStaticMarkup(
+      <ui.Field label="Replicas" disabled>
+        <ui.Input />
+      </ui.Field>
+    );
+    expect(el(html, "input")).toContain('disabled=""');
+    expect(el(html, "label")).toContain("opacity-50");
+  });
+
+  test("Field inline puts the control before its label (Checkbox)", () => {
+    const html = renderToStaticMarkup(
+      <ui.Field label="Page on-call" layout="inline" error="Required for production.">
+        <ui.Checkbox />
+      </ui.Field>
+    );
+    expect(html.indexOf('role="checkbox"')).toBeLessThan(html.indexOf("<label"));
+    expect(tag(html, 'role="checkbox"')).toContain('aria-invalid="true"');
+  });
+
+  test("Field names a RadioGroup through aria-labelledby", () => {
+    const html = renderToStaticMarkup(
+      <ui.Field label="Environment" error="Pick one.">
+        <ui.RadioGroup>
+          <ui.RadioGroupItem value="prod" label="Production" />
+          <ui.RadioGroupItem value="lab" label="Lab" />
+        </ui.RadioGroup>
+      </ui.Field>
+    );
+    const group = tag(html, 'role="radiogroup"');
+    expect(group).toMatch(/aria-labelledby="[^"]+-label"/);
+    expect(group).toContain('aria-invalid="true"');
+    expect(html.match(/role="radio"/g)?.length).toBe(2);
+  });
+
+  test("Checkbox: checked, indeterminate and invalid looks, a label tied to the box", () => {
+    const on = renderToStaticMarkup(<ui.Checkbox defaultChecked label="Notify" id="n" />);
+    expect(on).toContain('aria-checked="true"');
+    expect(on).toContain('<label for="n"');
+    expect(on).toContain("data-[state=checked]:bg-hn-action-primary");
+    const mixed = renderToStaticMarkup(<ui.Checkbox checked="indeterminate" aria-label="All" />);
+    expect(mixed).toContain('aria-checked="mixed"');
+    expect(mixed).toContain('data-state="indeterminate"');
+    expect(renderToStaticMarkup(<ui.Checkbox aria-label="x" />)).toContain(
+      "aria-invalid:border-hn-status-crit"
+    );
+  });
+
+  test("RadioGroupItem: checked item, disabled item, labels tied", () => {
+    const html = renderToStaticMarkup(
+      <ui.RadioGroup defaultValue="b" aria-label="Pick">
+        <ui.RadioGroupItem value="a" id="a" label="A" disabled />
+        <ui.RadioGroupItem value="b" id="b" label="B" />
+      </ui.RadioGroup>
+    );
+    expect(tag(html, 'id="b"')).toContain('aria-checked="true"');
+    expect(tag(html, 'id="a"')).toContain('disabled=""');
+    expect(html).toContain('<label for="a"');
+  });
+
+  test("Textarea: invalid border, vertical resize, rows default", () => {
+    const html = renderToStaticMarkup(<ui.Textarea aria-label="Notes" mono />);
+    for (const c of ['rows="4"', "resize-y", "aria-invalid:border-hn-status-crit", "font-hn-mono"])
+      expect(html).toContain(c);
+  });
+
+  test("FormAlert: alert role, copy per kind and locale, overridable", () => {
+    const server = renderToStaticMarkup(<ui.FormAlert kind="server-error" locale="de" />);
+    expect(server).toContain('role="alert"');
+    expect(server).toContain(ui.STATE_COPY.de.form.serverError.title);
+    expect(server).toContain(ui.STATE_COPY.de.form.serverError.description);
+    const invalid = renderToStaticMarkup(<ui.FormAlert kind="invalid" />);
+    expect(invalid).toContain(ui.STATE_COPY.en.form.invalid);
+    expect(invalid).toContain('data-status="crit"');
+    expect(
+      renderToStaticMarkup(<ui.FormAlert kind="invalid">Fix the name.</ui.FormAlert>)
+    ).toContain("Fix the name.");
+  });
+});
+
 describe("dist", () => {
   // The npm build must use react/jsx-runtime: a production React exports jsxDEV as
   // undefined, so a dev-runtime dist crashes every production render (design#27).
