@@ -1,0 +1,31 @@
+{
+  "fill": {
+    "solid": "srgb:0.08627,0.07843,0.05882,1.00000"
+  },
+  "groups": [
+    {
+      "layers": [
+        {
+          "image-name": "hansenexus-mark-lime.svg",
+          "name": "hansenexus-mark-lime",
+          "position": {
+            "scale": 1.51429,
+            "translation-in-points": [0, 0]
+          }
+        }
+      ],
+      "name": "mark",
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": true,
+        "value": 0.5
+      }
+    }
+  ],
+  "supported-platforms": {
+    "squares": "shared"
+  }
+}

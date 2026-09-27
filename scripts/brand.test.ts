@@ -69,6 +69,26 @@ describe("brand", () => {
     }
   });
 
+  test("the Icon Composer icon: flat ink fill, the lime mark unchanged, squares shared", async () => {
+    const c = await brandColours();
+    const dir = resolve(ROOT, ASSETS, "app-icon/hansenexus-app-icon.icon");
+    const raw = readFileSync(resolve(dir, "icon.json"), "utf8");
+    expect(raw).not.toMatch(/gradient|chromatic|specular|blur/i);
+    const icon = JSON.parse(raw);
+    const channel = (hex: string, i: number) =>
+      (Number.parseInt(hex.slice(1 + 2 * i, 3 + 2 * i), 16) / 255).toFixed(5);
+    const ink = [0, 1, 2].map((i) => channel(c.ink, i)).join(",");
+    expect(icon.fill).toEqual({ solid: `srgb:${ink},1.00000` });
+    expect(icon["supported-platforms"]).toEqual({ squares: "shared" });
+    expect(icon.groups).toHaveLength(1);
+    const [layer] = icon.groups[0].layers;
+    expect(layer["image-name"]).toBe("hansenexus-mark-lime.svg");
+    // A hand copy of the generated mark: it must follow the geometry and the tokens.
+    expect(readFileSync(resolve(dir, "Assets/hansenexus-mark-lime.svg"), "utf8")).toBe(
+      readFileSync(resolve(ROOT, ASSETS, "mark/hansenexus-mark-lime.svg"), "utf8")
+    );
+  });
+
   test("path segments parse absolute commands and implicit repeats", () => {
     expect(segments("M1 2 3 4H5V6Q7 8 9 10C1 2 3 4 5 6Z")).toEqual([
       { op: "move", p: [1, 2] },
