@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { gzipSync } from "node:zlib";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { boardProblems, decide, listCategories, registrySource } from "../scripts/variants";
@@ -136,6 +137,47 @@ describe("skeleton-style", () => {
         const html = renderToStaticMarkup(fixture.render(variant));
         expect(html).toContain('aria-busy="true"');
         expect(html).toMatch(/role="status"[^>]*aria-label="Loading/);
+      }
+    }
+  });
+});
+
+describe("illustration-style", () => {
+  const found = listCategories(ROOT).find((c) => c.id === "illustration-style");
+
+  test("is an open vote between geometric and line-art", () => {
+    expect(found?.decision).toBeNull();
+    expect(found?.variants).toEqual(["geometric", "line-art"]);
+  });
+
+  test("every variant fills the empty and error slots, aria-hidden", async () => {
+    if (!found) throw new Error("illustration-style is missing");
+    const { category } = await import(found.spec);
+    expect(category.fixtures.map((f: { id: string }) => f.id)).toEqual(["empty", "error"]);
+    for (const id of found.variants) {
+      const { variant } = await import(resolve(found.spec, "..", `${id}.tsx`));
+      for (const fixture of category.fixtures) {
+        const html = renderToStaticMarkup(fixture.render(variant));
+        expect(html).toMatch(/<div aria-hidden="true"[^>]*><svg[^>]*viewBox="0 0 160 120"/);
+      }
+    }
+  });
+
+  // What the illustrations package will enforce per motif: themeable colour and <= 3 KB gzip.
+  test("each motif colours only through currentColor and --hn-* vars, and is <= 3 KB gzip", async () => {
+    if (!found) throw new Error("illustration-style is missing");
+    for (const id of found.variants) {
+      const { variant } = await import(resolve(found.spec, "..", `${id}.tsx`));
+      for (const Motif of [variant.Empty, variant.Error]) {
+        const svg = renderToStaticMarkup(createElement(Motif));
+        const colours = [...svg.matchAll(/\b(?:fill|stroke|color|stop-color)="([^"]*)"/g)].map(
+          (m) => m[1]
+        );
+        expect(colours.length).toBeGreaterThan(0);
+        for (const c of colours)
+          expect(c).toMatch(/^(?:none|currentColor|var\(--hn-[a-z0-9-]+\))$/);
+        expect(svg).not.toMatch(/<(?:image|style|linearGradient|radialGradient|filter)\b/);
+        expect(gzipSync(svg).byteLength).toBeLessThanOrEqual(3 * 1024);
       }
     }
   });
