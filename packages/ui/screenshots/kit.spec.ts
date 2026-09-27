@@ -40,6 +40,15 @@ for (const mode of MODES) {
     });
   });
 
+  test(`illustrations ${mode}`, async ({ page }, info) => {
+    await page.goto(`/gallery/?scene=illustrations&mode=${mode}`);
+    await page.evaluate(() => document.fonts.ready);
+    await expect(page.locator("[data-motif] svg")).toHaveCount(16);
+    await expect(page).toHaveScreenshot(`illustrations-${info.project.name}-${mode}.png`, {
+      fullPage: true,
+    });
+  });
+
   for (const scene of OVERLAYS) {
     test(`${scene} ${mode}`, async ({ page }, info) => {
       await page.goto(`/gallery/?scene=${scene}&mode=${mode}`);

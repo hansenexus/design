@@ -1,0 +1,78 @@
+{
+  "name": "@hansenexus/illustrations",
+  "version": "0.1.0",
+  "description": "hansenexus state illustrations: eight geometric SVG motifs as React components, one import path each, coloured only through currentColor and the --hn-* tokens.",
+  "license": "MIT",
+  "keywords": [
+    "react",
+    "svg",
+    "illustrations",
+    "empty-state",
+    "design-system"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hansenexus/design.git",
+    "directory": "packages/illustrations"
+  },
+  "bugs": "https://github.com/hansenexus/design/issues",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./empty": {
+      "types": "./dist/empty.d.ts",
+      "import": "./dist/empty.js"
+    },
+    "./no-results": {
+      "types": "./dist/no-results.d.ts",
+      "import": "./dist/no-results.js"
+    },
+    "./error": {
+      "types": "./dist/error.d.ts",
+      "import": "./dist/error.js"
+    },
+    "./404": {
+      "types": "./dist/404.d.ts",
+      "import": "./dist/404.js"
+    },
+    "./offline": {
+      "types": "./dist/offline.d.ts",
+      "import": "./dist/offline.js"
+    },
+    "./no-permission": {
+      "types": "./dist/no-permission.d.ts",
+      "import": "./dist/no-permission.js"
+    },
+    "./success": {
+      "types": "./dist/success.d.ts",
+      "import": "./dist/success.js"
+    },
+    "./maintenance": {
+      "types": "./dist/maintenance.d.ts",
+      "import": "./dist/maintenance.js"
+    }
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "bun scripts/build.ts",
+    "test": "bun test tests"
+  },
+  "peerDependencies": {
+    "@hansenexus/tokens": "^0.4.0",
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@hansenexus/tokens": "workspace:*",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  }
+}

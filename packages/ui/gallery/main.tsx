@@ -2,7 +2,16 @@
 // variant votes (vote.tsx).
 // Screenshot baselines are taken from this page (screenshots/kit.spec.ts).
 // Names are an invented estate: no real hostnames, IPs or people in a public repo.
-import { type ReactNode, StrictMode } from "react";
+
+import { NotFoundIllustration } from "@hansenexus/illustrations/404";
+import { EmptyIllustration } from "@hansenexus/illustrations/empty";
+import { ErrorIllustration } from "@hansenexus/illustrations/error";
+import { MaintenanceIllustration } from "@hansenexus/illustrations/maintenance";
+import { NoPermissionIllustration } from "@hansenexus/illustrations/no-permission";
+import { NoResultsIllustration } from "@hansenexus/illustrations/no-results";
+import { OfflineIllustration } from "@hansenexus/illustrations/offline";
+import { SuccessIllustration } from "@hansenexus/illustrations/success";
+import { type ComponentType, type ReactNode, StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import {
   Badge,
@@ -80,6 +89,7 @@ export const SCENES = [
   "brand",
   "loading",
   "states",
+  "illustrations",
   "vote",
 ] as const;
 type Scene = (typeof SCENES)[number];
@@ -458,35 +468,6 @@ function Loading() {
   );
 }
 
-/** A stand-in for an @hansenexus/illustrations motif: 40 px of line art in ink.muted. */
-function Art({ search = false }: { search?: boolean }) {
-  return (
-    <svg
-      width="40"
-      height="40"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {search ? (
-        <>
-          <circle cx="11" cy="11" r="7" />
-          <path d="m20 20-3.5-3.5" />
-        </>
-      ) : (
-        <>
-          <path d="M22 12h-6l-2 3h-4l-2-3H2" />
-          <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
-        </>
-      )}
-    </svg>
-  );
-}
-
 /** A fixed error, so the development view's stack is the same in every build. */
 const FAILURE = Object.assign(new Error("connect ECONNREFUSED speicher-db:5432"), {
   digest: "2961537040",
@@ -535,7 +516,7 @@ function States() {
         <Spec title="EmptyState: empty (en)">
           <Card>
             <EmptyState
-              illustration={<Art />}
+              illustration={<EmptyIllustration />}
               titleAs="h3"
               action={<Button>Add a machine</Button>}
             />
@@ -546,7 +527,7 @@ function States() {
             <EmptyState
               variant="no-results"
               locale="de"
-              illustration={<Art search />}
+              illustration={<NoResultsIllustration />}
               titleAs="h3"
               action={<Button variant="secondary">Filter zurücksetzen</Button>}
             />
@@ -554,7 +535,13 @@ function States() {
         </Spec>
         <Spec title="ErrorState: production (en)">
           <Card>
-            <ErrorState error={FAILURE} dev={false} onRetry={() => {}} titleAs="h3" />
+            <ErrorState
+              error={FAILURE}
+              dev={false}
+              onRetry={() => {}}
+              illustration={<ErrorIllustration />}
+              titleAs="h3"
+            />
           </Card>
         </Spec>
         <Spec title="ErrorState: development (de)">
@@ -584,12 +571,56 @@ function States() {
   );
 }
 
+/** The eight @hansenexus/illustrations motifs, by import path. */
+const MOTIFS: [string, ComponentType<{ width?: number; height?: number }>][] = [
+  ["empty", EmptyIllustration],
+  ["no-results", NoResultsIllustration],
+  ["error", ErrorIllustration],
+  ["404", NotFoundIllustration],
+  ["offline", OfflineIllustration],
+  ["no-permission", NoPermissionIllustration],
+  ["success", SuccessIllustration],
+  ["maintenance", MaintenanceIllustration],
+];
+
+/**
+ * The illustrations scene: every motif at its 160 px default and at 48 px, in ink.muted as the
+ * EmptyState/ErrorState slot draws it. Colour comes only from currentColor and the tokens.
+ */
+function Illustrations() {
+  return (
+    <main className="mx-auto flex max-w-[1280px] flex-col gap-10 px-4 py-10 sm:px-10">
+      <header className="flex flex-col gap-2">
+        <span className="text-sm font-semibold text-hn-ink-muted">@hansenexus/illustrations</span>
+        <h1 className="m-0 font-hn-display text-[32px] leading-tight font-semibold tracking-[-0.02em] sm:text-[44px]">
+          State illustrations
+        </h1>
+      </header>
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {MOTIFS.map(([id, Motif]) => (
+          <figure
+            key={id}
+            data-motif={id}
+            className="m-0 flex flex-col items-center gap-3 rounded-hn-lg border border-hn-line-subtle bg-hn-surface-card p-4 text-hn-ink-muted"
+          >
+            <Motif width={128} height={96} />
+            <Motif width={48} height={36} />
+            <figcaption className="font-hn-mono text-[13px] text-hn-ink-body">{id}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </main>
+  );
+}
+
 function Scenes({ scene }: { scene: Scene }) {
   switch (scene) {
     case "vote":
       return <Vote />;
     case "states":
       return <States />;
+    case "illustrations":
+      return <Illustrations />;
     case "loading":
       return <Loading />;
     case "brand":

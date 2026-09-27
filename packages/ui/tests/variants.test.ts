@@ -145,9 +145,11 @@ describe("skeleton-style", () => {
 describe("illustration-style", () => {
   const found = listCategories(ROOT).find((c) => c.id === "illustration-style");
 
-  test("is an open vote between geometric and line-art", () => {
-    expect(found?.decision).toBeNull();
-    expect(found?.variants).toEqual(["geometric", "line-art"]);
+  test("is decided for geometric, line-art considered and deleted", () => {
+    expect(found?.decision?.winner).toBe("geometric");
+    expect(found?.decision?.date).toBe("2026-09-27");
+    expect(found?.decision?.considered).toEqual(["geometric", "line-art"]);
+    expect(found?.variants).toEqual(["geometric"]);
   });
 
   test("every variant fills the empty and error slots, aria-hidden", async () => {
@@ -163,7 +165,7 @@ describe("illustration-style", () => {
     }
   });
 
-  // What the illustrations package will enforce per motif: themeable colour and <= 3 KB gzip.
+  // The same rule packages/illustrations enforces for all eight motifs.
   test("each motif colours only through currentColor and --hn-* vars, and is <= 3 KB gzip", async () => {
     if (!found) throw new Error("illustration-style is missing");
     for (const id of found.variants) {
