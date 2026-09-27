@@ -2,8 +2,10 @@ import { describe, expect, test } from "bun:test";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { boardProblems, decide, listCategories, registrySource } from "../scripts/variants";
+import { Skeleton } from "../src";
 
 const ROOT = resolve(import.meta.dir, "..");
 
@@ -108,6 +110,14 @@ describe("board", () => {
 });
 
 describe("skeleton-style", () => {
+  test("is decided for pulse, and Skeleton pulses by default, still under reduced motion", () => {
+    const found = listCategories(ROOT).find((c) => c.id === "skeleton-style");
+    expect(found?.decision?.winner).toBe("pulse");
+    expect(found?.variants).toEqual(["pulse"]);
+    const html = renderToStaticMarkup(createElement(Skeleton));
+    expect(html).toContain("animate-hn-pulse motion-reduce:animate-none");
+  });
+
   test("every variant renders the six fixtures, each as a labelled busy group", async () => {
     const found = listCategories(ROOT).find((c) => c.id === "skeleton-style");
     if (!found) throw new Error("skeleton-style is missing");

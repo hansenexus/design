@@ -1,5 +1,6 @@
 // Pulse: every placeholder breathes from skeleton.base to skeleton.highlight, all in step.
-// This is what Skeleton does today; reduced motion holds it still.
+// The winner of the vote (decisions/skeleton-style.json) and the default of Skeleton; reduced
+// motion holds it still.
 import { Skeleton } from "../../../src";
 import type { BoneProps, SkeletonStyle } from "./category";
 

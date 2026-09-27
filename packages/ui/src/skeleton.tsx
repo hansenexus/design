@@ -11,7 +11,10 @@ const SHAPE: Record<SkeletonShape, string> = {
   circle: "aspect-square rounded-full",
 };
 
-/** The pulse runs skeleton.base to skeleton.highlight; reduced motion keeps base, still. */
+/**
+ * The pulse runs skeleton.base to skeleton.highlight; reduced motion keeps base, still. Pulse is
+ * the owner's pick from the skeleton-style vote (decisions/skeleton-style.json).
+ */
 const FILL = "block bg-hn-skeleton-base animate-hn-pulse motion-reduce:animate-none";
 
 export type SkeletonProps = Omit<ComponentProps<"span">, "children"> & {
