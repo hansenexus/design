@@ -1,8 +1,11 @@
 // Builds the kit gallery into gallery/dist/ and, with --serve, serves packages/ui on
 // 127.0.0.1 (default port 4410) at /gallery/?scene=kit&mode=dark. Variant votes are at
 // /gallery/?scene=vote&category=<id>. With --out <dir> it also writes the static site
-// (index.html plus dist/, every URL relative) that the kit-gallery image serves at /.
+// (index.html plus dist/, every URL relative) that the kit-gallery image serves at /. There the
+// JS and CSS carry a content hash in their names (main.<hash>.js), so an edge cache that keeps
+// .js and .css for hours never serves a stale bundle after a deploy (#50).
 // Run: bun scripts/gallery.ts [--serve] [--port 4410] [--out <dir>]
+import { createHash } from "node:crypto";
 import { copyFileSync, cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, extname, resolve, sep } from "node:path";
 import type { BunPlugin } from "bun";
@@ -88,13 +91,37 @@ export async function buildGallery() {
   if (css.exitCode !== 0) throw new Error("gallery: tailwind failed");
 }
 
-/** Writes the deployable site: gallery/index.html at the root, the build under dist/. */
+/** The files index.html loads that change with the code. Fonts and brand files keep their names. */
+const HASHED = ["main.js", "gallery.css", "fonts.css"] as const;
+
+/** `main.js` -> `main.<first 10 hex of its sha256>.js`: same bytes, same name. */
+export function hashedName(file: string, body: Uint8Array | string): string {
+  const hash = createHash("sha256").update(body).digest("hex").slice(0, 10);
+  const ext = extname(file);
+  return `${file.slice(0, -ext.length)}.${hash}${ext}`;
+}
+
+/**
+ * Writes the deployable site: gallery/index.html at the root, the build under dist/, with the
+ * HASHED files renamed to hashedName() and index.html pointing at the new names.
+ */
 export function exportSite(dir: string) {
   const site = resolve(dir);
   rmSync(site, { recursive: true, force: true });
   mkdirSync(site, { recursive: true });
-  copyFileSync(resolve(ROOT, "gallery/index.html"), resolve(site, "index.html"));
-  cpSync(OUT, resolve(site, "dist"), { recursive: true });
+  const dist = resolve(site, "dist");
+  cpSync(OUT, dist, { recursive: true });
+  let html = readFileSync(resolve(ROOT, "gallery/index.html"), "utf8");
+  for (const file of HASHED) {
+    const ref = `"./dist/${file}"`;
+    if (!html.includes(ref)) throw new Error(`gallery: index.html does not reference ${ref}`);
+    const body = readFileSync(resolve(dist, file));
+    const name = hashedName(file, body);
+    writeFileSync(resolve(dist, name), body);
+    rmSync(resolve(dist, file));
+    html = html.replaceAll(ref, `"./dist/${name}"`);
+  }
+  writeFileSync(resolve(site, "index.html"), html);
 }
 
 const TYPES: Record<string, string> = {
