@@ -13,6 +13,10 @@ export const AA = { text: 4.5, ui: 3, placeholder: 1.2 } as const;
 
 const SURFACES = ["surface.page", "surface.band", "surface.card", "surface.raised"];
 
+const ANSI = ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"];
+/** The 16 ANSI colours, normal then bright: terminal.black ... terminal.bright-white. */
+export const TERMINAL = [...ANSI, ...ANSI.map((c) => `bright-${c}`)].map((c) => `terminal.${c}`);
+
 type Rule = { kind: keyof typeof AA; fg: string[]; bg: string[] };
 
 export const RULES: Rule[] = [
@@ -49,6 +53,8 @@ export const RULES: Rule[] = [
     bg: SURFACES,
   },
   { kind: "placeholder", fg: ["skeleton.base", "skeleton.highlight"], bg: SURFACES },
+  // A terminal draws on surface.page; every ANSI colour, black and white included, is text there.
+  { kind: "text", fg: TERMINAL, bg: ["surface.page"] },
   // The mark is a graphic: 3:1 against the flat grounds it is allowed on (the app icon tile,
   // paper). Lime on paper is not a pair on purpose; on light the mark is lime-deep.
   { kind: "ui", fg: ["brand.lime", "brand.paper"], bg: ["brand.ink"] },

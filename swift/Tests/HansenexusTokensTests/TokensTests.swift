@@ -23,6 +23,20 @@ final class TokensTests: XCTestCase {
     }
   }
 
+  func testTerminalPalette() {
+    let dark = HNColors.of(.kommandant, .dark).terminal
+    let light = HNColors.of(.kommandant, .light).terminal
+    XCTAssertEqual(dark.magenta.hex, "#d59cc8")
+    XCTAssertEqual(dark.cyan.hex, "#7abfc3")
+    XCTAssertEqual(light.magenta.hex, "#834f78")
+    XCTAssertEqual(light.cyan.hex, "#356e71")
+    XCTAssertEqual(dark.brightMagenta.hex, "#efc0e3")
+    XCTAssertEqual(light.brightWhite.hex, "#716a5c")
+    // Green is lime, the one accent.
+    XCTAssertEqual(dark.green, HNColors.of(.kommandant, .dark).status.ok)
+    XCTAssertEqual(light.green, HNColors.of(.kommandant, .light).status.ok)
+  }
+
   func testEveryThemeShipsBothModes() {
     for theme in HNTheme.allCases {
       XCTAssertNotEqual(HNColors.of(theme, .dark), HNColors.of(theme, .light), "\(theme)")
