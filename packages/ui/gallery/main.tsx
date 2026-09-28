@@ -1,6 +1,7 @@
 // The kit gallery: every primitive in its board states, plus one scene per overlay, and the
 // variant votes (vote.tsx).
-// Screenshot baselines are taken from this page (screenshots/kit.spec.ts).
+// Screenshot baselines are taken from this page (screenshots/kit.spec.ts), with ?bare=1 so the
+// scene nav stays out of the frame.
 // Names are an invented estate: no real hostnames, IPs or people in a public repo.
 
 import { NotFoundIllustration } from "@hansenexus/illustrations/404";
@@ -1145,12 +1146,42 @@ function Scenes({ scene }: { scene: Scene }) {
   }
 }
 
-const param = new URLSearchParams(location.search).get("scene");
+/**
+ * The top bar on every scene: one plain link per entry of SCENES, relative so the site works
+ * behind any path (kit is ./, the rest ?scene=<name>). Wraps onto more rows at phone width.
+ * It sits above the overlays' z-50 and takes pointer events back from the body, so the modal
+ * dialog and select scenes can still be left by a click.
+ */
+function SceneNav({ current }: { current: Scene }) {
+  return (
+    <nav
+      aria-label="Gallery scenes"
+      className="pointer-events-auto relative z-[60] flex flex-wrap items-baseline gap-x-4 gap-y-1.5 border-b border-hn-line-subtle bg-hn-surface-band px-4 py-3 text-sm sm:px-10"
+    >
+      {SCENES.map((s) => (
+        <a
+          key={s}
+          href={s === "kit" ? "./" : `?scene=${s}`}
+          aria-current={s === current ? "page" : undefined}
+          className="text-hn-ink-primary aria-[current=page]:font-semibold"
+        >
+          {s}
+        </a>
+      ))}
+    </nav>
+  );
+}
+
+const query = new URLSearchParams(location.search);
+const param = query.get("scene");
 const scene: Scene = SCENES.includes(param as Scene) ? (param as Scene) : "kit";
+// ?bare=1 drops the nav: the screenshot baselines (screenshots/kit.spec.ts) frame the scene alone.
+const bare = query.get("bare") === "1";
 const root = document.getElementById("root");
 if (root) {
   createRoot(root).render(
     <StrictMode>
+      {!bare && <SceneNav current={scene} />}
       <Scenes scene={scene} />
     </StrictMode>
   );

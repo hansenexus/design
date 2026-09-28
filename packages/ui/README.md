@@ -346,6 +346,8 @@ loading scene (Skeleton and Spinner), the states, illustrations, forms, layout, 
 `scripts/screenshots.sh` runs Playwright inside the pinned `mcr.microsoft.com/playwright` image,
 the same one CI uses. It needs Docker. `screenshots/interaction.spec.ts` drives the live palette, sheet,
 popover and pager in the same run (keyboard, focus return, `aria-current` after load).
+Every scene carries a top nav linking all the others; the baselines load their scene with
+`&bare=1`, which leaves the nav out of the frame.
 
 ```sh
 bun run build                 # tokens dist is needed by the gallery
