@@ -79,3 +79,23 @@ test("pagination: aria-current moves only after the page loaded", async ({ page 
   await expect(nav.getByRole("button", { name: "Page 4" })).toHaveAttribute("aria-current", "page");
   await expect(nav.getByRole("button", { name: "Next" })).toBeDisabled();
 });
+
+test("scene nav: every scene linked, the current one marked, links resolve, bare hides it", async ({
+  page,
+}) => {
+  await page.goto("/gallery/?scene=states");
+  const nav = page.getByRole("navigation", { name: "Gallery scenes" });
+  await expect(nav.getByRole("link")).toHaveCount(16);
+  await expect(nav.locator('[aria-current="page"]')).toHaveText("states");
+  await expect(nav.getByRole("link", { name: "kit", exact: true })).toHaveAttribute("href", "./");
+  await nav.getByRole("link", { name: "forms", exact: true }).click();
+  await expect(page).toHaveURL(/\/gallery\/\?scene=forms$/);
+  await expect(nav.locator('[aria-current="page"]')).toHaveText("forms");
+  await nav.getByRole("link", { name: "kit", exact: true }).click();
+  await expect(page).toHaveURL(/\/gallery\/$/);
+  await expect(nav.locator('[aria-current="page"]')).toHaveText("kit");
+
+  await page.goto("/gallery/?scene=states&bare=1");
+  await expect(page.locator('[role="progressbar"]')).toHaveCount(3);
+  await expect(nav).toHaveCount(0);
+});
