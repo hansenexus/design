@@ -45,13 +45,15 @@ RUN bun install --frozen-lockfile \
 # Scratch-based static-web-server image: one static binary, no shell. Pinned by digest.
 FROM joseluisq/static-web-server:2.44.0@sha256:2c1a7c3e0feaea5859307403b74e1c575f3ec1499094fc077344173d11abaae2 AS kit-gallery
 # SERVER_HOST, SERVER_PORT (127.0.0.1:8081) and SERVER_HEALTH are set by the proxy for its child.
-# Cache-control off: the JS and CSS carry a content hash (dist/main.<hash>.js, #50), but
-# index.html, the fonts and the brand files do not, and static-web-server's default long max-age
-# would pin those in browsers after a deploy.
+# Cache-Control comes from kit-gallery.sws.toml only (#52): no-cache for index.html, a day for
+# the content-hashed JS and CSS (dist/main.<hash>.js, #50), an hour for the rest of dist/.
+# The built-in per-type defaults stay off, or their long max-age would pin the unhashed files.
 ENV SERVER_ROOT=/public \
+    SERVER_CONFIG_FILE=/etc/sws.toml \
     SERVER_CACHE_CONTROL_HEADERS=false \
     SERVER_LOG_LEVEL=info
 COPY --from=access-proxy / /
+COPY --chmod=0444 kit-gallery.sws.toml /etc/sws.toml
 COPY --from=build /site /public
 USER 101:101
 EXPOSE 8080

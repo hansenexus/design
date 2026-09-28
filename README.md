@@ -54,7 +54,9 @@ pushing.
 The image is [static-web-server](https://static-web-server.net) (pinned by digest, about 4 MB)
 serving the output of `bun scripts/gallery.ts --out <dir>`: `index.html` plus `dist/` with the
 bundle, CSS, brand files and self-hosted fonts, every URL relative. It listens on 8080 as uid 101
-and writes nothing, so it runs with a read-only root. Build and check it locally:
+and writes nothing, so it runs with a read-only root. Cache-Control comes from
+`kit-gallery.sws.toml`: `no-cache` for `index.html`, a day for the content-hashed JS and CSS, an
+hour for fonts and brand files. Build and check it locally:
 
 ```sh
 docker build --target kit-gallery -t kit-gallery .

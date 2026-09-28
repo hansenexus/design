@@ -1,0 +1,32 @@
+# static-web-server config for the kit-gallery image (Dockerfile, SERVER_CONFIG_FILE), #52.
+# Only the Cache-Control headers live here; everything else stays in the image's env and the
+# access proxy's env for its child (SERVER_HOST, SERVER_PORT, SERVER_HEALTH). With no
+# [general] table static-web-server logs "no `general` settings found, using default values":
+# harmless, a file setting only replaces the env value when present.
+#
+# SERVER_CACHE_CONTROL_HEADERS=false keeps static-web-server's per-type defaults out, so these
+# rules are the only Cache-Control source. Every matching entry is applied in order and a later
+# one overwrites the header, so the most specific rule comes last. Sources are globset globs
+# against the request path; `*` also matches `/`. A request for `/` is matched as `/index.html`.
+
+# Unhashed files under dist/ (fonts, brand files): short, so a changed file shows up within the
+# hour. Paths outside dist/ that no rule below names (404s) go out without Cache-Control.
+[[advanced.headers]]
+source = "/dist/**"
+[advanced.headers.headers]
+Cache-Control = "public, max-age=3600"
+
+# The page itself: always revalidate, it names the hashed assets of the current deploy.
+[[advanced.headers]]
+source = "{/,**/*.html}"
+[advanced.headers.headers]
+Cache-Control = "no-cache"
+
+# Content-hashed JS and CSS from `gallery.ts --out` (<name>.<sha256:10>.<ext>, #50): a new
+# build gets a new name, so a day is safe. Not a year and not `immutable`: static-web-server
+# applies these headers to 404s as well, so a hashed name requested before its file exists
+# (mid-rollout) would be pinned as a 404 for as long as this says.
+[[advanced.headers]]
+source = "/dist/*.[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].{js,css}"
+[advanced.headers.headers]
+Cache-Control = "public, max-age=86400"

@@ -22,6 +22,7 @@ on:
   pull_request:
     paths:
       - Dockerfile
+      - kit-gallery.sws.toml
       - .dockerignore
       - .github/workflows/kit-gallery.yml
       - bun.lock
@@ -42,6 +43,8 @@ permissions:
 env:
   REGISTRY: registry.hansenexus.dev
   IMAGE: registry.hansenexus.dev/design/kit-gallery
+  # For the Cache-Control smoke only; the image under test has no curl.
+  CURL_IMAGE: curlimages/curl:8.11.1@sha256:c1fe1679c34d9784c1b0d1e5f62ac0a79fca01fb6377cdd33e90473c6f9f9a69
 
 jobs:
   image:
@@ -122,6 +125,24 @@ jobs:
           grep -oE 'url\(\./fonts/[^)]+\)' "$site/$fonts" | sed -E 's#url\(\./(.*)\)#\1#' \
             | while read -r font; do test -s "$site/dist/$font" || { echo "::error::missing $font"; exit 1; }; done
           echo "fonts: every url() in $fonts is in the image"
+          # Cache-Control from kit-gallery.sws.toml (#52), asked of static-web-server itself on
+          # 127.0.0.1:8081 (behind the proxy everything but /health needs a token). The image has
+          # no shell or curl, so curl runs in a container sharing its network namespace.
+          js=$(grep -xE 'dist/main\.[0-9a-f]{10}\.js' <<<"$refs")
+          font=$(grep -oE 'url\(\./fonts/[^)]+\)' "$site/$fonts" | sed -E 's#url\(\./(.*)\)#\1#' | head -1)
+          cache_control() { # cache_control <want> <path>
+            got=$(docker run --rm --network container:kit-gallery "$CURL_IMAGE" -sSI "http://127.0.0.1:8081$2" \
+              | tr -d '\r' | awk 'tolower($1) == "cache-control:" { sub(/^[^:]*: */, ""); print }')
+            echo "$2: ${got:-<none>}"
+            [ "$got" = "$1" ] || { echo "::error::want Cache-Control '$1' for $2, got '${got:-<none>}'"; exit 1; }
+          }
+          cache_control 'no-cache' /
+          cache_control 'no-cache' /index.html
+          cache_control 'public, max-age=86400' "/$js"
+          cache_control 'public, max-age=86400' "/$fonts"
+          cache_control 'public, max-age=3600' "/dist/$font"
+          cache_control 'public, max-age=3600' /dist/brand/favicon.svg
+          cache_control '' /nope
 
       - name: Push
         if: env.PUSH == 'true'
