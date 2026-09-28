@@ -1,7 +1,8 @@
 name: kit-gallery
 
 # main → `registry.hansenexus.dev/design/kit-gallery:<sha>`, the public @hansenexus/ui kit gallery
-# as a static-server image (Dockerfile). hn-infra infrastructure/design pins the sha and serves it
+# as a static-server image (Dockerfile) behind tools/access-proxy, the Cloudflare Access JWT check
+# (#47). hn-infra infrastructure/design pins the sha and serves it
 # at design.hansenexus.dev/ behind Cloudflare Access (hn-infra#248); that README holds the image
 # contract this job smoke-tests: port 8080, uid 101, read-only root, only /tmp writable.
 # Pull requests that touch the image inputs build and smoke-test it without pushing, so a broken
@@ -27,6 +28,7 @@ on:
       - package.json
       - "packages/**"
       - "brand/assets/**"
+      - "tools/access-proxy/**"
   workflow_dispatch:
 
 # One main run at a time, never cancelled: each sha gets its image.
@@ -76,22 +78,43 @@ jobs:
           cache-to: type=gha,mode=max,scope=kit-gallery
           provenance: false
 
+      # Real team domain: the proxy fetches the JWKS at startup, which the smoke exercises too. No
+      # token can be minted here, so the valid-token path lives in the Go unit tests.
       - name: Smoke test under the deployment's constraints
         run: |
           set -euo pipefail
           docker run -d --name kit-gallery -p 8080:8080 \
             --read-only --tmpfs /tmp --user 101:101 --cap-drop ALL \
-            --security-opt no-new-privileges "$IMAGE:$GITHUB_SHA"
+            --security-opt no-new-privileges \
+            -e CF_ACCESS_TEAM_DOMAIN=hansenexus.cloudflareaccess.com -e CF_ACCESS_AUD=smoke \
+            "$IMAGE:$GITHUB_SHA"
           trap 'docker logs kit-gallery; docker rm -f kit-gallery >/dev/null' EXIT
-          for _ in $(seq 1 20); do curl -fs -o /dev/null http://127.0.0.1:8080/ && break; sleep 0.5; done
-          # The page and everything it loads, fonts and brand files included (self-contained).
-          for path in / /dist/main.js /dist/gallery.css /dist/fonts.css /dist/brand/favicon.svg; do
-            curl -fsS -o /dev/null -w "%{http_code} $path\n" "http://127.0.0.1:8080$path"
+          base=http://127.0.0.1:8080
+          for _ in $(seq 1 20); do curl -fs -o /dev/null "$base/health" && break; sleep 0.5; done
+          expect() { # expect <status> <curl args...>
+            want=$1; shift
+            got=$(curl -sS -o /dev/null -w '%{http_code}' "$@")
+            echo "$got $*"
+            [ "$got" = "$want" ] || { echo "::error::want $want, got $got for $*"; exit 1; }
+          }
+          # The probe path answers without a token; everything else needs one.
+          expect 200 "$base/health"
+          expect 200 -I "$base/health"
+          expect 403 "$base/"
+          expect 403 "$base/dist/main.js"
+          expect 403 -X POST "$base/health"
+          expect 403 -H 'Cf-Access-Jwt-Assertion: not.a.token' "$base/"
+          [ -z "$(curl -sS "$base/")" ] || { echo "::error::403 carries a body"; exit 1; }
+          # Behind the proxy the files need a token, so check them in the image instead: the page
+          # and everything it loads, fonts and brand files included (self-contained).
+          site="$RUNNER_TEMP/site"; mkdir -p "$site"
+          docker cp kit-gallery:/public/. "$site"
+          for f in index.html dist/main.js dist/gallery.css dist/fonts.css dist/brand/favicon.svg; do
+            test -s "$site/$f" || { echo "::error::missing $f"; exit 1; }
           done
-          curl -fsS http://127.0.0.1:8080/dist/fonts.css \
-            | grep -oE 'url\(\./fonts/[^)]+\)' | sed -E 's#url\(\./(.*)\)#/dist/\1#' \
-            | while read -r font; do curl -fsS -o /dev/null "http://127.0.0.1:8080$font"; done
-          echo "fonts: every url() in fonts.css resolves"
+          grep -oE 'url\(\./fonts/[^)]+\)' "$site/dist/fonts.css" | sed -E 's#url\(\./(.*)\)#\1#' \
+            | while read -r font; do test -s "$site/dist/$font" || { echo "::error::missing $font"; exit 1; }; done
+          echo "fonts: every url() in fonts.css is in the image"
 
       - name: Push
         if: env.PUSH == 'true'

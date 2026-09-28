@@ -76,6 +76,25 @@ jobs:
             packages/ui/playwright-report/
           retention-days: 7
 
+  go:
+    # tools/access-proxy, the Cloudflare Access JWT check in front of the gallery images (#47).
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/access-proxy
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: tools/access-proxy/go.mod
+          cache: false
+      - name: Format
+        run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+      - name: Vet
+        run: go vet ./...
+      - name: Test
+        run: go test -race -count=1 ./...
+
   swift:
     # Compiles and tests the SwiftPM package. Linux covers the Foundation-free token
     # values; macOS also builds the SwiftUI adapters and compiles them for iOS.
@@ -102,7 +121,7 @@ jobs:
   result:
     name: CI Result
     if: always()
-    needs: [check, package, screenshots, swift]
+    needs: [check, package, screenshots, go, swift]
     runs-on: ubuntu-latest
     steps:
       - name: All jobs passed
