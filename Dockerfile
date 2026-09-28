@@ -5,7 +5,8 @@
 # infrastructure/design/kit.yaml).
 #
 # Build: the workspace packages, then `scripts/gallery.ts --out` writes the static site
-# (index.html plus dist/ with fonts, brand files, CSS and JS, every URL relative).
+# (index.html plus dist/ with fonts, brand files, CSS and JS, every URL relative; the JS and CSS
+# names carry a content hash, which index.html references).
 # Run: tools/access-proxy on 8080 verifies the Cloudflare Access JWT and forwards to
 # static-web-server on 127.0.0.1:8081, its supervised child (#47). The contract in hn-infra
 # infrastructure/design/README.md: port 8080, uid 101, read-only root filesystem (nothing here
@@ -43,10 +44,10 @@ RUN bun install --frozen-lockfile \
 
 # Scratch-based static-web-server image: one static binary, no shell. Pinned by digest.
 FROM joseluisq/static-web-server:2.44.0@sha256:2c1a7c3e0feaea5859307403b74e1c575f3ec1499094fc077344173d11abaae2 AS kit-gallery
-# Cache-control off: the gallery's file names carry no content hash, so the default one-year
 # SERVER_HOST, SERVER_PORT (127.0.0.1:8081) and SERVER_HEALTH are set by the proxy for its child.
-# Cache-control off: the gallery's file names carry no content hash, so the default one-year
-# max-age on .js and .css would pin a stale gallery in browsers after a deploy.
+# Cache-control off: the JS and CSS carry a content hash (dist/main.<hash>.js, #50), but
+# index.html, the fonts and the brand files do not, and static-web-server's default long max-age
+# would pin those in browsers after a deploy.
 ENV SERVER_ROOT=/public \
     SERVER_CACHE_CONTROL_HEADERS=false \
     SERVER_LOG_LEVEL=info

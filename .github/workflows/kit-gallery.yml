@@ -109,12 +109,19 @@ jobs:
           # and everything it loads, fonts and brand files included (self-contained).
           site="$RUNNER_TEMP/site"; mkdir -p "$site"
           docker cp kit-gallery:/public/. "$site"
-          for f in index.html dist/main.js dist/gallery.css dist/fonts.css dist/brand/favicon.svg; do
+          test -s "$site/index.html" || { echo "::error::missing index.html"; exit 1; }
+          # The JS and CSS names carry a content hash (#50): take them from index.html.
+          refs=$(grep -oE '(href|src)="\./dist/[^"]+"' "$site/index.html" | sed -E 's#.*"\./(.*)"#\1#')
+          for kind in 'main\.[0-9a-f]{10}\.js' 'gallery\.[0-9a-f]{10}\.css' 'fonts\.[0-9a-f]{10}\.css'; do
+            grep -qxE "dist/$kind" <<<"$refs" || { echo "::error::index.html has no dist/$kind"; exit 1; }
+          done
+          for f in $refs dist/brand/favicon.svg; do
             test -s "$site/$f" || { echo "::error::missing $f"; exit 1; }
           done
-          grep -oE 'url\(\./fonts/[^)]+\)' "$site/dist/fonts.css" | sed -E 's#url\(\./(.*)\)#\1#' \
+          fonts=$(grep -xE 'dist/fonts\.[0-9a-f]{10}\.css' <<<"$refs")
+          grep -oE 'url\(\./fonts/[^)]+\)' "$site/$fonts" | sed -E 's#url\(\./(.*)\)#\1#' \
             | while read -r font; do test -s "$site/dist/$font" || { echo "::error::missing $font"; exit 1; }; done
-          echo "fonts: every url() in fonts.css is in the image"
+          echo "fonts: every url() in $fonts is in the image"
 
       - name: Push
         if: env.PUSH == 'true'
