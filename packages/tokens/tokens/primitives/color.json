@@ -28,6 +28,10 @@
         "$value": "#8a8273",
         "$description": "Aus (off) in dark"
       },
+      "550": {
+        "$value": "#716a5c",
+        "$description": "Terminal bright-white on light"
+      },
       "600": {
         "$value": "#6b6456"
       },
@@ -76,29 +80,79 @@
       }
     },
     "amber": {
+      "300": {
+        "$value": "#fec98a"
+      },
       "400": {
         "$value": "#f0a53a"
       },
       "700": {
         "$value": "#8a5200"
+      },
+      "800": {
+        "$value": "#663d07"
       }
     },
     "coral": {
+      "300": {
+        "$value": "#fcb2a5"
+      },
       "400": {
         "$value": "#ff7a66",
         "$description": "Kritisch (crit) in dark"
       },
       "700": {
         "$value": "#b3261e"
+      },
+      "800": {
+        "$value": "#86130d"
       }
     },
     "sky": {
+      "200": {
+        "$value": "#bed5fd"
+      },
       "300": {
         "$value": "#8fb8ff",
         "$description": "Läuft (busy) in dark"
       },
       "700": {
         "$value": "#1f5fbf"
+      },
+      "800": {
+        "$value": "#15448c"
+      }
+    },
+    "plum": {
+      "200": {
+        "$value": "#efc0e3"
+      },
+      "300": {
+        "$value": "#d59cc8",
+        "$description": "Terminal magenta in dark"
+      },
+      "700": {
+        "$value": "#834f78",
+        "$description": "Terminal magenta in light"
+      },
+      "800": {
+        "$value": "#623659"
+      }
+    },
+    "teal": {
+      "200": {
+        "$value": "#a3dde0"
+      },
+      "300": {
+        "$value": "#7abfc3",
+        "$description": "Terminal cyan in dark"
+      },
+      "700": {
+        "$value": "#356e71",
+        "$description": "Terminal cyan in light"
+      },
+      "800": {
+        "$value": "#225052"
       }
     }
   }

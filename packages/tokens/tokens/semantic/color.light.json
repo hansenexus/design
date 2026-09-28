@@ -52,6 +52,35 @@
     "base": { "$value": "{palette.warm.200}", "$description": "The resting placeholder fill" },
     "highlight": { "$value": "{palette.warm.300}", "$description": "The pulse's far end" }
   },
+  "terminal": {
+    "$type": "color",
+    "$description": "The 16 ANSI colours of a terminal drawn on surface.page. Every one is text-contrast (4.5:1) on surface.page. Lime is green, as elsewhere; magenta and cyan are muted so lime stays the only accent.",
+    "black": { "$value": "{palette.warm.900}" },
+    "red": { "$value": "{palette.coral.700}" },
+    "green": { "$value": "{palette.lime.700}" },
+    "yellow": { "$value": "{palette.amber.700}" },
+    "blue": { "$value": "{palette.sky.700}" },
+    "magenta": { "$value": "{palette.plum.700}" },
+    "cyan": { "$value": "{palette.teal.700}" },
+    "white": {
+      "$value": "{palette.warm.600}",
+      "$description": "The lightest grey that stays 4.5:1"
+    },
+    "bright-black": { "$value": "{palette.warm.650}" },
+    "bright-red": {
+      "$value": "{palette.coral.800}",
+      "$description": "On light, bright is one step deeper: lighter would fall below 4.5:1"
+    },
+    "bright-green": { "$value": "{palette.lime.800}" },
+    "bright-yellow": { "$value": "{palette.amber.800}" },
+    "bright-blue": { "$value": "{palette.sky.800}" },
+    "bright-magenta": { "$value": "{palette.plum.800}" },
+    "bright-cyan": { "$value": "{palette.teal.800}" },
+    "bright-white": {
+      "$value": "{palette.warm.550}",
+      "$description": "Lighter than white yet still 4.5:1"
+    }
+  },
   "focus": {
     "ring": { "$type": "color", "$value": "{palette.lime.700}" }
   },

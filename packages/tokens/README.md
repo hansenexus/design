@@ -73,12 +73,17 @@ ms.delay.pending; // 200, every duration in milliseconds for timers
 - `line.subtle` is decoration only; a control's boundary uses `line.strong`.
 - `brand.*` (lime, lime-deep, ink, paper) is for the mark and wordmark only, the same in both
   modes. Usage in [brand/README.md](../../brand/README.md).
+- `terminal.*` (`black` … `white`, `bright-black` … `bright-white`) is the 16-colour ANSI palette of
+  a terminal drawn on `surface.page`, and only that. Green is lime; magenta and cyan are muted so
+  lime stays the one accent. On light, `bright-*` is one step deeper, not lighter, so every colour
+  keeps 4.5:1. Outside a terminal, use `status.*` for meaning.
 
 ## Checks
 
 `bun run contrast` resolves every theme in both modes and checks each pair in
 `scripts/contrast.ts` (text 4.5:1, UI 3:1, and a 1.2:1 floor for `skeleton.*` on every surface:
-not a WCAG minimum, since a placeholder carries no information, but it must read as a shape). It fails on a pair below AA and on a colour token
+not a WCAG minimum, since a placeholder carries no information, but it must read as a shape; and
+4.5:1 for all 16 `terminal.*` colours on `surface.page`). It fails on a pair below AA and on a colour token
 that no rule covers and that is not explicitly exempt.
 
 ## Versioning

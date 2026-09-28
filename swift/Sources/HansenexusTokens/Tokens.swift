@@ -110,6 +110,26 @@ public struct HNColors: Sendable, Equatable {
     public let tint: HNRGBA
   }
 
+  public struct Terminal: Sendable, Equatable {
+    /// The lowest grey that stays 4.5:1
+    public let black: HNRGBA
+    public let blue: HNRGBA
+    public let brightBlack: HNRGBA
+    public let brightBlue: HNRGBA
+    public let brightCyan: HNRGBA
+    public let brightGreen: HNRGBA
+    public let brightMagenta: HNRGBA
+    public let brightRed: HNRGBA
+    public let brightWhite: HNRGBA
+    public let brightYellow: HNRGBA
+    public let cyan: HNRGBA
+    public let green: HNRGBA
+    public let magenta: HNRGBA
+    public let red: HNRGBA
+    public let white: HNRGBA
+    public let yellow: HNRGBA
+  }
+
   public let action: Action
   public let brand: Brand
   public let focus: Focus
@@ -118,6 +138,7 @@ public struct HNColors: Sendable, Equatable {
   public let skeleton: Skeleton
   public let status: Status
   public let surface: Surface
+  public let terminal: Terminal
 
   /// The colours of `theme` in `mode`.
   public static func of(_ theme: HNTheme, _ mode: HNMode) -> HNColors {
@@ -177,6 +198,24 @@ public struct HNColors: Sendable, Equatable {
       page: HNRGBA(0x16140F),
       raised: HNRGBA(0x2A2620),
       tint: HNRGBA(0x253515)
+    ),
+    terminal: Terminal(
+      black: HNRGBA(0x8A8273),
+      blue: HNRGBA(0x8FB8FF),
+      brightBlack: HNRGBA(0xA39C8C),
+      brightBlue: HNRGBA(0xBED5FD),
+      brightCyan: HNRGBA(0xA3DDE0),
+      brightGreen: HNRGBA(0x8BE45F),
+      brightMagenta: HNRGBA(0xEFC0E3),
+      brightRed: HNRGBA(0xFCB2A5),
+      brightWhite: HNRGBA(0xF4F0E6),
+      brightYellow: HNRGBA(0xFEC98A),
+      cyan: HNRGBA(0x7ABFC3),
+      green: HNRGBA(0x42C501),
+      magenta: HNRGBA(0xD59CC8),
+      red: HNRGBA(0xFF7A66),
+      white: HNRGBA(0xCDC6B6),
+      yellow: HNRGBA(0xF0A53A)
     )
   )
 
@@ -226,6 +265,24 @@ public struct HNColors: Sendable, Equatable {
       page: HNRGBA(0xF4F0E6),
       raised: HNRGBA(0xECE7DC),
       tint: HNRGBA(0xE1ECD0)
+    ),
+    terminal: Terminal(
+      black: HNRGBA(0x16140F),
+      blue: HNRGBA(0x1F5FBF),
+      brightBlack: HNRGBA(0x4A4439),
+      brightBlue: HNRGBA(0x15448C),
+      brightCyan: HNRGBA(0x225052),
+      brightGreen: HNRGBA(0x1F5500),
+      brightMagenta: HNRGBA(0x623659),
+      brightRed: HNRGBA(0x86130D),
+      brightWhite: HNRGBA(0x716A5C),
+      brightYellow: HNRGBA(0x663D07),
+      cyan: HNRGBA(0x356E71),
+      green: HNRGBA(0x2B7300),
+      magenta: HNRGBA(0x834F78),
+      red: HNRGBA(0xB3261E),
+      white: HNRGBA(0x6B6456),
+      yellow: HNRGBA(0x8A5200)
     )
   )
 
@@ -275,6 +332,24 @@ public struct HNColors: Sendable, Equatable {
       page: HNRGBA(0x16140F),
       raised: HNRGBA(0x2A2620),
       tint: HNRGBA(0x253515)
+    ),
+    terminal: Terminal(
+      black: HNRGBA(0x8A8273),
+      blue: HNRGBA(0x8FB8FF),
+      brightBlack: HNRGBA(0xA39C8C),
+      brightBlue: HNRGBA(0xBED5FD),
+      brightCyan: HNRGBA(0xA3DDE0),
+      brightGreen: HNRGBA(0x8BE45F),
+      brightMagenta: HNRGBA(0xEFC0E3),
+      brightRed: HNRGBA(0xFCB2A5),
+      brightWhite: HNRGBA(0xF4F0E6),
+      brightYellow: HNRGBA(0xFEC98A),
+      cyan: HNRGBA(0x7ABFC3),
+      green: HNRGBA(0x42C501),
+      magenta: HNRGBA(0xD59CC8),
+      red: HNRGBA(0xFF7A66),
+      white: HNRGBA(0xCDC6B6),
+      yellow: HNRGBA(0xF0A53A)
     )
   )
 
@@ -324,6 +399,24 @@ public struct HNColors: Sendable, Equatable {
       page: HNRGBA(0xF4F0E6),
       raised: HNRGBA(0xECE7DC),
       tint: HNRGBA(0xE1ECD0)
+    ),
+    terminal: Terminal(
+      black: HNRGBA(0x16140F),
+      blue: HNRGBA(0x1F5FBF),
+      brightBlack: HNRGBA(0x4A4439),
+      brightBlue: HNRGBA(0x15448C),
+      brightCyan: HNRGBA(0x225052),
+      brightGreen: HNRGBA(0x1F5500),
+      brightMagenta: HNRGBA(0x623659),
+      brightRed: HNRGBA(0x86130D),
+      brightWhite: HNRGBA(0x716A5C),
+      brightYellow: HNRGBA(0x663D07),
+      cyan: HNRGBA(0x356E71),
+      green: HNRGBA(0x2B7300),
+      magenta: HNRGBA(0x834F78),
+      red: HNRGBA(0xB3261E),
+      white: HNRGBA(0x6B6456),
+      yellow: HNRGBA(0x8A5200)
     )
   )
 
@@ -373,6 +466,24 @@ public struct HNColors: Sendable, Equatable {
       page: HNRGBA(0x16140F),
       raised: HNRGBA(0x2A2620),
       tint: HNRGBA(0x253515)
+    ),
+    terminal: Terminal(
+      black: HNRGBA(0x8A8273),
+      blue: HNRGBA(0x8FB8FF),
+      brightBlack: HNRGBA(0xA39C8C),
+      brightBlue: HNRGBA(0xBED5FD),
+      brightCyan: HNRGBA(0xA3DDE0),
+      brightGreen: HNRGBA(0x8BE45F),
+      brightMagenta: HNRGBA(0xEFC0E3),
+      brightRed: HNRGBA(0xFCB2A5),
+      brightWhite: HNRGBA(0xF4F0E6),
+      brightYellow: HNRGBA(0xFEC98A),
+      cyan: HNRGBA(0x7ABFC3),
+      green: HNRGBA(0x42C501),
+      magenta: HNRGBA(0xD59CC8),
+      red: HNRGBA(0xFF7A66),
+      white: HNRGBA(0xCDC6B6),
+      yellow: HNRGBA(0xF0A53A)
     )
   )
 
@@ -422,6 +533,24 @@ public struct HNColors: Sendable, Equatable {
       page: HNRGBA(0xF4F0E6),
       raised: HNRGBA(0xECE7DC),
       tint: HNRGBA(0xE1ECD0)
+    ),
+    terminal: Terminal(
+      black: HNRGBA(0x16140F),
+      blue: HNRGBA(0x1F5FBF),
+      brightBlack: HNRGBA(0x4A4439),
+      brightBlue: HNRGBA(0x15448C),
+      brightCyan: HNRGBA(0x225052),
+      brightGreen: HNRGBA(0x1F5500),
+      brightMagenta: HNRGBA(0x623659),
+      brightRed: HNRGBA(0x86130D),
+      brightWhite: HNRGBA(0x716A5C),
+      brightYellow: HNRGBA(0x663D07),
+      cyan: HNRGBA(0x356E71),
+      green: HNRGBA(0x2B7300),
+      magenta: HNRGBA(0x834F78),
+      red: HNRGBA(0xB3261E),
+      white: HNRGBA(0x6B6456),
+      yellow: HNRGBA(0x8A5200)
     )
   )
 }

@@ -3,7 +3,7 @@ import { cpSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { build } from "../scripts/build";
-import { checkAll, ratio } from "../scripts/contrast";
+import { checkAll, ratio, TERMINAL } from "../scripts/contrast";
 import { TOKENS_DIR } from "../scripts/resolve";
 import { generateSwift, SWIFT_OUT } from "../scripts/swift";
 
@@ -80,6 +80,27 @@ describe("contrast", () => {
     expect(run.stderr.toString()).toContain("placeholder: skeleton.base on surface.raised");
   });
 
+  test("all 16 terminal colours are text pairs on surface.page, every theme, both modes", async () => {
+    const { results } = await checkAll();
+    const terminal = results.filter((r) => r.fg.startsWith("terminal."));
+    expect(new Set(terminal.map((r) => r.fg))).toEqual(new Set(TERMINAL));
+    expect(TERMINAL).toHaveLength(16);
+    expect(new Set(terminal.map((r) => r.bg))).toEqual(new Set(["surface.page"]));
+    expect(new Set(terminal.map((r) => r.kind))).toEqual(new Set(["text"]));
+    expect(terminal).toHaveLength(16 * 3 * 2);
+    expect(terminal.every((r) => r.ratio >= 4.5)).toBe(true);
+  });
+
+  test("a terminal colour under 4.5:1 on surface.page fails the CLI", () => {
+    // warm.600 is the usual ANSI bright-black grey, and 3.14:1 on the dark Grund.
+    const dir = fixture("semantic/color.dark.json", (j) => {
+      setToken(j, "terminal", "bright-black", "{palette.warm.600}");
+    });
+    const run = Bun.spawnSync(["bun", CONTRAST, "--tokens", dir]);
+    expect(run.exitCode).toBe(1);
+    expect(run.stderr.toString()).toContain("text: terminal.bright-black on surface.page");
+  });
+
   test("a colour token outside every rule fails the CLI", () => {
     const dir = fixture("semantic/color.light.json", (j) => {
       setToken(j, "ink", "faint", "{palette.warm.200}");
@@ -127,6 +148,25 @@ describe("build", () => {
     expect(mod.vars.surface.page).toBe("var(--hn-surface-page)");
   });
 
+  test("terminal tokens reach CSS, Tailwind and TS in both modes", async () => {
+    await built;
+    const css = readFileSync(join(dist, "tokens.css"), "utf8");
+    expect(css).toContain("--hn-terminal-magenta: #d59cc8;");
+    expect(css).toContain("--hn-terminal-cyan: #356e71;");
+    expect(css).toContain("--hn-terminal-bright-white: #f4f0e6;");
+    const tw = readFileSync(join(dist, "tailwind.css"), "utf8");
+    expect(tw).toContain("--color-hn-terminal-magenta: var(--hn-terminal-magenta);");
+    const mod = await import(join(dist, "index.js"));
+    expect(mod.tokens.kommandant.dark.terminal.magenta).toBe("#d59cc8");
+    expect(mod.tokens.kommandant.dark.terminal.cyan).toBe("#7abfc3");
+    expect(mod.tokens.kommandant.light.terminal.magenta).toBe("#834f78");
+    expect(mod.tokens.kommandant.light.terminal.cyan).toBe("#356e71");
+    // Green is lime, the one accent, and the aliases follow their semantic twins.
+    expect(mod.tokens.kommandant.dark.terminal.green).toBe(mod.tokens.kommandant.dark.status.ok);
+    expect(mod.tokens.kommandant.light.terminal.red).toBe(mod.tokens.kommandant.light.status.crit);
+    expect(mod.vars.terminal["bright-black"]).toBe("var(--hn-terminal-bright-black)");
+  });
+
   test("motion tokens reach CSS, Tailwind and TS", async () => {
     await built;
     const css = readFileSync(join(dist, "tokens.css"), "utf8");
@@ -157,6 +197,8 @@ describe("swift", () => {
     expect(swift).toContain("page: HNRGBA(0x16140F)");
     expect(swift).toContain("case .touch: return HNSize(row: 56, target: 44)");
     expect(swift).toContain("public static let s4: Double = 16");
+    expect(swift).toContain("public let terminal: Terminal");
+    expect(swift).toContain("brightMagenta: HNRGBA(0xEFC0E3)");
     expect(swift).toContain('public static let mono: [String] = ["JetBrains Mono"');
     expect(swift).toContain("HNShadowValue(color: HNRGBA(0x000000, alpha: 0xB3), x: 0, y: 30");
     expect(swift).not.toMatch(/palette\.[a-z]|density\.[a-z]|Material/);
