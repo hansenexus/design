@@ -1,0 +1,7 @@
+{
+  "category": "shell-layout",
+  "winner": "floating-panels",
+  "date": "2026-09-29",
+  "rationale": "Floating panels read as separate surfaces and keep content widest; glass off, so it stays on the flat-lime ruling (dec_2026-09-25_kommandant-visual-flat-lime-only) and needs no superseding ruling.",
+  "considered": ["command-first", "floating-panels", "rail-sidebar", "three-pane"]
+}

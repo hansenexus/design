@@ -199,14 +199,15 @@ describe("shell-layout", () => {
     return { category, variants };
   };
 
-  test("is an open vote on the four shells, at level template", async () => {
-    expect(found?.decision).toBeNull();
-    expect(found?.variants).toEqual([
+  test("is decided for floating panels out of the four shells, at level template", async () => {
+    expect(found?.decision?.winner).toBe("floating-panels");
+    expect(found?.decision?.considered).toEqual([
       "command-first",
       "floating-panels",
       "rail-sidebar",
       "three-pane",
     ]);
+    expect(found?.variants).toEqual(["floating-panels"]);
     const { category } = await load();
     expect(category.level).toBe("template");
   });
@@ -227,10 +228,8 @@ describe("shell-layout", () => {
         const html = renderToStaticMarkup(fixture.render(variant));
         expect(html).toContain(`data-theme="${theme}"`);
         expect(html).toContain(`data-screen="${screen}"`);
-        // The nav: a landmark, the drawer's menu button, or command-first's ⌘K field.
-        expect(html).toMatch(
-          /aria-label="App"|aria-label="Open navigation"|Search or run a command/
-        );
+        // The nav: a landmark or the drawer's menu button.
+        expect(html).toMatch(/aria-label="App"|aria-label="Open navigation"/);
         expect(html).toContain("kran-01");
       }
     }
