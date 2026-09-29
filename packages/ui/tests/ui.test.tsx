@@ -8,7 +8,7 @@ import { NoResultsIllustration } from "@hansenexus/illustrations/no-results";
 import { ms } from "@hansenexus/tokens";
 import { renderToStaticMarkup } from "react-dom/server";
 import { registryItemSchema } from "shadcn/schema";
-import { buildRegistry, loadRegistry } from "../scripts/registry";
+import { buildRegistry, loadRegistry, registryVersion, STAMP_RE } from "../scripts/registry";
 import * as ui from "../src";
 
 const ROOT = resolve(import.meta.dir, "..");
@@ -67,6 +67,29 @@ describe("registry", () => {
     expect(button.files?.[0]?.content).toContain("export function Button");
     const tokens = JSON.parse(readFileSync(join(out, "tokens.json"), "utf8"));
     expect(Object.keys(tokens.css)).toEqual(['@import "@hansenexus/tokens/tailwind.css"']);
+  });
+
+  test("stamps every copied-in file and item with the ui version (#65)", async () => {
+    const out = mkdtempSync(join(tmpdir(), "hn-registry-"));
+    await buildRegistry(out, "1.2.3");
+    const index = JSON.parse(readFileSync(join(out, "registry.json"), "utf8"));
+    expect(index.items.map((i: { meta: { version: string } }) => i.meta.version)).toEqual(
+      loadRegistry().items.map(() => "1.2.3")
+    );
+    for (const { name } of loadRegistry().items) {
+      const item = registryItemSchema.parse(
+        JSON.parse(readFileSync(join(out, `${name}.json`), "utf8"))
+      );
+      expect(item.meta?.version).toBe("1.2.3");
+      for (const file of item.files ?? []) {
+        const first = file.content?.split("\n")[0] ?? "";
+        expect(first).toBe(`"hn-registry: ${name}@1.2.3";`);
+        expect(first.match(STAMP_RE)?.slice(1)).toEqual([name, "1.2.3"]);
+      }
+    }
+    expect(registryVersion()).toBe(
+      JSON.parse(readFileSync(resolve(ROOT, "package.json"), "utf8")).version
+    );
   });
 });
 

@@ -3,10 +3,20 @@
 // /gallery/?scene=vote&category=<id>. With --out <dir> it also writes the static site
 // (index.html plus dist/, every URL relative) that the kit-gallery image serves at /. There the
 // JS and CSS carry a content hash in their names (main.<hash>.js), so an edge cache that keeps
-// .js and .css for hours never serves a stale bundle after a deploy (#50).
+// .js and .css for hours never serves a stale bundle after a deploy (#50). The site also carries
+// the built shadcn registry (dist/r from `bun run build`) at r/, so the registry is served next to
+// the gallery at design.hansenexus.dev/r/{name}.json (#65).
 // Run: bun scripts/gallery.ts [--serve] [--port 4410] [--out <dir>]
 import { createHash } from "node:crypto";
-import { copyFileSync, cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, extname, resolve, sep } from "node:path";
 import type { BunPlugin } from "bun";
 import { registrySource } from "./variants";
@@ -101,9 +111,13 @@ export function hashedName(file: string, body: Uint8Array | string): string {
   return `${file.slice(0, -ext.length)}.${hash}${ext}`;
 }
 
+/** The built registry (scripts/registry.ts via `bun run build`), copied to the site's r/. */
+const REGISTRY = resolve(ROOT, "dist/r");
+
 /**
  * Writes the deployable site: gallery/index.html at the root, the build under dist/, with the
- * HASHED files renamed to hashedName() and index.html pointing at the new names.
+ * HASHED files renamed to hashedName() and index.html pointing at the new names, and the
+ * registry under r/.
  */
 export function exportSite(dir: string) {
   const site = resolve(dir);
@@ -122,6 +136,9 @@ export function exportSite(dir: string) {
     html = html.replaceAll(ref, `"./dist/${name}"`);
   }
   writeFileSync(resolve(site, "index.html"), html);
+  if (!existsSync(resolve(REGISTRY, "registry.json")))
+    throw new Error(`gallery: no registry in ${REGISTRY}, run \`bun run build\` first`);
+  cpSync(REGISTRY, resolve(site, "r"), { recursive: true });
 }
 
 const TYPES: Record<string, string> = {
@@ -132,6 +149,7 @@ const TYPES: Record<string, string> = {
   ".png": "image/png",
   ".svg": "image/svg+xml",
   ".map": "application/json",
+  ".json": "application/json",
 };
 
 export function serve(port: number) {

@@ -317,10 +317,33 @@ useCommandShortcut(() => setOpen((o) => !o));               // ⌘K / Ctrl+K
 
 The same sources ship as a shadcn registry (`registry.json`; built items in `dist/r/`, also in the
 npm package under `@hansenexus/ui/registry/*`). Each item depends on `@hansenexus/tokens`, which adds
-the token import to your CSS. Point a namespace at wherever `dist/r` is hosted:
+the token import to your CSS.
+
+**Version stamp.** Every file an item copies in starts with `"hn-registry: <item>@<version>";`, and
+every item in `r/<item>.json` and `r/registry.json` carries the same version as `meta.version`. The
+version is this package's (`@hansenexus/ui`), so one release moves every item. `/design outdated` (the
+skill in hansenexus/skills) reads the stamps in a consumer repo and lists each one behind
+`meta.version`; keep the stamp line when you edit a copied file, it is how the block is found. It is
+an (inert) directive rather than a comment because `shadcn add` drops a file's leading comments.
+
+**Hosted.** The kit-gallery image serves `dist/r` next to the gallery, at
+`https://design.hansenexus.dev/r/{name}.json` (`no-cache`), behind Cloudflare Access. The shadcn CLI
+authenticates with an Access service token as headers; shadcn expands `${VAR}` from the
+environment, so the token stays out of `components.json` (the `/design` skill fills the variables
+from 1Password):
 
 ```json
-{ "registries": { "@hansenexus": "https://<host>/r/{name}.json" } }
+{
+  "registries": {
+    "@hansenexus": {
+      "url": "https://design.hansenexus.dev/r/{name}.json",
+      "headers": {
+        "CF-Access-Client-Id": "${HN_REGISTRY_CLIENT_ID}",
+        "CF-Access-Client-Secret": "${HN_REGISTRY_CLIENT_SECRET}"
+      }
+    }
+  }
+}
 ```
 
 ```sh
