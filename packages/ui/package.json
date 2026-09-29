@@ -41,6 +41,7 @@
     "build": "bun scripts/build.ts",
     "test": "bun test tests",
     "gallery": "bun scripts/gallery.ts",
+    "outdated": "bun scripts/outdated.ts",
     "variants": "bun scripts/variants.ts list",
     "decide": "bun scripts/variants.ts decide",
     "screenshots": "scripts/screenshots.sh",
