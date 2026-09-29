@@ -28,6 +28,7 @@ export const SCENES = [
   "data",
   "overlays",
   "navigation",
+  "motion",
   "vote",
 ] as const;
 export type Scene = (typeof SCENES)[number];

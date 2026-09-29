@@ -85,7 +85,7 @@ test("scene nav: every scene linked, the current one marked, links resolve, bare
 }) => {
   await page.goto("/gallery/?scene=states");
   const nav = page.getByRole("navigation", { name: "Gallery scenes" });
-  await expect(nav.getByRole("link")).toHaveCount(16);
+  await expect(nav.getByRole("link")).toHaveCount(17);
   await expect(nav.locator('[aria-current="page"]')).toHaveText("states");
   await expect(nav.getByRole("link", { name: "kit", exact: true })).toHaveAttribute("href", "./");
   await nav.getByRole("link", { name: "forms", exact: true }).click();
@@ -193,4 +193,39 @@ test("auto-loop: the QueryState card cycles loading, empty, error and success", 
   const state = card.locator("[data-loop] [data-state]").first();
   for (const status of ["loading", "empty", "error", "data", "loading"])
     await expect(state).toHaveAttribute("data-state", status, { timeout: 5000 });
+});
+
+test("motion scene: every token group with a curve and a demo that replays", async ({ page }) => {
+  await page.goto("/gallery/?scene=motion");
+  for (const group of ["delay", "min-visible", "pulse", "shimmer", "spin", "duration"])
+    await expect(page.locator(`[data-group="${group}"] [data-curve]`)).toHaveCount(1);
+  await expect(page.locator("[data-token]")).toHaveCount(8);
+  const card = page.locator('[data-preview="tokens"]').filter({ hasText: "pulse" });
+  await expect(card.locator("[data-demo]")).toHaveAttribute("data-moved", "true");
+  await card.getByRole("button", { name: /^Replay/ }).click();
+  await expect(card.locator("[data-run]")).toHaveAttribute("data-run", "1");
+  await expect(card.locator("[data-demo]")).toHaveAttribute("data-moved", "true");
+});
+
+test("scripted flow: plays in order, scrubs and replays", async ({ page }) => {
+  await page.goto("/gallery/?scene=motion&speed=0.5");
+  const flow = page.locator('[data-flow="palette-sheet"]');
+  await expect(flow).toHaveAttribute("data-step", "0");
+  await flow.getByRole("button", { name: "Play", exact: true }).click();
+  for (const step of ["1", "2", "3", "4"])
+    await expect(flow).toHaveAttribute("data-step", step, { timeout: 8000 });
+  await expect(flow.locator("[data-flow-sheet]")).toBeVisible();
+  await expect(flow.getByRole("button", { name: "Play", exact: true })).toBeVisible();
+
+  const scrub = flow.getByRole("slider");
+  await scrub.fill("0");
+  await expect(flow).toHaveAttribute("data-step", "0");
+  await expect(flow.locator("[data-flow-sheet]")).toHaveCount(0);
+  await flow.getByRole("button", { name: /^3\. / }).click();
+  await expect(flow).toHaveAttribute("data-step", "2");
+  await expect(flow.getByRole("combobox")).toHaveValue("kran");
+
+  await flow.getByRole("button", { name: "Play from start" }).click();
+  await expect(flow).toHaveAttribute("data-step", "0");
+  await expect(flow).toHaveAttribute("data-step", "1", { timeout: 8000 });
 });

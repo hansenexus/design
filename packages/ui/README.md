@@ -385,6 +385,13 @@ popover and pager in the same run (keyboard, focus return, `aria-current` after 
 Every scene carries a top nav linking all the others; the baselines load their scene with
 `&bare=1`, which leaves the nav out of the frame.
 
+The motion scene (`?scene=motion`) has no pixel baseline, since it is motion. It reads
+`semantic/motion.json` and the `duration` tokens of `semantic/scale.json` directly and shows each
+group as its easing curve plus a block that crosses its track over the token's duration; Replay
+plays a group again. Scripted flows play there as a timeline (play, pause, scrub, jump to a step).
+A flow is a hand-written step list in `gallery/motion.ts`: each step is a label, a hold in ms and
+the whole state the stage renders, so a scrub is a lookup. The interaction spec drives both.
+
 ```sh
 bun run build                 # tokens dist is needed by the gallery
 bun run screenshots           # compare (from packages/ui)

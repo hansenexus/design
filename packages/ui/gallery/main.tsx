@@ -104,6 +104,7 @@ import {
 import { Data } from "./data";
 import { Bell, Check, Key, MapIcon, More, Restart, Server } from "./icons";
 import { ITEM_SCENES, itemsByLevel } from "./levels";
+import { Motion } from "./motion-scene";
 import { Navigation } from "./navigation";
 import { Overlays } from "./overlays";
 import { BareContext, PreviewCard, useMotionTimings, ViewContext, ViewToolbar } from "./preview";
@@ -1051,6 +1052,8 @@ function Scenes({ scene }: { scene: Scene }) {
       return <Overlays />;
     case "navigation":
       return <Navigation />;
+    case "motion":
+      return <Motion />;
     case "loading":
       return <Loading />;
     case "brand":
