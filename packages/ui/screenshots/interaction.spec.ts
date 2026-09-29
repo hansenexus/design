@@ -139,3 +139,58 @@ test("view toolbar: a fixed viewport renders the scene in an iframe of that widt
     inner.locator('[data-preview="spinner"]').getByRole("button", { name: /^Replay/ })
   ).toBeVisible();
 });
+
+test("compare: every card renders once per theme, side by side", async ({ page }) => {
+  await page.goto("/gallery/?scene=loading");
+  await page
+    .getByRole("toolbar", { name: "Gallery view" })
+    .getByLabel("Compare")
+    .selectOption("on");
+  await expect(page).toHaveURL(/compare=on/);
+  const card = page.locator('[data-preview="spinner"]');
+  const panels = card.locator("[data-compare]");
+  await expect(panels).toHaveCount(4);
+  for (const theme of ["hansenexus", "kommandant", "portal", "lexilink"])
+    await expect(card.locator(`[data-compare="${theme}"]`)).toHaveAttribute("data-theme", theme);
+  // Side by side where they fit (260 px each); at phone width they stack.
+  const [a, b] = [await panels.nth(0).boundingBox(), await panels.nth(1).boundingBox()];
+  const wide = (page.viewportSize()?.width ?? 0) >= 1280;
+  expect(a && b && (wide ? Math.abs(a.y - b.y) < 1 && b.x > a.x : b.y > a.y)).toBe(true);
+});
+
+test("speed and motion scale the motion variables at the root and on compare panels", async ({
+  page,
+}) => {
+  await page.goto("/gallery/?scene=loading&speed=0.25&compare=on");
+  const read = (selector: string, name: string) =>
+    page
+      .locator(selector)
+      .first()
+      .evaluate((el, n) => getComputedStyle(el).getPropertyValue(n), name);
+  expect(await read("html", "--hn-delay-pending")).toBe("800ms");
+  expect(await read('[data-compare="portal"]', "--hn-spin-duration")).toBe("3200ms");
+  await page
+    .getByRole("toolbar", { name: "Gallery view" })
+    .getByLabel("Motion")
+    .selectOption("reduced");
+  expect(await read("html", "--hn-pulse-duration")).toBe("0ms");
+  expect(await read('[data-compare="portal"]', "--hn-min-visible-pending")).toBe("0ms");
+  await page
+    .getByRole("toolbar", { name: "Gallery view" })
+    .getByLabel("Motion")
+    .selectOption("full");
+  await page.getByRole("toolbar", { name: "Gallery view" }).getByLabel("Speed").selectOption("1");
+  expect(await read("html", "--hn-delay-pending")).toBe("200ms");
+});
+
+test("auto-loop: the QueryState card cycles loading, empty, error and success", async ({
+  page,
+}) => {
+  await page.goto("/gallery/?scene=states");
+  const card = page.locator('[data-preview="query-state"]');
+  await card.getByRole("button", { name: /^Auto-loop/ }).click();
+  // The QueryState container; ErrorState inside it carries a data-state of its own.
+  const state = card.locator("[data-loop] [data-state]").first();
+  for (const status of ["loading", "empty", "error", "data", "loading"])
+    await expect(state).toHaveAttribute("data-state", status, { timeout: 5000 });
+});

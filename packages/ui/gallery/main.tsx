@@ -99,15 +99,19 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
+  useDelayedVisibility,
 } from "../src";
 import { Data } from "./data";
 import { Bell, Check, Key, MapIcon, More, Restart, Server } from "./icons";
 import { ITEM_SCENES, itemsByLevel } from "./levels";
 import { Navigation } from "./navigation";
 import { Overlays } from "./overlays";
-import { BareContext, PreviewCard, ViewToolbar } from "./preview";
+import { BareContext, PreviewCard, useMotionTimings, ViewContext, ViewToolbar } from "./preview";
 import {
   frameQuery,
+  type LoopStatus,
+  motionTokens,
+  motionVariables,
   readView,
   SCENES,
   type Scene,
@@ -452,6 +456,7 @@ function MachineSkeleton({ surface }: { surface: string }) {
  * shows its base colour and the ring its start angle.
  */
 function Loading() {
+  const timings = useMotionTimings();
   return (
     <main className="mx-auto flex max-w-[1280px] flex-col gap-10 px-4 py-10 sm:px-10">
       <header className="flex flex-col gap-2">
@@ -483,7 +488,7 @@ function Loading() {
             <SpinnerGlyph size={16} />
             <SpinnerGlyph size={24} />
             <Button variant="secondary" disabled>
-              <Spinner label="Saving" />
+              <Spinner label="Saving" {...timings} />
               Saving
             </Button>
           </div>
@@ -515,9 +520,23 @@ function Frame({ children }: { children: ReactNode }) {
  * German and English copy side by side. Screenshots disable animation, so the indeterminate
  * Progress shows the skeleton base colour.
  */
+/** The skeleton QueryState shows while loading, held back and held on by the motion timings. */
+function DelayedSkeleton() {
+  const visible = useDelayedVisibility(true, useMotionTimings());
+  return visible ? <Skeleton shape="text" lines={3} className="text-sm" /> : null;
+}
+
+/** The auto-loop's input for each status: QueryState is driven only through its props. */
+const LOOP_QUERY: Record<LoopStatus, { query: string[] | undefined; error?: Error }> = {
+  loading: { query: undefined },
+  empty: { query: [] },
+  error: { query: QUAYS, error: FAILURE },
+  data: { query: QUAYS },
+};
+
 function States() {
-  const machines = (query: string[] | undefined, error?: Error) => (
-    <QueryState query={query} error={error} onRetry={() => {}}>
+  const machines = (query: string[] | undefined, error?: Error, loading?: ReactNode) => (
+    <QueryState query={query} error={error} loading={loading} onRetry={() => {}}>
       {(rows) => (
         <ul className="m-0 flex list-none flex-col gap-2 p-0 text-sm">
           {rows.map((r) => (
@@ -583,14 +602,25 @@ function States() {
             </div>
           </Frame>
         </Spec>
-        <Spec title="QueryState: loading, empty, data, error" wide>
+        <PreviewCard
+          title="QueryState: loading, empty, data, error"
+          item="query-state"
+          wide
+          loop={(status) => (
+            <div className="max-w-sm" data-loop={status}>
+              <Frame>
+                {machines(LOOP_QUERY[status].query, LOOP_QUERY[status].error, <DelayedSkeleton />)}
+              </Frame>
+            </div>
+          )}
+        >
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Frame>{machines(undefined)}</Frame>
             <Frame>{machines([])}</Frame>
             <Frame>{machines(QUAYS)}</Frame>
             <Frame>{machines(QUAYS, FAILURE)}</Frame>
           </div>
-        </Spec>
+        </PreviewCard>
       </div>
     </main>
   );
@@ -1211,12 +1241,22 @@ function LevelNav({ view }: { view: View }) {
   );
 }
 
-/** Sets data-theme, data-mode and data-density on <html>, where @hansenexus/tokens reads them. */
+/**
+ * Sets data-theme, data-mode and data-density on <html>, where @hansenexus/tokens reads them, and
+ * the motion variables scaled by speed and motion (#60) inline on it, where they win over the
+ * theme's own values. Component code only ever reads the variables.
+ */
 function applyView(view: View) {
   const html = document.documentElement;
   for (const [key, value] of Object.entries(viewAttributes(view))) {
     if (value === null) delete html.dataset[key];
     else html.dataset[key] = value;
+  }
+  const motion = motionVariables(view);
+  for (const [name] of motionTokens()) {
+    const value = motion[name];
+    if (value === undefined) html.style.removeProperty(name);
+    else html.style.setProperty(name, value);
   }
 }
 
@@ -1244,7 +1284,7 @@ function Gallery() {
     setView(next);
   };
   return (
-    <>
+    <ViewContext.Provider value={view}>
       <SceneNav current={scene} view={view} />
       <LevelNav view={view} />
       <ViewToolbar view={view} onChange={change} />
@@ -1260,7 +1300,7 @@ function Gallery() {
           />
         </div>
       )}
-    </>
+    </ViewContext.Provider>
   );
 }
 
@@ -1269,7 +1309,13 @@ if (root) {
   createRoot(root).render(
     <StrictMode>
       <BareContext.Provider value={bare}>
-        {framed ? <Scenes scene={scene} /> : <Gallery />}
+        {framed ? (
+          <ViewContext.Provider value={readView(query)}>
+            <Scenes scene={scene} />
+          </ViewContext.Provider>
+        ) : (
+          <Gallery />
+        )}
       </BareContext.Provider>
     </StrictMode>
   );

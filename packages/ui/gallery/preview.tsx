@@ -2,29 +2,100 @@
 // with a replay button, which remounts its children so enter motion and delayed states play
 // again, a copy-install action and the item's atomic level from registry.json (#58). With ?bare=1 the card renders exactly like a plain spec
 // section, so the screenshot baselines stay the same.
-import { createContext, type ReactNode, useContext, useEffect, useState } from "react";
+// The review tools (hansenexus/design#60): compare renders the card once per theme side by side,
+// speed and motion scale the motion variables (set at the gallery root, and again on each compare
+// panel, whose data-theme redeclares them), and a card with a `loop` gets an auto-loop toggle
+// that drives its content through QueryState's states.
+import { themes } from "@hansenexus/tokens";
+import {
+  type CSSProperties,
+  createContext,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { Badge, Button } from "../src";
 import { Check, Restart } from "./icons";
 import { levelOf } from "./levels";
-import { installCommand, VIEW_OPTIONS, type View } from "./view";
+import {
+  DEFAULT_VIEW,
+  installCommand,
+  LOOP,
+  type LoopStatus,
+  loopTimings,
+  motionVariables,
+  VIEW_OPTIONS,
+  type View,
+  viewAttributes,
+} from "./view";
 
 /** True when the page renders for a screenshot or inside the viewport iframe. */
 export const BareContext = createContext(false);
+
+/** The current view, for the compare panels and the motion timings. */
+export const ViewContext = createContext<View>(DEFAULT_VIEW);
+
+/** The pending indicator's delay and minimum at the current speed and motion. */
+export function useMotionTimings() {
+  const { delayMs, minVisibleMs } = loopTimings(useContext(ViewContext));
+  return { delayMs, minVisibleMs };
+}
+
+/** Steps through loopTimings' states while `on`, starting at loading, and around again. */
+function useLoop(on: boolean, view: View): LoopStatus {
+  const [step, setStep] = useState(0);
+  const { speed, motion } = view;
+  useEffect(() => {
+    if (!on) {
+      setStep(0);
+      return;
+    }
+    const { steps } = loopTimings({ speed, motion });
+    const t = setTimeout(() => setStep((n) => (n + 1) % steps.length), steps[step]?.ms ?? 0);
+    return () => clearTimeout(t);
+  }, [on, step, speed, motion]);
+  return LOOP[step] ?? "loading";
+}
+
+/** One compare panel: the card's content under one theme, in the current mode and density. */
+function ThemePanel({ theme, view, children }: { theme: string; view: View; children: ReactNode }) {
+  const { mode, density } = viewAttributes(view);
+  return (
+    <div
+      data-theme={theme}
+      data-mode={mode}
+      data-density={density ?? undefined}
+      data-compare={theme}
+      style={motionVariables(view) as CSSProperties}
+      className="flex min-w-0 flex-col gap-2 rounded-hn-lg border border-hn-line-subtle bg-hn-surface-page p-3 text-hn-ink-primary"
+    >
+      <span className="font-hn-mono text-xs text-hn-ink-muted">{theme}</span>
+      {children}
+    </div>
+  );
+}
 
 export function PreviewCard({
   title,
   item,
   wide = false,
+  loop,
   children,
 }: {
   title: string;
   /** The registry.json item name the install command adds. */
   item: string;
   wide?: boolean;
+  /** Content for one QueryState status; gives the card an auto-loop toggle. */
+  loop?: (status: LoopStatus) => ReactNode;
   children: ReactNode;
 }) {
   const bare = useContext(BareContext);
+  const view = useContext(ViewContext);
   const [run, setRun] = useState(0);
+  const [looping, setLooping] = useState(false);
+  const status = useLoop(looping && !bare && loop !== undefined, view);
   const [copy, setCopy] = useState<"idle" | "copied" | "failed">("idle");
   const command = installCommand(item);
   const level = levelOf(item);
@@ -46,6 +117,8 @@ export function PreviewCard({
     );
   }
 
+  const content = loop && looping ? loop(status) : children;
+
   const onCopy = () => {
     navigator.clipboard.writeText(command).then(
       () => setCopy("copied"),
@@ -59,6 +132,16 @@ export function PreviewCard({
         <h2 className={heading}>{title}</h2>
         {level ? <Badge>{level}</Badge> : null}
         <div className="ml-auto flex items-center gap-1">
+          {loop ? (
+            <Button
+              variant="ghost"
+              aria-pressed={looping}
+              onClick={() => setLooping((on) => !on)}
+              aria-label={`Auto-loop ${title}`}
+            >
+              {looping ? `Auto-loop: ${status === "data" ? "success" : status}` : "Auto-loop"}
+            </Button>
+          ) : null}
           <Button
             variant="ghost"
             onClick={() => setRun((n) => n + 1)}
@@ -83,8 +166,19 @@ export function PreviewCard({
       {copy === "failed" ? (
         <code className="font-hn-mono text-[12px] text-hn-ink-body">{command}</code>
       ) : null}
-      <div key={run} data-run={run} className="contents">
-        {children}
+      {/* Keyed on speed and motion too, so timers that read their timing on mount pick it up. */}
+      <div key={`${run}-${view.speed}-${view.motion}`} data-run={run} className="contents">
+        {view.compare === "on" ? (
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,260px),1fr))] gap-3">
+            {themes.map((theme) => (
+              <ThemePanel key={theme} theme={theme} view={view}>
+                {content}
+              </ThemePanel>
+            ))}
+          </div>
+        ) : (
+          content
+        )}
       </div>
     </section>
   );
@@ -95,6 +189,9 @@ const LABELS: Record<keyof View, string> = {
   density: "Density",
   mode: "Mode",
   viewport: "Viewport",
+  compare: "Compare",
+  speed: "Speed",
+  motion: "Motion",
 };
 
 /** One native select per view key; a change rewrites the query and re-renders every card. */
@@ -116,7 +213,7 @@ export function ViewToolbar({ view, onChange }: { view: View; onChange: (view: V
           >
             {VIEW_OPTIONS[key].map((v) => (
               <option key={v} value={v}>
-                {key === "viewport" && v !== "auto" ? `${v} px` : v}
+                {key === "viewport" && v !== "auto" ? `${v} px` : key === "speed" ? `${v}x` : v}
               </option>
             ))}
           </select>
