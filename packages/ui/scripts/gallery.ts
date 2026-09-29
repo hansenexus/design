@@ -38,18 +38,23 @@ const BRAND_FILES = [
 
 // Self-hosted fonts, so screenshots never depend on the network. The token stacks name the
 // families without "Variable", so the fontsource faces are re-registered under those names.
-// The woff2 files are copied into dist/fonts/ so the built gallery is self-contained.
+// The woff2 files are copied into dist/fonts/ so the built gallery is self-contained. Every theme's
+// stacks are here: Fraunces, Instrument Sans and JetBrains Mono for the shared tier, Archivo and
+// Geist Mono for lexilink (#62). Archivo comes from wdth.css, the faces with the width axis, since
+// lexilink's hierarchy is font-stretch; the other packages ship the weight axis in index.css.
 const FONTS = [
-  ["fraunces", "Fraunces"],
-  ["instrument-sans", "Instrument Sans"],
-  ["jetbrains-mono", "JetBrains Mono"],
+  ["fraunces", "Fraunces", "index.css"],
+  ["instrument-sans", "Instrument Sans", "index.css"],
+  ["jetbrains-mono", "JetBrains Mono", "index.css"],
+  ["archivo", "Archivo", "wdth.css"],
+  ["geist-mono", "Geist Mono", "index.css"],
 ] as const;
 
 function fontsCss(): string {
   mkdirSync(resolve(OUT, "fonts"), { recursive: true });
-  return FONTS.map(([pkg, family]) => {
-    const dir = dirname(Bun.resolveSync(`@fontsource-variable/${pkg}/index.css`, ROOT));
-    const css = readFileSync(resolve(dir, "index.css"), "utf8");
+  return FONTS.map(([pkg, family, file]) => {
+    const dir = dirname(Bun.resolveSync(`@fontsource-variable/${pkg}/${file}`, ROOT));
+    const css = readFileSync(resolve(dir, file), "utf8");
     for (const [, file] of css.matchAll(/url\(\.\/files\/([^)]+)\)/g)) {
       if (file) copyFileSync(resolve(dir, "files", file), resolve(OUT, "fonts", file));
     }

@@ -41,6 +41,7 @@
     "build": "bun scripts/build.ts",
     "test": "bun test tests",
     "gallery": "bun scripts/gallery.ts",
+    "outdated": "bun scripts/outdated.ts",
     "variants": "bun scripts/variants.ts list",
     "decide": "bun scripts/variants.ts decide",
     "screenshots": "scripts/screenshots.sh",
@@ -55,7 +56,9 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@fontsource-variable/archivo": "5.3.0",
     "@fontsource-variable/fraunces": "5.3.0",
+    "@fontsource-variable/geist-mono": "5.3.0",
     "@fontsource-variable/instrument-sans": "5.3.0",
     "@fontsource-variable/jetbrains-mono": "5.3.0",
     "@hansenexus/illustrations": "workspace:*",

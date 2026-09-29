@@ -11,6 +11,27 @@ import {
   themes,
 } from "@hansenexus/tokens";
 
+/** The gallery scenes, one page each: kit is ./, the rest ?scene=<name>. */
+export const SCENES = [
+  "kit",
+  "dialog",
+  "menu",
+  "select",
+  "tooltip",
+  "toast",
+  "brand",
+  "loading",
+  "states",
+  "illustrations",
+  "forms",
+  "layout",
+  "data",
+  "overlays",
+  "navigation",
+  "vote",
+] as const;
+export type Scene = (typeof SCENES)[number];
+
 /** "auto" renders the scene in the page itself; a width renders it in an iframe of that width. */
 export const VIEWPORTS = ["auto", "390", "1280"] as const;
 export type Viewport = (typeof VIEWPORTS)[number];
@@ -77,6 +98,15 @@ export function readView(query: URLSearchParams): View {
     speed: pick(VIEW_OPTIONS.speed, query.get("speed"), DEFAULT_VIEW.speed),
     motion: pick(VIEW_OPTIONS.motion, query.get("motion"), DEFAULT_VIEW.motion),
   };
+}
+
+/** A relative link to a scene that keeps the view: kit is ./, the rest ?scene=<name>. */
+export function sceneHref(scene: Scene, view: View): string {
+  const q = writeView(
+    new URLSearchParams(scene === "kit" ? "" : `scene=${scene}`),
+    view
+  ).toString();
+  return q ? `?${q}` : "./";
 }
 
 /** A copy of `query` with the view's keys set; defaults are dropped so plain links stay plain. */

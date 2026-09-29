@@ -1,6 +1,6 @@
 // The preview card and the view toolbar (hansenexus/design#57). A card shows one registry item
 // with a replay button, which remounts its children so enter motion and delayed states play
-// again, and a copy-install action. With ?bare=1 the card renders exactly like a plain spec
+// again, a copy-install action and the item's atomic level from registry.json (#58). With ?bare=1 the card renders exactly like a plain spec
 // section, so the screenshot baselines stay the same.
 // The review tools (hansenexus/design#60): compare renders the card once per theme side by side,
 // speed and motion scale the motion variables (set at the gallery root, and again on each compare
@@ -15,8 +15,9 @@ import {
   useEffect,
   useState,
 } from "react";
-import { Button } from "../src";
+import { Badge, Button } from "../src";
 import { Check, Restart } from "./icons";
+import { levelOf } from "./levels";
 import {
   DEFAULT_VIEW,
   installCommand,
@@ -97,6 +98,7 @@ export function PreviewCard({
   const status = useLoop(looping && !bare && loop !== undefined, view);
   const [copy, setCopy] = useState<"idle" | "copied" | "failed">("idle");
   const command = installCommand(item);
+  const level = levelOf(item);
 
   useEffect(() => {
     if (copy === "idle") return;
@@ -125,9 +127,10 @@ export function PreviewCard({
   };
 
   return (
-    <section className={section} data-preview={item}>
+    <section className={section} data-preview={item} data-level={level}>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
         <h2 className={heading}>{title}</h2>
+        {level ? <Badge>{level}</Badge> : null}
         <div className="ml-auto flex items-center gap-1">
           {loop ? (
             <Button

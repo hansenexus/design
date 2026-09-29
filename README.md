@@ -23,6 +23,11 @@ bun run brand   # regenerates brand/assets and the Swift brand files after a geo
 outside `packages/tokens`. `ratchet.baseline.json` holds allowed counts per file; it is empty and
 may only shrink (`bun scripts/ratchet.ts --update`).
 
+`bun run ratchet` also runs `scripts/levels.ts`: every `@hansenexus/ui` registry item carries
+`meta.level` (`atom|molecule|organism|template`) in `packages/ui/registry.json`, and a file may import
+only items of the same or a lower level. Folders stay flat; the level lives in that metadata. The
+gallery lists the items by level and shows each preview card's level.
+
 ## Releases
 
 Each package publishes to npm with provenance over OIDC trusted publishing, from its own
