@@ -12,7 +12,7 @@ import { NoPermissionIllustration } from "@hansenexus/illustrations/no-permissio
 import { NoResultsIllustration } from "@hansenexus/illustrations/no-results";
 import { OfflineIllustration } from "@hansenexus/illustrations/offline";
 import { SuccessIllustration } from "@hansenexus/illustrations/success";
-import { type ComponentType, type ReactNode, StrictMode } from "react";
+import { type ComponentType, type ReactNode, StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   Accordion,
@@ -104,6 +104,8 @@ import { Data } from "./data";
 import { Bell, Check, Key, MapIcon, More, Restart, Server } from "./icons";
 import { Navigation } from "./navigation";
 import { Overlays } from "./overlays";
+import { BareContext, PreviewCard, ViewToolbar } from "./preview";
+import { frameQuery, readView, type View, viewAttributes, writeView } from "./view";
 import { Vote } from "./vote";
 
 export const SCENES = [
@@ -455,8 +457,9 @@ function MachineSkeleton({ surface }: { surface: string }) {
 }
 
 /**
- * The loading scene: Skeleton in every shape on every surface, and the Spinner. Screenshots
- * disable animation, so the skeleton shows its base colour and the ring its start angle.
+ * The loading scene: Skeleton in every shape on every surface, and the Spinner, as preview cards
+ * (replay shows the Spinner's 200 ms delay again). Screenshots disable animation, so the skeleton
+ * shows its base colour and the ring its start angle.
  */
 function Loading() {
   return (
@@ -468,7 +471,7 @@ function Loading() {
         </h1>
       </header>
       <div className="grid gap-x-8 gap-y-10 lg:grid-cols-2">
-        <Spec title="Skeleton on each surface" wide>
+        <PreviewCard title="Skeleton on each surface" item="skeleton" wide>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {SURFACES.map(([name, surface]) => (
               <div key={name} className="flex flex-col gap-2">
@@ -477,15 +480,15 @@ function Loading() {
               </div>
             ))}
           </div>
-        </Spec>
-        <Spec title="Skeleton shapes: block, text, circle">
+        </PreviewCard>
+        <PreviewCard title="Skeleton shapes: block, text, circle" item="skeleton">
           <div className="flex items-start gap-4 rounded-hn-lg bg-hn-surface-card p-4">
             <Skeleton width={96} height={72} />
             <Skeleton shape="text" lines={3} className="flex-1 text-sm" />
             <Skeleton shape="circle" width={40} />
           </div>
-        </Spec>
-        <Spec title="Spinner: after 200 ms, at least 400 ms">
+        </PreviewCard>
+        <PreviewCard title="Spinner: after 200 ms, at least 400 ms" item="spinner">
           <div className="flex items-center gap-6 rounded-hn-lg bg-hn-surface-card p-4">
             <SpinnerGlyph size={16} />
             <SpinnerGlyph size={24} />
@@ -494,7 +497,7 @@ function Loading() {
               Saving
             </Button>
           </div>
-        </Spec>
+        </PreviewCard>
       </div>
     </main>
   );
@@ -1148,11 +1151,15 @@ function Scenes({ scene }: { scene: Scene }) {
 
 /**
  * The top bar on every scene: one plain link per entry of SCENES, relative so the site works
- * behind any path (kit is ./, the rest ?scene=<name>). Wraps onto more rows at phone width.
- * It sits above the overlays' z-50 and takes pointer events back from the body, so the modal
- * dialog and select scenes can still be left by a click.
+ * behind any path (kit is ./, the rest ?scene=<name>), carrying the current view along. Wraps
+ * onto more rows at phone width. It sits above the overlays' z-50 and takes pointer events back
+ * from the body, so the modal dialog and select scenes can still be left by a click.
  */
-function SceneNav({ current }: { current: Scene }) {
+function SceneNav({ current, view }: { current: Scene; view: View }) {
+  const href = (s: Scene) => {
+    const q = writeView(new URLSearchParams(s === "kit" ? "" : `scene=${s}`), view).toString();
+    return q ? `?${q}` : "./";
+  };
   return (
     <nav
       aria-label="Gallery scenes"
@@ -1161,7 +1168,7 @@ function SceneNav({ current }: { current: Scene }) {
       {SCENES.map((s) => (
         <a
           key={s}
-          href={s === "kit" ? "./" : `?scene=${s}`}
+          href={href(s)}
           aria-current={s === current ? "page" : undefined}
           className="text-hn-ink-primary aria-[current=page]:font-semibold"
         >
@@ -1172,17 +1179,65 @@ function SceneNav({ current }: { current: Scene }) {
   );
 }
 
+/** Sets data-theme, data-mode and data-density on <html>, where @hansenexus/tokens reads them. */
+function applyView(view: View) {
+  const html = document.documentElement;
+  for (const [key, value] of Object.entries(viewAttributes(view))) {
+    if (value === null) delete html.dataset[key];
+    else html.dataset[key] = value;
+  }
+}
+
 const query = new URLSearchParams(location.search);
 const param = query.get("scene");
 const scene: Scene = SCENES.includes(param as Scene) ? (param as Scene) : "kit";
-// ?bare=1 drops the nav: the screenshot baselines (screenshots/kit.spec.ts) frame the scene alone.
+// ?bare=1 drops the nav, the toolbar and the card actions: the screenshot baselines
+// (screenshots/kit.spec.ts) frame the scene alone. ?frame=1, the viewport iframe, drops only the
+// nav and toolbar, since it renders inside the outer page's chrome.
 const bare = query.get("bare") === "1";
+const framed = bare || query.get("frame") === "1";
+applyView(readView(query));
+
+/**
+ * The page: nav, view toolbar and the scene. A toolbar change updates <html> and the query in
+ * place, so every card re-renders without a reload. A fixed viewport renders the scene in an
+ * iframe of that width, where the scene's own breakpoints apply.
+ */
+function Gallery() {
+  const [view, setView] = useState(() => readView(query));
+  const change = (next: View) => {
+    applyView(next);
+    const q = writeView(new URLSearchParams(location.search), next).toString();
+    history.replaceState(null, "", q ? `?${q}` : location.pathname);
+    setView(next);
+  };
+  return (
+    <>
+      <SceneNav current={scene} view={view} />
+      <ViewToolbar view={view} onChange={change} />
+      {view.viewport === "auto" ? (
+        <Scenes scene={scene} />
+      ) : (
+        <div className="overflow-x-auto bg-hn-surface-band p-4 sm:p-6">
+          <iframe
+            title={`${scene} at ${view.viewport} px`}
+            src={`?${frameQuery(new URLSearchParams(location.search), view)}`}
+            width={Number(view.viewport)}
+            className="mx-auto block h-[calc(100vh-10rem)] min-h-[480px] border border-hn-line-strong bg-hn-surface-page"
+          />
+        </div>
+      )}
+    </>
+  );
+}
+
 const root = document.getElementById("root");
 if (root) {
   createRoot(root).render(
     <StrictMode>
-      {!bare && <SceneNav current={scene} />}
-      <Scenes scene={scene} />
+      <BareContext.Provider value={bare}>
+        {framed ? <Scenes scene={scene} /> : <Gallery />}
+      </BareContext.Provider>
     </StrictMode>
   );
 }
