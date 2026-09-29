@@ -103,12 +103,14 @@ import {
 } from "../src";
 import { Data } from "./data";
 import { Bell, Check, Key, MapIcon, More, Restart, Server } from "./icons";
-import { ITEM_SCENES, itemsByLevel } from "./levels";
+import { ItemPage, isItem } from "./item";
+import { itemsByLevel } from "./levels";
 import { Navigation } from "./navigation";
 import { Overlays } from "./overlays";
 import { BareContext, PreviewCard, useMotionTimings, ViewContext, ViewToolbar } from "./preview";
 import {
   frameQuery,
+  itemHref,
   type LoopStatus,
   motionTokens,
   motionVariables,
@@ -1175,7 +1177,7 @@ function Scenes({ scene }: { scene: Scene }) {
  * onto more rows at phone width. It sits above the overlays' z-50 and takes pointer events back
  * from the body, so the modal dialog and select scenes can still be left by a click.
  */
-function SceneNav({ current, view }: { current: Scene; view: View }) {
+function SceneNav({ current, view }: { current: Scene | null; view: View }) {
   return (
     <nav
       aria-label="Gallery scenes"
@@ -1196,8 +1198,9 @@ function SceneNav({ current, view }: { current: Scene; view: View }) {
 }
 
 /**
- * The registry by atomic level (#58), lowest first: one row per level, each item linking to the
- * scene that shows it. Collapsed by default so the scene stays in view; the summary counts them.
+ * The registry by atomic level (#58), lowest first: one row per level, each item linking to its
+ * page with its blast radius (#59). Collapsed by default so the scene stays in view; the summary
+ * counts them.
  */
 function LevelNav({ view }: { view: View }) {
   const groups = itemsByLevel();
@@ -1216,19 +1219,17 @@ function LevelNav({ view }: { view: View }) {
               <dt className="font-hn-mono text-hn-ink-muted">{level}s</dt>
               <dd className="m-0 flex flex-wrap gap-x-3 gap-y-1">
                 {items.length ? (
-                  items.map((item) => {
-                    const scene = ITEM_SCENES[item.name] ?? "kit";
-                    return (
-                      <a
-                        key={item.name}
-                        href={sceneHref(scene, view)}
-                        title={`${item.name}, in the ${scene} scene`}
-                        className="text-hn-ink-primary"
-                      >
-                        {item.title}
-                      </a>
-                    );
-                  })
+                  items.map((item) => (
+                    <a
+                      key={item.name}
+                      href={itemHref(item.name, view)}
+                      aria-current={item.name === itemParam ? "page" : undefined}
+                      title={`${item.name}: what it uses and what uses it`}
+                      className="text-hn-ink-primary aria-[current=page]:font-semibold"
+                    >
+                      {item.title}
+                    </a>
+                  ))
                 ) : (
                   <span className="text-hn-ink-muted">none yet</span>
                 )}
@@ -1263,6 +1264,9 @@ function applyView(view: View) {
 const query = new URLSearchParams(location.search);
 const param = query.get("scene");
 const scene: Scene = SCENES.includes(param as Scene) ? (param as Scene) : "kit";
+// ?item=<name> shows that registry item's page with its "used by" list (#59) instead of a scene.
+const itemQuery = query.get("item");
+const itemParam = isItem(itemQuery) ? itemQuery : null;
 // ?bare=1 drops the nav, the toolbar and the card actions: the screenshot baselines
 // (screenshots/kit.spec.ts) frame the scene alone. ?frame=1, the viewport iframe, drops only the
 // nav and toolbar, since it renders inside the outer page's chrome.
@@ -1275,6 +1279,11 @@ applyView(readView(query));
  * place, so every card re-renders without a reload. A fixed viewport renders the scene in an
  * iframe of that width, where the scene's own breakpoints apply.
  */
+/** The item page when ?item= names a registry item, the scene otherwise. */
+function Page() {
+  return itemParam ? <ItemPage name={itemParam} /> : <Scenes scene={scene} />;
+}
+
 function Gallery() {
   const [view, setView] = useState(() => readView(query));
   const change = (next: View) => {
@@ -1285,15 +1294,15 @@ function Gallery() {
   };
   return (
     <ViewContext.Provider value={view}>
-      <SceneNav current={scene} view={view} />
+      <SceneNav current={itemParam ? null : scene} view={view} />
       <LevelNav view={view} />
       <ViewToolbar view={view} onChange={change} />
       {view.viewport === "auto" ? (
-        <Scenes scene={scene} />
+        <Page />
       ) : (
         <div className="overflow-x-auto bg-hn-surface-band p-4 sm:p-6">
           <iframe
-            title={`${scene} at ${view.viewport} px`}
+            title={`${itemParam ?? scene} at ${view.viewport} px`}
             src={`?${frameQuery(new URLSearchParams(location.search), view)}`}
             width={Number(view.viewport)}
             className="mx-auto block h-[calc(100vh-10rem)] min-h-[480px] border border-hn-line-strong bg-hn-surface-page"
@@ -1311,7 +1320,7 @@ if (root) {
       <BareContext.Provider value={bare}>
         {framed ? (
           <ViewContext.Provider value={readView(query)}>
-            <Scenes scene={scene} />
+            <Page />
           </ViewContext.Provider>
         ) : (
           <Gallery />

@@ -28,6 +28,12 @@ may only shrink (`bun scripts/ratchet.ts --update`).
 only items of the same or a lower level. Folders stay flat; the level lives in that metadata. The
 gallery lists the items by level and shows each preview card's level.
 
+Each item has a gallery page, `?item=<name>`, with its blast radius: every item that uses it,
+directly or transitively, through `registryDependencies` or a source import, each as a replayable
+preview card in the current toolbar view ("Replay all" replays every card at once). The graph is
+built with the gallery (`packages/ui/scripts/graph.ts`, also written to
+`packages/ui/gallery/dist/graph.json`); the gallery parses nothing at runtime.
+
 ## Releases
 
 Each package publishes to npm with provenance over OIDC trusted publishing, from its own

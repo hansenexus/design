@@ -5,7 +5,8 @@
 // JS and CSS carry a content hash in their names (main.<hash>.js), so an edge cache that keeps
 // .js and .css for hours never serves a stale bundle after a deploy (#50). The site also carries
 // the built shadcn registry (dist/r from `bun run build`) at r/, so the registry is served next to
-// the gallery at design.hansenexus.dev/r/{name}.json (#65).
+// the gallery at design.hansenexus.dev/r/{name}.json (#65). The registry's dependency graph
+// (scripts/graph.ts) is built here too, as `virtual:graph` and gallery/dist/graph.json (#59).
 // Run: bun scripts/gallery.ts [--serve] [--port 4410] [--out <dir>]
 import { createHash } from "node:crypto";
 import {
@@ -19,6 +20,7 @@ import {
 } from "node:fs";
 import { dirname, extname, resolve, sep } from "node:path";
 import type { BunPlugin } from "bun";
+import { graphSource, loadGraph } from "./graph";
 import { registrySource } from "./variants";
 
 const ROOT = resolve(import.meta.dir, "..");
@@ -79,8 +81,27 @@ const variants: BunPlugin = {
   },
 };
 
+/** `virtual:graph`: each registry item's direct uses and transitive dependents (#59). */
+function graphPlugin(source: string): BunPlugin {
+  return {
+    name: "graph",
+    setup(build) {
+      build.onResolve({ filter: /^virtual:graph$/ }, (args) => ({
+        path: args.path,
+        namespace: "graph",
+      }));
+      build.onLoad({ filter: /.*/, namespace: "graph" }, () => ({
+        contents: source,
+        loader: "ts",
+      }));
+    },
+  };
+}
+
 export async function buildGallery() {
   mkdirSync(OUT, { recursive: true });
+  const graph = loadGraph(ROOT);
+  writeFileSync(resolve(OUT, "graph.json"), `${JSON.stringify(graph, null, 2)}\n`);
   writeFileSync(resolve(OUT, "fonts.css"), fontsCss());
   mkdirSync(resolve(OUT, "brand"), { recursive: true });
   for (const file of BRAND_FILES) {
@@ -92,7 +113,7 @@ export async function buildGallery() {
     target: "browser",
     format: "esm",
     minify: true,
-    plugins: [variants],
+    plugins: [variants, graphPlugin(graphSource(graph))],
     define: { "process.env.NODE_ENV": JSON.stringify("production") },
   });
   if (!js.success) {
