@@ -2,6 +2,9 @@
 // one registry-item JSON per entry, file contents inlined, plus the index, into dist/r/.
 // It fails when an item's declared dependencies disagree with its imports, or when an
 // item does not pass shadcn's own schema.
+// Every file a consumer copies in starts with a stamp, `"hn-registry: <item>@<version>";`, and
+// every item carries the same version as `meta.version`, so `/design outdated` can compare what a
+// repo holds with what the registry serves (#65). The version is @hansenexus/ui's.
 // Run: bun scripts/registry.ts [outDir]
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -62,26 +65,49 @@ export function checkItem(item: Item): string[] {
   return errors;
 }
 
-export async function buildRegistry(outDir: string): Promise<number> {
+/** The version every item is stamped with: @hansenexus/ui's package.json version. */
+export function registryVersion(): string {
+  return JSON.parse(readFileSync(resolve(ROOT, "package.json"), "utf8")).version;
+}
+
+/**
+ * The first line of every copied-in file. `/design outdated` parses it with STAMP_RE.
+ * A directive, not a comment: with `tsx: true` shadcn writes ts-morph's `getText()`, which drops
+ * a file's leading comments, so a `//` stamp on line 1 never reaches the consumer. An unknown
+ * directive is inert, and it stays in the prologue next to a later "use client".
+ */
+export function stamp(item: string, version: string): string {
+  return `"hn-registry: ${item}@${version}";`;
+}
+
+export const STAMP_RE = /^"hn-registry: ([a-z0-9-]+)@(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)";$/;
+
+export async function buildRegistry(outDir: string, version = registryVersion()): Promise<number> {
   const registry = loadRegistry();
   const errors = registry.items.flatMap(checkItem);
   if (errors.length) throw new Error(`registry:\n  ${errors.join("\n  ")}`);
   mkdirSync(outDir, { recursive: true });
-  for (const item of registry.items) {
+  const items = registry.items.map((item) => ({
+    ...item,
+    meta: { ...(item.meta as Record<string, unknown> | undefined), version },
+  }));
+  for (const item of items) {
     const built = {
       $schema: "https://ui.shadcn.com/schema/registry-item.json",
       ...item,
       files: item.files?.map((f) => ({
         ...f,
         path: f.path.replace(/^src\//, "ui/"),
-        content: readFileSync(resolve(ROOT, f.path), "utf8"),
+        content: `${stamp(item.name, version)}\n${readFileSync(resolve(ROOT, f.path), "utf8")}`,
       })),
     };
     registryItemSchema.parse(built);
     writeFileSync(resolve(outDir, `${item.name}.json`), `${JSON.stringify(built, null, 2)}\n`);
   }
-  writeFileSync(resolve(outDir, "registry.json"), `${JSON.stringify(registry, null, 2)}\n`);
-  return registry.items.length;
+  const index = { ...registry, items };
+  registrySchema.parse(index);
+  writeFileSync(resolve(outDir, "registry.json"), `${JSON.stringify(index, null, 2)}\n`);
+  return items.length;
 }
 
 if (import.meta.main) {

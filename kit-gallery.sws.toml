@@ -30,3 +30,10 @@ Cache-Control = "no-cache"
 source = "/dist/*.[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].{js,css}"
 [advanced.headers.headers]
 Cache-Control = "public, max-age=86400"
+
+# The shadcn registry (`r/<item>.json`, `r/registry.json`, #65): unhashed names whose content and
+# stamped version change with each release, so `/design outdated` must never see a stale copy.
+[[advanced.headers]]
+source = "/r/**"
+[advanced.headers.headers]
+Cache-Control = "no-cache"
