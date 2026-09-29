@@ -8,7 +8,7 @@
   "scripts": {
     "lint": "biome check .",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "ratchet": "bun scripts/ratchet.ts",
+    "ratchet": "bun scripts/ratchet.ts && bun scripts/levels.ts",
     "build": "bun run --filter '*' build",
     "contrast": "bun run --filter '*' contrast",
     "test": "bun test scripts && bun run --filter '*' test",

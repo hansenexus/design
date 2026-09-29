@@ -12,7 +12,7 @@ import { NoPermissionIllustration } from "@hansenexus/illustrations/no-permissio
 import { NoResultsIllustration } from "@hansenexus/illustrations/no-results";
 import { OfflineIllustration } from "@hansenexus/illustrations/offline";
 import { SuccessIllustration } from "@hansenexus/illustrations/success";
-import { type ComponentType, type ReactNode, StrictMode, useState } from "react";
+import { type ComponentType, Fragment, type ReactNode, StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   Accordion,
@@ -102,31 +102,21 @@ import {
 } from "../src";
 import { Data } from "./data";
 import { Bell, Check, Key, MapIcon, More, Restart, Server } from "./icons";
+import { ITEM_SCENES, itemsByLevel } from "./levels";
 import { Navigation } from "./navigation";
 import { Overlays } from "./overlays";
 import { BareContext, PreviewCard, ViewToolbar } from "./preview";
-import { frameQuery, readView, type View, viewAttributes, writeView } from "./view";
+import {
+  frameQuery,
+  readView,
+  SCENES,
+  type Scene,
+  sceneHref,
+  type View,
+  viewAttributes,
+  writeView,
+} from "./view";
 import { Vote } from "./vote";
-
-export const SCENES = [
-  "kit",
-  "dialog",
-  "menu",
-  "select",
-  "tooltip",
-  "toast",
-  "brand",
-  "loading",
-  "states",
-  "illustrations",
-  "forms",
-  "layout",
-  "data",
-  "overlays",
-  "navigation",
-  "vote",
-] as const;
-type Scene = (typeof SCENES)[number];
 
 function Spec({
   title,
@@ -1156,10 +1146,6 @@ function Scenes({ scene }: { scene: Scene }) {
  * from the body, so the modal dialog and select scenes can still be left by a click.
  */
 function SceneNav({ current, view }: { current: Scene; view: View }) {
-  const href = (s: Scene) => {
-    const q = writeView(new URLSearchParams(s === "kit" ? "" : `scene=${s}`), view).toString();
-    return q ? `?${q}` : "./";
-  };
   return (
     <nav
       aria-label="Gallery scenes"
@@ -1168,13 +1154,59 @@ function SceneNav({ current, view }: { current: Scene; view: View }) {
       {SCENES.map((s) => (
         <a
           key={s}
-          href={href(s)}
+          href={sceneHref(s, view)}
           aria-current={s === current ? "page" : undefined}
           className="text-hn-ink-primary aria-[current=page]:font-semibold"
         >
           {s}
         </a>
       ))}
+    </nav>
+  );
+}
+
+/**
+ * The registry by atomic level (#58), lowest first: one row per level, each item linking to the
+ * scene that shows it. Collapsed by default so the scene stays in view; the summary counts them.
+ */
+function LevelNav({ view }: { view: View }) {
+  const groups = itemsByLevel();
+  return (
+    <nav
+      aria-label="Items by level"
+      className="pointer-events-auto relative z-[60] border-b border-hn-line-subtle bg-hn-surface-band px-4 py-2 text-[13px] sm:px-10"
+    >
+      <details>
+        <summary className="cursor-pointer text-hn-ink-muted">
+          Items by level: {groups.map(([level, items]) => `${items.length} ${level}s`).join(", ")}
+        </summary>
+        <dl className="m-0 mt-2 grid gap-y-2 sm:grid-cols-[8rem_1fr]">
+          {groups.map(([level, items]) => (
+            <Fragment key={level}>
+              <dt className="font-hn-mono text-hn-ink-muted">{level}s</dt>
+              <dd className="m-0 flex flex-wrap gap-x-3 gap-y-1">
+                {items.length ? (
+                  items.map((item) => {
+                    const scene = ITEM_SCENES[item.name] ?? "kit";
+                    return (
+                      <a
+                        key={item.name}
+                        href={sceneHref(scene, view)}
+                        title={`${item.name}, in the ${scene} scene`}
+                        className="text-hn-ink-primary"
+                      >
+                        {item.title}
+                      </a>
+                    );
+                  })
+                ) : (
+                  <span className="text-hn-ink-muted">none yet</span>
+                )}
+              </dd>
+            </Fragment>
+          ))}
+        </dl>
+      </details>
     </nav>
   );
 }
@@ -1214,6 +1246,7 @@ function Gallery() {
   return (
     <>
       <SceneNav current={scene} view={view} />
+      <LevelNav view={view} />
       <ViewToolbar view={view} onChange={change} />
       {view.viewport === "auto" ? (
         <Scenes scene={scene} />
