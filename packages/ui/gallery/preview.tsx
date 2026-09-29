@@ -1,10 +1,11 @@
 // The preview card and the view toolbar (hansenexus/design#57). A card shows one registry item
 // with a replay button, which remounts its children so enter motion and delayed states play
-// again, and a copy-install action. With ?bare=1 the card renders exactly like a plain spec
+// again, a copy-install action and the item's atomic level from registry.json (#58). With ?bare=1 the card renders exactly like a plain spec
 // section, so the screenshot baselines stay the same.
 import { createContext, type ReactNode, useContext, useEffect, useState } from "react";
-import { Button } from "../src";
+import { Badge, Button } from "../src";
 import { Check, Restart } from "./icons";
+import { levelOf } from "./levels";
 import { installCommand, VIEW_OPTIONS, type View } from "./view";
 
 /** True when the page renders for a screenshot or inside the viewport iframe. */
@@ -26,6 +27,7 @@ export function PreviewCard({
   const [run, setRun] = useState(0);
   const [copy, setCopy] = useState<"idle" | "copied" | "failed">("idle");
   const command = installCommand(item);
+  const level = levelOf(item);
 
   useEffect(() => {
     if (copy === "idle") return;
@@ -52,9 +54,10 @@ export function PreviewCard({
   };
 
   return (
-    <section className={section} data-preview={item}>
+    <section className={section} data-preview={item} data-level={level}>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
         <h2 className={heading}>{title}</h2>
+        {level ? <Badge>{level}</Badge> : null}
         <div className="ml-auto flex items-center gap-1">
           <Button
             variant="ghost"

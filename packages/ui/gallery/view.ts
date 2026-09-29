@@ -2,6 +2,27 @@
 // view can be linked. Pure functions, so tests/gallery-view.test.ts covers them without a DOM.
 import { type Density, densities, type Mode, modes, type Theme, themes } from "@hansenexus/tokens";
 
+/** The gallery scenes, one page each: kit is ./, the rest ?scene=<name>. */
+export const SCENES = [
+  "kit",
+  "dialog",
+  "menu",
+  "select",
+  "tooltip",
+  "toast",
+  "brand",
+  "loading",
+  "states",
+  "illustrations",
+  "forms",
+  "layout",
+  "data",
+  "overlays",
+  "navigation",
+  "vote",
+] as const;
+export type Scene = (typeof SCENES)[number];
+
 /** "auto" renders the scene in the page itself; a width renders it in an iframe of that width. */
 export const VIEWPORTS = ["auto", "390", "1280"] as const;
 export type Viewport = (typeof VIEWPORTS)[number];
@@ -44,6 +65,15 @@ export function readView(query: URLSearchParams): View {
     mode: pick(VIEW_OPTIONS.mode, query.get("mode"), DEFAULT_VIEW.mode),
     viewport: pick(VIEW_OPTIONS.viewport, query.get("viewport"), DEFAULT_VIEW.viewport),
   };
+}
+
+/** A relative link to a scene that keeps the view: kit is ./, the rest ?scene=<name>. */
+export function sceneHref(scene: Scene, view: View): string {
+  const q = writeView(
+    new URLSearchParams(scene === "kit" ? "" : `scene=${scene}`),
+    view
+  ).toString();
+  return q ? `?${q}` : "./";
 }
 
 /** A copy of `query` with the view's keys set; defaults are dropped so plain links stay plain. */
