@@ -99,3 +99,43 @@ test("scene nav: every scene linked, the current one marked, links resolve, bare
   await expect(page.locator('[role="progressbar"]')).toHaveCount(3);
   await expect(nav).toHaveCount(0);
 });
+
+test("preview card: replay remounts, the Spinner waits its 200 ms again", async ({ page }) => {
+  await page.goto("/gallery/?scene=loading");
+  const card = page.locator('[data-preview="spinner"]');
+  await expect(card.locator('svg[role="status"]')).toHaveCount(3);
+  await card.getByRole("button", { name: /^Replay/ }).click();
+  await expect(card.locator("[data-run]")).toHaveAttribute("data-run", "1");
+  await expect(card.locator('svg[role="status"]')).toHaveCount(3);
+});
+
+test("view toolbar: theme, density and mode land on <html> and in the query", async ({ page }) => {
+  await page.goto("/gallery/?scene=loading");
+  const toolbar = page.getByRole("toolbar", { name: "Gallery view" });
+  await toolbar.getByLabel("Theme").selectOption("portal");
+  await toolbar.getByLabel("Density").selectOption("touch");
+  await toolbar.getByLabel("Mode").selectOption("light");
+  const html = page.locator("html");
+  await expect(html).toHaveAttribute("data-theme", "portal");
+  await expect(html).toHaveAttribute("data-density", "touch");
+  await expect(html).toHaveAttribute("data-mode", "light");
+  await expect(page).toHaveURL(/theme=portal&density=touch&mode=light/);
+  await expect(page.getByRole("link", { name: "states" })).toHaveAttribute("href", /theme=portal/);
+});
+
+test("view toolbar: a fixed viewport renders the scene in an iframe of that width", async ({
+  page,
+}) => {
+  await page.goto("/gallery/?scene=loading");
+  await page
+    .getByRole("toolbar", { name: "Gallery view" })
+    .getByLabel("Viewport")
+    .selectOption("390");
+  const frame = page.locator("iframe");
+  await expect(frame).toHaveAttribute("width", "390");
+  const inner = page.frameLocator("iframe");
+  await expect(inner.getByRole("toolbar", { name: "Gallery view" })).toHaveCount(0);
+  await expect(
+    inner.locator('[data-preview="spinner"]').getByRole("button", { name: /^Replay/ })
+  ).toBeVisible();
+});
