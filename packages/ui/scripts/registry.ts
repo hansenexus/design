@@ -13,6 +13,25 @@ import { registryItemSchema, registrySchema } from "shadcn/schema";
 const ROOT = resolve(import.meta.dir, "..");
 export const NAMESPACE = "@hansenexus";
 
+/** Where the built registry is served: the kit-gallery image, behind Cloudflare Access (#65). */
+export const REGISTRY_URL = "https://design.hansenexus.dev/r/{name}.json";
+
+/**
+ * The `registries` entry a consumer's components.json needs. The Access service token travels as
+ * headers; `${VAR}` is filled from the environment by the shadcn CLI (and by outdated.ts), so the
+ * token is never in a repo. `/design add` sets both variables for the child process from 1Password
+ * (op-rw). Written to dist/r/components.json so a consumer, or the skill, can copy it verbatim.
+ */
+export const REGISTRIES = {
+  [NAMESPACE]: {
+    url: REGISTRY_URL,
+    headers: {
+      "CF-Access-Client-Id": "${HN_REGISTRY_CLIENT_ID}",
+      "CF-Access-Client-Secret": "${HN_REGISTRY_CLIENT_SECRET}",
+    },
+  },
+} satisfies Record<string, { url: string; headers: Record<string, string> }>;
+
 type Item = {
   name: string;
   type: string;
@@ -107,6 +126,10 @@ export async function buildRegistry(outDir: string, version = registryVersion())
   const index = { ...registry, items };
   registrySchema.parse(index);
   writeFileSync(resolve(outDir, "registry.json"), `${JSON.stringify(index, null, 2)}\n`);
+  writeFileSync(
+    resolve(outDir, "components.json"),
+    `${JSON.stringify({ registries: REGISTRIES }, null, 2)}\n`
+  );
   return items.length;
 }
 
