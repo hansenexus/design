@@ -244,13 +244,16 @@ describe("shell-layout", () => {
         expect(html).not.toMatch(/backdrop-blur|blur-3xl/);
       }
     }
+    // The winner draws @hansenexus/shell itself (#64): its panels, flat.
+    const { SHELL_PANEL } = await import("../../shell/src");
+    expect(SHELL_PANEL).toContain("shadow-hn-lift");
+    expect(SHELL_PANEL).toContain("bg-hn-surface-card");
+    expect(SHELL_PANEL).not.toMatch(/blur|\//);
     const floating = variants.find((v) => v.id === "floating-panels");
-    expect(floating?.panelClass(false)).toContain("shadow-hn-lift");
-    expect(floating?.panelClass(false)).toContain("bg-hn-surface-card");
-    expect(floating?.panelClass(false)).not.toMatch(/blur|\//);
     const html = renderToStaticMarkup(category.fixtures[0].render(floating?.variant));
     expect(html).toContain('data-glass="off"');
-    expect(html).toMatch(/class="relative flex h-full w-full gap-3 bg-hn-surface-band p-3"/);
+    expect(html).toContain('data-shell=""');
+    expect(html.match(/data-shell-panel="(?:nav|header|main|context)"/g)).toHaveLength(4);
   });
 
   test("the floating-panels glass toggle turns every fixture translucent and blurred", async () => {

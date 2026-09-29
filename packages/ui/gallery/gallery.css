@@ -3,4 +3,5 @@
 @import "../src/no-palette.css";
 @import "@hansenexus/tokens/tailwind.css";
 @source "../src";
+@source "../../shell/src";
 @source "./";

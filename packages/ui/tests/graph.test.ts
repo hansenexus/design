@@ -39,6 +39,25 @@ describe("dependency graph (#59)", () => {
     expect(graph.cx?.usedBy).toEqual([{ name: "badge", path: ["badge", "cx"] }]);
   });
 
+  test("meta.uses is an edge: a package item (the shell, #64) is in its items' blast radius", () => {
+    const graph = buildGraph(
+      [item("cx"), item("rail-item", ["cx"]), { name: "shell", meta: { uses: ["rail-item"] } }],
+      {}
+    );
+    expect(graph.shell?.uses).toEqual(["rail-item"]);
+    expect(graph.cx?.usedBy).toContainEqual({ name: "shell", path: ["shell", "rail-item", "cx"] });
+    expect(() => buildGraph([{ name: "shell", meta: { uses: ["nope"] } }], {})).toThrow(
+      /shell uses unknown nope/
+    );
+  });
+
+  test("the real registry: the shell is used by nothing and reaches the command palette", () => {
+    const graph = loadGraph();
+    expect(graph.shell?.usedBy).toEqual([]);
+    expect(graph.command?.usedBy.map((d) => d.name)).toContain("shell");
+    expect(graph["rail-item"]?.usedBy.map((d) => d.name)).toContain("shell");
+  });
+
   test("an edge to something that is not an item fails the build", () => {
     expect(() => buildGraph([item("badge", ["nope"])], {})).toThrow(/unknown @hansenexus\/nope/);
     expect(() =>

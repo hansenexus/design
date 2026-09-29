@@ -113,6 +113,7 @@ import {
 } from "../src";
 import { Bell, More, Restart, Server } from "./icons";
 import { useMotionTimings } from "./preview";
+import { DemoShell } from "./shell";
 
 const TODAY = new Date(2026, 8, 14);
 const HOSTS = ["kran-01", "kran-02", "pegel"];
@@ -533,6 +534,11 @@ export const DEMOS: Record<string, () => ReactNode> = {
     </Breadcrumb>
   ),
   pagination: () => <LivePager />,
+  shell: () => (
+    <div className="h-[560px] overflow-hidden rounded-hn-lg border border-hn-line-subtle">
+      <DemoShell />
+    </div>
+  ),
   command: () => (
     <Command
       groups={[

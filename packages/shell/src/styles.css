@@ -1,0 +1,11 @@
+/*
+ * @hansenexus/shell/styles.css: every utility the shell uses, for apps without Tailwind. Load it
+ * after @hansenexus/ui/styles.css. Tailwind v4 apps skip this file and add `@source` for the
+ * package instead (README). Built by scripts/build.ts. No preflight.
+ */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
+@import "./no-palette.css";
+@import "@hansenexus/tokens/tailwind.css";
+@source "./";

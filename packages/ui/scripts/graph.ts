@@ -1,6 +1,8 @@
 // The dependency graph of the registry, for the gallery's blast-radius view (hansenexus/design#59).
 // An edge runs from an item to each item it uses: its `registryDependencies` plus the registry
-// items its files import (a relative import resolves to the item that owns the file). For every
+// items its files import (a relative import resolves to the item that owns the file), plus
+// `meta.uses` for an item that installs an npm package instead of copying files (the shell, #64).
+// For every
 // item it lists what it uses directly and every item that uses it, directly or transitively, so
 // one atom's page shows each molecule and organism a change to it reaches.
 // Built once per gallery build (scripts/gallery.ts): the gallery imports it as `virtual:graph`
@@ -59,6 +61,11 @@ export function buildGraph(items: GraphItem[], sources: Record<string, string>):
     for (const dep of item.registryDependencies ?? []) {
       const name = dep.startsWith(`${NAMESPACE}/`) ? dep.slice(NAMESPACE.length + 1) : dep;
       if (!names.has(name)) throw new Error(`graph: ${item.name} depends on unknown ${dep}`);
+      out.add(name);
+    }
+    const declared = item.meta?.uses;
+    for (const name of Array.isArray(declared) ? (declared as string[]) : []) {
+      if (!names.has(name)) throw new Error(`graph: ${item.name} uses unknown ${name}`);
       out.add(name);
     }
     for (const f of item.files ?? []) {

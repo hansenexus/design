@@ -109,6 +109,7 @@ import { itemsByLevel, type Level } from "./levels";
 import { Navigation } from "./navigation";
 import { Overlays } from "./overlays";
 import { BareContext, PreviewCard, useMotionTimings, ViewContext, ViewToolbar } from "./preview";
+import { ShellScene } from "./shell";
 import {
   frameQuery,
   itemHref,
@@ -1054,6 +1055,8 @@ function Scenes({ scene }: { scene: Scene }) {
       return <Overlays />;
     case "navigation":
       return <Navigation />;
+    case "shell":
+      return <ShellScene />;
     case "loading":
       return <Loading />;
     case "brand":

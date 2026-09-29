@@ -81,6 +81,20 @@ const variants: BunPlugin = {
   },
 };
 
+/**
+ * The gallery mounts @hansenexus/shell from its source (gallery/shell.tsx), and the shell imports
+ * @hansenexus/ui. Resolve that to this package's src, not its dist: one copy of the primitives in
+ * the bundle, and a change to an atom shows in the shell without a rebuild (#64).
+ */
+const uiSource: BunPlugin = {
+  name: "ui-source",
+  setup(build) {
+    build.onResolve({ filter: /^@hansenexus\/ui$/ }, () => ({
+      path: resolve(ROOT, "src/index.ts"),
+    }));
+  },
+};
+
 /** `virtual:graph`: each registry item's direct uses and transitive dependents (#59). */
 function graphPlugin(source: string): BunPlugin {
   return {
@@ -113,7 +127,7 @@ export async function buildGallery() {
     target: "browser",
     format: "esm",
     minify: true,
-    plugins: [variants, graphPlugin(graphSource(graph))],
+    plugins: [variants, uiSource, graphPlugin(graphSource(graph))],
     define: { "process.env.NODE_ENV": JSON.stringify("production") },
   });
   if (!js.success) {

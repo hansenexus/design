@@ -60,6 +60,15 @@ for (const mode of MODES) {
     });
   });
 
+  test(`shell ${mode}`, async ({ page }, info) => {
+    await page.goto(`/gallery/?scene=shell&mode=${mode}&bare=1`);
+    await page.evaluate(() => document.fonts.ready);
+    await expect(page.locator("[data-shell]")).toHaveCount(3);
+    await expect(page).toHaveScreenshot(`shell-${info.project.name}-${mode}.png`, {
+      fullPage: true,
+    });
+  });
+
   test(`layout ${mode}`, async ({ page }, info) => {
     await page.goto(`/gallery/?scene=layout&mode=${mode}&bare=1`);
     await page.evaluate(() => document.fonts.ready);

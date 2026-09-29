@@ -1,0 +1,85 @@
+name: release-shell
+
+# Publishes @hansenexus/shell to npm with provenance over Trusted Publishing
+# (OIDC, no NPM_TOKEN). Same shape as release-ui.yml. @hansenexus/tokens and @hansenexus/ui
+# are peer dependencies and ship on their own `tokens-v*` and `ui-v*` tags.
+#
+# npm side (npmjs.com > @hansenexus/shell > Settings > Trusted Publisher):
+#   Organization hansenexus, Repository design, Workflow release-shell.yml,
+#   Allowed actions: npm publish.
+#
+# Trigger: push a `shell-v<version>` tag. The workflow refuses a tag that disagrees
+# with packages/shell/package.json. workflow_dispatch with dry_run packs and validates
+# without publishing.
+
+on:
+  push:
+    tags: ["shell-v*"]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Pack and validate, but do not publish"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-shell
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # GitHub release
+      id-token: write # provenance attestation
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - name: npm supporting OIDC
+        run: npm install -g npm@latest
+      - run: bun install --frozen-lockfile
+
+      - name: Tag and packages/shell/package.json agree
+        if: startsWith(github.ref, 'refs/tags/shell-v')
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME#shell-v}"
+          pkg=$(node -p "require('./packages/shell/package.json').version")
+          if [ "$tag" != "$pkg" ]; then
+            echo "::error::tag shell-v$tag does not match packages/shell/package.json $pkg"
+            exit 1
+          fi
+
+      # Root build: ui builds before shell (the declarations import its types), and the shell
+      # tests read dist/.
+      - name: Gate
+        run: bun run build && bun run contrast && bun run test
+
+      - name: Pack
+        working-directory: packages/shell
+        run: npm pack --dry-run
+
+      - name: Publish
+        if: ${{ github.event_name == 'push' || !inputs.dry_run }}
+        working-directory: packages/shell
+        run: npm publish --access public --provenance
+
+      - name: Publish (dry run)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        working-directory: packages/shell
+        run: npm publish --access public --dry-run
+
+      - name: GitHub release
+        if: startsWith(github.ref, 'refs/tags/shell-v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
