@@ -14,7 +14,8 @@ final class TokensTests: XCTestCase {
   }
 
   func testLimeIsTheOnlyAccent() {
-    for theme in HNTheme.allCases {
+    // lexilink keeps its own brand (B2 Ledger, orange blocks): see testLexilinkLedger.
+    for theme in HNTheme.allCases where theme != .lexilink {
       XCTAssertEqual(HNColors.of(theme, .dark).action.primary.hex, "#42c501")
       XCTAssertEqual(HNColors.of(theme, .light).action.primary.hex, "#42c501")
       // On light, lime as text is #2b7300; the fill keeps dark text.
@@ -35,6 +36,28 @@ final class TokensTests: XCTestCase {
     // Green is lime, the one accent.
     XCTAssertEqual(dark.green, HNColors.of(.kommandant, .dark).status.ok)
     XCTAssertEqual(light.green, HNColors.of(.kommandant, .light).status.ok)
+  }
+
+  func testLexilinkLedger() {
+    let light = HNColors.of(.lexilink, .light)
+    let dark = HNColors.of(.lexilink, .dark)
+    XCTAssertEqual(light.surface.page.hex, "#ffffff")
+    XCTAssertEqual(light.ink.primary.hex, "#070707")
+    XCTAssertEqual(dark.surface.page.hex, "#1c1712")
+    XCTAssertEqual(dark.line.subtle.hex, "#47413c")
+    for c in [light, dark] {
+      // Orange is a block with dark text, never text.
+      XCTAssertEqual(c.action.primary.hex, "#f3821d")
+      XCTAssertEqual(c.action.primaryInk.hex, "#070707")
+      XCTAssertEqual(c.action.text, c.ink.primary)
+    }
+    XCTAssertEqual(HNRadius.of(.lexilink).md, 0)
+    XCTAssertEqual(HNRadius.of(.lexilink).pill, 999)
+    XCTAssertEqual(HNFontFamily.of(.lexilink).sans.first, "Archivo")
+    XCTAssertEqual(HNFontFamily.of(.lexilink).mono.first, "Geist Mono")
+    // The static names stay the default theme's.
+    XCTAssertEqual(HNRadius.md, HNRadius.of(.hansenexus).md)
+    XCTAssertEqual(HNFontFamily.sans, HNFontFamily.of(.hansenexus).sans)
   }
 
   func testEveryThemeShipsBothModes() {

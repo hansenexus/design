@@ -7,6 +7,7 @@ public enum HNTheme: String, CaseIterable, Sendable {
   case hansenexus
   case kommandant
   case portal
+  case lexilink
 
   public static let `default`: HNTheme = .hansenexus
 }
@@ -149,6 +150,8 @@ public struct HNColors: Sendable, Equatable {
     case (.kommandant, .light): return kommandantLight
     case (.portal, .dark): return portalDark
     case (.portal, .light): return portalLight
+    case (.lexilink, .dark): return lexilinkDark
+    case (.lexilink, .light): return lexilinkLight
     }
   }
 
@@ -553,6 +556,140 @@ public struct HNColors: Sendable, Equatable {
       yellow: HNRGBA(0x8A5200)
     )
   )
+
+  static let lexilinkDark = HNColors(
+    action: Action(
+      danger: HNRGBA(0xFF655A),
+      dangerInk: HNRGBA(0x070707),
+      primary: HNRGBA(0xF3821D),
+      primaryHover: HNRGBA(0xF3821D),
+      primaryInk: HNRGBA(0x070707),
+      text: HNRGBA(0xEFEBE2),
+      textHover: HNRGBA(0xEFEBE2)
+    ),
+    brand: Brand(
+      ink: HNRGBA(0x16140F),
+      lime: HNRGBA(0x42C501),
+      limeDeep: HNRGBA(0x2B7300),
+      paper: HNRGBA(0xF4F0E6)
+    ),
+    focus: Focus(
+      ring: HNRGBA(0xF3821D)
+    ),
+    ink: Ink(
+      body: HNRGBA(0xEFEBE2),
+      muted: HNRGBA(0x8F8C85),
+      primary: HNRGBA(0xEFEBE2)
+    ),
+    line: Line(
+      strong: HNRGBA(0x8F8C85),
+      subtle: HNRGBA(0x47413C)
+    ),
+    skeleton: Skeleton(
+      base: HNRGBA(0x3F3A34),
+      highlight: HNRGBA(0x47413C)
+    ),
+    status: Status(
+      busy: HNRGBA(0x8FB8FF),
+      crit: HNRGBA(0xFF7A66),
+      off: HNRGBA(0x8A8273),
+      ok: HNRGBA(0x42C501),
+      unknown: HNRGBA(0xA39C8C),
+      warn: HNRGBA(0xF0A53A)
+    ),
+    surface: Surface(
+      band: HNRGBA(0x130F0A),
+      card: HNRGBA(0x1C1712),
+      page: HNRGBA(0x1C1712),
+      raised: HNRGBA(0x1C1712),
+      tint: HNRGBA(0x1C1712)
+    ),
+    terminal: Terminal(
+      black: HNRGBA(0x8A8273),
+      blue: HNRGBA(0x8FB8FF),
+      brightBlack: HNRGBA(0xA39C8C),
+      brightBlue: HNRGBA(0xBED5FD),
+      brightCyan: HNRGBA(0xA3DDE0),
+      brightGreen: HNRGBA(0x8BE45F),
+      brightMagenta: HNRGBA(0xEFC0E3),
+      brightRed: HNRGBA(0xFCB2A5),
+      brightWhite: HNRGBA(0xF4F0E6),
+      brightYellow: HNRGBA(0xFEC98A),
+      cyan: HNRGBA(0x7ABFC3),
+      green: HNRGBA(0x42C501),
+      magenta: HNRGBA(0xD59CC8),
+      red: HNRGBA(0xFF7A66),
+      white: HNRGBA(0xCDC6B6),
+      yellow: HNRGBA(0xF0A53A)
+    )
+  )
+
+  static let lexilinkLight = HNColors(
+    action: Action(
+      danger: HNRGBA(0xD40C1A),
+      dangerInk: HNRGBA(0xFFFFFF),
+      primary: HNRGBA(0xF3821D),
+      primaryHover: HNRGBA(0xF3821D),
+      primaryInk: HNRGBA(0x070707),
+      text: HNRGBA(0x070707),
+      textHover: HNRGBA(0x070707)
+    ),
+    brand: Brand(
+      ink: HNRGBA(0x16140F),
+      lime: HNRGBA(0x42C501),
+      limeDeep: HNRGBA(0x2B7300),
+      paper: HNRGBA(0xF4F0E6)
+    ),
+    focus: Focus(
+      ring: HNRGBA(0x070707)
+    ),
+    ink: Ink(
+      body: HNRGBA(0x070707),
+      muted: HNRGBA(0x717171),
+      primary: HNRGBA(0x070707)
+    ),
+    line: Line(
+      strong: HNRGBA(0x070707),
+      subtle: HNRGBA(0x070707)
+    ),
+    skeleton: Skeleton(
+      base: HNRGBA(0xDEDEDE),
+      highlight: HNRGBA(0xBEBEBE)
+    ),
+    status: Status(
+      busy: HNRGBA(0x1F5FBF),
+      crit: HNRGBA(0xB3261E),
+      off: HNRGBA(0x6B6456),
+      ok: HNRGBA(0x2B7300),
+      unknown: HNRGBA(0x6B6456),
+      warn: HNRGBA(0x8A5200)
+    ),
+    surface: Surface(
+      band: HNRGBA(0xFFFFFF),
+      card: HNRGBA(0xFFFFFF),
+      page: HNRGBA(0xFFFFFF),
+      raised: HNRGBA(0xFFFFFF),
+      tint: HNRGBA(0xFFFFFF)
+    ),
+    terminal: Terminal(
+      black: HNRGBA(0x16140F),
+      blue: HNRGBA(0x1F5FBF),
+      brightBlack: HNRGBA(0x4A4439),
+      brightBlue: HNRGBA(0x15448C),
+      brightCyan: HNRGBA(0x225052),
+      brightGreen: HNRGBA(0x1F5500),
+      brightMagenta: HNRGBA(0x623659),
+      brightRed: HNRGBA(0x86130D),
+      brightWhite: HNRGBA(0x716A5C),
+      brightYellow: HNRGBA(0x663D07),
+      cyan: HNRGBA(0x356E71),
+      green: HNRGBA(0x2B7300),
+      magenta: HNRGBA(0x834F78),
+      red: HNRGBA(0xB3261E),
+      white: HNRGBA(0x6B6456),
+      yellow: HNRGBA(0x8A5200)
+    )
+  )
 }
 
 /// Waits in seconds before a pending indicator shows; faster work shows nothing.
@@ -581,7 +718,12 @@ public enum HNFocus {
 }
 
 /// Font family stacks, first choice first. `Font.hn` in SwiftUI resolves them.
-public enum HNFontFamily {
+public struct HNFontFamily: Sendable, Equatable {
+  public let display: [String]
+  public let mono: [String]
+  public let sans: [String]
+
+  /// The hansenexus theme's values; `of(_:)` picks another theme's.
   /// Page titles and big numbers
   public static let display: [String] = ["Fraunces", "Georgia", "serif"]
 
@@ -590,6 +732,16 @@ public enum HNFontFamily {
 
   /// The UI
   public static let sans: [String] = ["Instrument Sans", "system-ui", "sans-serif"]
+
+  /// The theme's own values.
+  public static func of(_ theme: HNTheme) -> HNFontFamily {
+    switch theme {
+    case .hansenexus: return HNFontFamily(display: ["Fraunces", "Georgia", "serif"], mono: ["JetBrains Mono", "ui-monospace", "monospace"], sans: ["Instrument Sans", "system-ui", "sans-serif"])
+    case .kommandant: return HNFontFamily(display: ["Fraunces", "Georgia", "serif"], mono: ["JetBrains Mono", "ui-monospace", "monospace"], sans: ["Instrument Sans", "system-ui", "sans-serif"])
+    case .portal: return HNFontFamily(display: ["Fraunces", "Georgia", "serif"], mono: ["JetBrains Mono", "ui-monospace", "monospace"], sans: ["Instrument Sans", "system-ui", "sans-serif"])
+    case .lexilink: return HNFontFamily(display: ["Archivo", "system-ui", "sans-serif"], mono: ["Geist Mono", "ui-monospace", "monospace"], sans: ["Archivo", "system-ui", "sans-serif"])
+    }
+  }
 }
 
 /// Minimum time in seconds a pending indicator stays once shown.
@@ -607,7 +759,14 @@ public enum HNPulse {
 }
 
 /// Corner radii in points.
-public enum HNRadius {
+public struct HNRadius: Sendable, Equatable {
+  public let lg: Double
+  public let md: Double
+  public let pill: Double
+  public let sm: Double
+  public let xl: Double
+
+  /// The hansenexus theme's values; `of(_:)` picks another theme's.
   public static let lg: Double = 14
 
   public static let md: Double = 10
@@ -617,6 +776,16 @@ public enum HNRadius {
   public static let sm: Double = 6
 
   public static let xl: Double = 18
+
+  /// The theme's own values.
+  public static func of(_ theme: HNTheme) -> HNRadius {
+    switch theme {
+    case .hansenexus: return HNRadius(lg: 14, md: 10, pill: 999, sm: 6, xl: 18)
+    case .kommandant: return HNRadius(lg: 14, md: 10, pill: 999, sm: 6, xl: 18)
+    case .portal: return HNRadius(lg: 14, md: 10, pill: 999, sm: 6, xl: 18)
+    case .lexilink: return HNRadius(lg: 0, md: 0, pill: 999, sm: 0, xl: 4)
+    }
+  }
 }
 
 public enum HNShadow {
@@ -637,12 +806,18 @@ public struct HNSize: Sendable, Equatable {
   public let row: Double
   public let target: Double
 
+  /// The hansenexus theme's values; `of(_:)` picks another theme's.
+  public static let row: Double = 48
+
+  public static let target: Double = 24
+
   /// The theme's own density.
   public static func of(_ theme: HNTheme) -> HNSize {
     switch theme {
     case .hansenexus: return HNSize(row: 48, target: 24)
     case .kommandant: return HNSize(row: 36, target: 24)
     case .portal: return HNSize(row: 48, target: 24)
+    case .lexilink: return HNSize(row: 48, target: 24)
     }
   }
 

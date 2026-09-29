@@ -1,6 +1,6 @@
 # @hansenexus/tokens
 
-The hansenexus design tokens: one DTCG source for hansenexus.dev, the portal and kommandant.
+The hansenexus design tokens: one DTCG source for hansenexus.dev, the portal, kommandant and lexilink.
 Dark and light both ship, and every semantic text and UI pair meets WCAG 2.2 AA in both.
 
 ```sh
@@ -19,7 +19,7 @@ Every token is a `--hn-*` variable: `--hn-surface-page`, `--hn-ink-muted`, `--hn
 | Attribute | Values | Default |
 | --- | --- | --- |
 | `data-mode` | `dark`, `light` | `dark` |
-| `data-theme` | `hansenexus`, `kommandant`, `portal` | `hansenexus` |
+| `data-theme` | `hansenexus`, `kommandant`, `portal`, `lexilink` | `hansenexus` |
 | `data-density` | `compact` (36 px rows, 24 px targets), `comfortable` (48 px), `touch` (56 px, 44 px targets) | the theme's |
 
 `data-mode` also works on a subtree. A theme's per-mode overrides expect `data-theme` and
@@ -63,9 +63,21 @@ ms.delay.pending; // 200, every duration in milliseconds for timers
 - `tokens/themes/`: per product, the density and any semantic that differs from the shared set.
   `themes/<theme>.<mode>.json` holds per-mode overrides.
 
+## lexilink
+
+`data-theme="lexilink"` is lexilink's B2 Ledger on the same semantic names: pure paper and ink,
+1 px ink lines, no grey fills, square corners (`radius.sm` to `lg` are 0, `xl` 4 px, `pill` stays
+round), Archivo for display and UI, Geist Mono for numbers. Orange (`action.primary`) is a solid
+block with ink text, never text and never a tint; `action.text` is ink. The source is hn-monorepo
+`apps/lexilink-next/src/styles/theme.css`; the hex values in `palette.ledger` are its oklch values
+converted to sRGB. Two values differ from that file because the contrast rules here are stricter:
+the focus ring on light is ink (orange on paper is 2.6:1), and `line.strong` on dark is the grey
+(the 38 % dividing line, `line.subtle`, is 1.8:1). lexilink's type recipes (weight, width,
+tracking per role) are component styling and stay in the app.
+
 ## Rules the tokens cannot enforce
 
-- Lime `#42c501` is the only accent: a flat fill with `action.primary-ink` on it, or text on dark.
+- Lime `#42c501` is the only accent (lexilink excepted, see above): a flat fill with `action.primary-ink` on it, or text on dark.
   On light, lime text is `action.text` (`#2b7300`). No glow, gradients, coloured shadows or sheen.
 - Status is never colour alone: ok dot, busy ring, warn triangle, crit diamond, off hollow circle,
   unknown dashed circle. `status.off` is a shape colour; its label uses `ink.muted`.

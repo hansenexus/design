@@ -5,7 +5,7 @@ import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import StyleDictionary from "style-dictionary";
 
-export const THEMES = ["hansenexus", "kommandant", "portal"] as const;
+export const THEMES = ["hansenexus", "kommandant", "portal", "lexilink"] as const;
 export const MODES = ["dark", "light"] as const;
 export const DENSITIES = ["compact", "comfortable", "touch"] as const;
 export const DEFAULT_THEME = "hansenexus";
@@ -35,18 +35,21 @@ export async function resolveTokens(
   mode: Mode,
   tokensDir: string = TOKENS_DIR
 ): Promise<ResolvedToken[]> {
-  const source = [
+  // The shared tiers are `include`, the theme `source`: a theme may override a shared token
+  // without a collision error, while two files within either list still may not collide.
+  const include = [
     join(tokensDir, "primitives/*.json"),
     join(tokensDir, "semantic/scale.json"),
     join(tokensDir, "semantic/motion.json"),
     join(tokensDir, `semantic/color.${mode}.json`),
-    join(tokensDir, `themes/${theme}.json`),
   ];
-  // Optional per-mode theme overrides, e.g. themes/portal.light.json.
+  const source = [join(tokensDir, `themes/${theme}.json`)];
+  // Optional per-mode theme overrides, e.g. themes/lexilink.light.json.
   const modeOverride = join(tokensDir, `themes/${theme}.${mode}.json`);
   if (existsSync(modeOverride)) source.push(modeOverride);
 
   const sd = new StyleDictionary({
+    include,
     source,
     usesDtcg: true,
     log: { verbosity: "silent", warnings: "error" },
