@@ -1,0 +1,72 @@
+{
+  "surface": {
+    "$type": "color",
+    "page": {
+      "$value": "{palette.ledger.night-paper}",
+      "$description": "Warm dark paper, not the inverted ledger"
+    },
+    "band": {
+      "$value": "{palette.ledger.night-ground}",
+      "$description": "The desk beside the column"
+    },
+    "card": {
+      "$value": "{palette.ledger.night-paper}",
+      "$description": "No grey fills: a card is paper with a line around it"
+    },
+    "raised": {
+      "$value": "{palette.ledger.night-paper}",
+      "$description": "No grey fills; the active cell inverts in the component"
+    },
+    "tint": { "$value": "{palette.ledger.night-paper}", "$description": "Orange is never a tint" }
+  },
+  "ink": {
+    "$type": "color",
+    "primary": { "$value": "{palette.ledger.night-ink}" },
+    "body": { "$value": "{palette.ledger.night-ink}" },
+    "muted": { "$value": "{palette.ledger.night-grey}", "$description": "Secondary text only" }
+  },
+  "line": {
+    "$type": "color",
+    "subtle": {
+      "$value": "{palette.ledger.night-line}",
+      "$description": "The dividing line at 38%, so cells divide without glowing"
+    },
+    "strong": {
+      "$value": "{palette.ledger.night-grey}",
+      "$description": "A control boundary: the dividing line is 1.8:1, below 3:1, so controls take the grey"
+    }
+  },
+  "action": {
+    "$type": "color",
+    "primary": {
+      "$value": "{palette.ledger.orange}",
+      "$description": "The one call to action: a solid orange block"
+    },
+    "primary-hover": {
+      "$value": "{palette.ledger.orange}",
+      "$description": "No hover tint: orange stays solid"
+    },
+    "primary-ink": {
+      "$value": "{palette.ledger.ink}",
+      "$description": "Stays dark on orange in both modes"
+    },
+    "text": {
+      "$value": "{palette.ledger.night-ink}",
+      "$description": "Orange is never text: a text action is ink"
+    },
+    "text-hover": { "$value": "{palette.ledger.night-ink}" },
+    "danger": {
+      "$value": "{palette.ledger.red-lifted}",
+      "$description": "Lifted for the dark ground"
+    },
+    "danger-ink": { "$value": "{palette.ledger.ink}" }
+  },
+  "skeleton": {
+    "$type": "color",
+    "base": { "$value": "{palette.ledger.night-chart}" },
+    "highlight": { "$value": "{palette.ledger.night-line}" }
+  },
+  "focus": {
+    "ring": { "$type": "color", "$value": "{palette.ledger.orange}" }
+  }
+}

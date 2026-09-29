@@ -154,6 +154,65 @@
       "800": {
         "$value": "#225052"
       }
+    },
+    "ledger": {
+      "$description": "lexilink B2 Ledger (hn-monorepo apps/lexilink-next/src/styles/theme.css). Authored there in oklch; the hex here is the sRGB conversion. Only themes/lexilink*.json reference it.",
+      "paper": {
+        "$value": "#ffffff",
+        "$description": "oklch(1 0 0): the page on light"
+      },
+      "ink": {
+        "$value": "#070707",
+        "$description": "oklch(0.13 0 0): text and lines on light; the text on orange in both modes"
+      },
+      "grey": {
+        "$value": "#717171",
+        "$description": "oklch(0.55 0 0): secondary text on light, 4.9:1 on paper"
+      },
+      "grey-light": {
+        "$value": "#dedede",
+        "$description": "oklch(0.9 0 0): skeleton base on light"
+      },
+      "grey-chart": {
+        "$value": "#bebebe",
+        "$description": "oklch(0.8 0 0): chart-4 on light; skeleton highlight"
+      },
+      "orange": {
+        "$value": "#f3821d",
+        "$description": "oklch(0.72 0.17 55): the one brand block. A fill with ink text, never text, never a tint"
+      },
+      "red": {
+        "$value": "#d40c1a",
+        "$description": "oklch(0.55 0.22 27): destructive on light, paper text 5.4:1"
+      },
+      "red-lifted": {
+        "$value": "#ff655a",
+        "$description": "oklch(0.7 0.19 27): destructive on dark, ink text 7:1"
+      },
+      "night-ground": {
+        "$value": "#130f0a",
+        "$description": "oklch(0.17 0.012 70): the desk beside the column on dark"
+      },
+      "night-paper": {
+        "$value": "#1c1712",
+        "$description": "oklch(0.21 0.012 70): the page on dark"
+      },
+      "night-chart": {
+        "$value": "#3f3a34",
+        "$description": "oklch(0.35 0.012 70): chart-4 on dark; skeleton base"
+      },
+      "night-line": {
+        "$value": "#47413c",
+        "$description": "oklch(0.38 0.012 70): the dividing line on dark, 1.8:1, decoration only"
+      },
+      "night-grey": {
+        "$value": "#8f8c85",
+        "$description": "oklch(0.64 0.01 80): secondary text on dark, 5.3:1"
+      },
+      "night-ink": {
+        "$value": "#efebe2",
+        "$description": "oklch(0.94 0.012 85): text on dark"
+      }
     }
   }
 }

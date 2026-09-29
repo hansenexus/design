@@ -49,6 +49,10 @@ them it falls back to the system serif, default or monospaced design.
 Also `HNDuration` (seconds), `HNFocus` (ring width and offset), `HNShadow.lift` and
 `HNFontFamily`.
 
+`HNRadius` and `HNFontFamily` differ per theme since lexilink (square corners, Archivo and Geist
+Mono): `HNRadius.of(.lexilink).md` is 0, `HNFontFamily.of(.lexilink).sans` starts with Archivo. The
+static names (`HNRadius.md`, `HNFontFamily.sans`) stay the default theme's values.
+
 ## Rules the package cannot enforce
 
 - No glass in content. Cards, sheets and every content surface are flat; glass exists only as the

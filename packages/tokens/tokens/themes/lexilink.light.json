@@ -1,0 +1,61 @@
+{
+  "surface": {
+    "$type": "color",
+    "page": { "$value": "{palette.ledger.paper}", "$description": "Pure white paper" },
+    "band": {
+      "$value": "{palette.ledger.paper}",
+      "$description": "The ground beside the column: paper on light, the lines are the only edge"
+    },
+    "card": {
+      "$value": "{palette.ledger.paper}",
+      "$description": "No grey fills: a card is paper with a line around it"
+    },
+    "raised": {
+      "$value": "{palette.ledger.paper}",
+      "$description": "No grey fills; the active cell inverts in the component"
+    },
+    "tint": { "$value": "{palette.ledger.paper}", "$description": "Orange is never a tint" }
+  },
+  "ink": {
+    "$type": "color",
+    "primary": { "$value": "{palette.ledger.ink}" },
+    "body": { "$value": "{palette.ledger.ink}" },
+    "muted": { "$value": "{palette.ledger.grey}", "$description": "Secondary text only" }
+  },
+  "line": {
+    "$type": "color",
+    "subtle": { "$value": "{palette.ledger.ink}", "$description": "Every line is ink" },
+    "strong": { "$value": "{palette.ledger.ink}" }
+  },
+  "action": {
+    "$type": "color",
+    "primary": {
+      "$value": "{palette.ledger.orange}",
+      "$description": "The one call to action: a solid orange block"
+    },
+    "primary-hover": {
+      "$value": "{palette.ledger.orange}",
+      "$description": "No hover tint: orange stays solid"
+    },
+    "primary-ink": { "$value": "{palette.ledger.ink}", "$description": "Ink on orange, 7.7:1" },
+    "text": {
+      "$value": "{palette.ledger.ink}",
+      "$description": "Orange is never text: a text action is ink"
+    },
+    "text-hover": { "$value": "{palette.ledger.ink}" },
+    "danger": { "$value": "{palette.ledger.red}" },
+    "danger-ink": { "$value": "{palette.ledger.paper}", "$description": "Paper on red, 5.4:1" }
+  },
+  "skeleton": {
+    "$type": "color",
+    "base": { "$value": "{palette.ledger.grey-light}" },
+    "highlight": { "$value": "{palette.ledger.grey-chart}" }
+  },
+  "focus": {
+    "ring": {
+      "$type": "color",
+      "$value": "{palette.ledger.ink}",
+      "$description": "lexilink's ring is orange, but orange on paper is 2.6:1, below 3:1; on light the ring is ink"
+    }
+  }
+}

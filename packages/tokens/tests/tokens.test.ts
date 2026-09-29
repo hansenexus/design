@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { build } from "../scripts/build";
 import { checkAll, ratio, TERMINAL } from "../scripts/contrast";
-import { TOKENS_DIR } from "../scripts/resolve";
+import { THEMES, TOKENS_DIR } from "../scripts/resolve";
 import { generateSwift, SWIFT_OUT } from "../scripts/swift";
 
 const CONTRAST = resolve(import.meta.dir, "../scripts/contrast.ts");
@@ -87,7 +87,7 @@ describe("contrast", () => {
     expect(TERMINAL).toHaveLength(16);
     expect(new Set(terminal.map((r) => r.bg))).toEqual(new Set(["surface.page"]));
     expect(new Set(terminal.map((r) => r.kind))).toEqual(new Set(["text"]));
-    expect(terminal).toHaveLength(16 * 3 * 2);
+    expect(terminal).toHaveLength(16 * THEMES.length * 2);
     expect(terminal.every((r) => r.ratio >= 4.5)).toBe(true);
   });
 
@@ -148,6 +148,30 @@ describe("build", () => {
     expect(mod.vars.surface.page).toBe("var(--hn-surface-page)");
   });
 
+  test("lexilink carries B2 Ledger per mode, radius and fonts shared across modes", async () => {
+    await built;
+    const css = readFileSync(join(dist, "tokens.css"), "utf8");
+    const shared = css.slice(css.indexOf('[data-theme="lexilink"] {'));
+    expect(shared).toContain("--hn-radius-md: 0px;");
+    expect(shared).toContain("--hn-font-sans: Archivo, system-ui, sans-serif;");
+    expect(css).toContain('[data-theme="lexilink"][data-mode="light"]');
+    const mod = await import(join(dist, "index.js"));
+    expect(mod.themes).toContain("lexilink");
+    const { light, dark } = mod.tokens.lexilink;
+    expect(light.surface.page).toBe("#ffffff");
+    expect(dark.surface.page).toBe("#1c1712");
+    expect(dark.surface.band).toBe("#130f0a");
+    for (const m of [light, dark]) {
+      expect(m.action.primary).toBe("#f3821d");
+      expect(m.action["primary-ink"]).toBe("#070707");
+      expect(m.radius.pill).toBe("999px");
+      expect(m.font.mono).toBe("'Geist Mono', ui-monospace, monospace");
+    }
+    // Every other theme keeps the shared set.
+    expect(mod.tokens.hansenexus.light.radius.md).toBe("10px");
+    expect(mod.tokens.portal.light.surface.page).toBe("#f4f0e6");
+  });
+
   test("terminal tokens reach CSS, Tailwind and TS in both modes", async () => {
     await built;
     const css = readFileSync(join(dist, "tokens.css"), "utf8");
@@ -200,6 +224,8 @@ describe("swift", () => {
     expect(swift).toContain("public let terminal: Terminal");
     expect(swift).toContain("brightMagenta: HNRGBA(0xEFC0E3)");
     expect(swift).toContain('public static let mono: [String] = ["JetBrains Mono"');
+    expect(swift).toContain("static let lexilinkLight = HNColors(");
+    expect(swift).toContain("public static func of(_ theme: HNTheme) -> HNRadius {");
     expect(swift).toContain("HNShadowValue(color: HNRGBA(0x000000, alpha: 0xB3), x: 0, y: 30");
     expect(swift).not.toMatch(/palette\.[a-z]|density\.[a-z]|Material/);
     const colors = (

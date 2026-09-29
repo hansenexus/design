@@ -1,0 +1,28 @@
+{
+  "size": {
+    "$description": "Theme lexilink (B2 Ledger): comfortable density, square corners, Archivo and Geist Mono. Colours per mode in lexilink.dark.json and lexilink.light.json.",
+    "$type": "dimension",
+    "row": { "$value": "{density.comfortable.row}" },
+    "target": { "$value": "{density.comfortable.target}" }
+  },
+  "radius": {
+    "$type": "dimension",
+    "$description": "The ledger has no rounded corner: lexilink's --radius is 0, and its globals.css derives sm/md/lg as max(0, radius - n) and xl as radius + 4px. pill stays round (radios, switches).",
+    "sm": { "$value": "0px" },
+    "md": { "$value": "0px" },
+    "lg": { "$value": "0px" },
+    "xl": { "$value": "4px" }
+  },
+  "font": {
+    "$type": "fontFamily",
+    "display": {
+      "$value": ["Archivo", "system-ui", "sans-serif"],
+      "$description": "Archivo's width axis does the hierarchy (lexilink sets weight and font-stretch per role)"
+    },
+    "sans": { "$value": ["Archivo", "system-ui", "sans-serif"], "$description": "The UI" },
+    "mono": {
+      "$value": ["Geist Mono", "ui-monospace", "monospace"],
+      "$description": "Every number"
+    }
+  }
+}

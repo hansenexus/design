@@ -239,9 +239,19 @@ function renderPerTheme(
   for (const t of shape) {
     out.push(`  public let ${ident(split(t)[1])}: ${swiftValue(t)[0]}`);
   }
+  // The default theme's values stay static, so `HNRadius.md` still reads like a shared constant.
+  out.push("", `  /// The ${DEFAULT_THEME} theme's values; \`of(_:)\` picks another theme's.`);
+  shape.forEach((t, i) => {
+    const [type, value] = swiftValue(t);
+    if (i > 0) out.push("");
+    out.push(
+      ...doc(t.description, "  "),
+      `  public static let ${ident(split(t)[1])}: ${type} = ${value}`
+    );
+  });
   out.push(
     "",
-    "  /// The theme's own density.",
+    `  /// The theme's own ${group === "size" ? "density" : "values"}.`,
     `  public static func of(_ theme: HNTheme) -> ${name} {`,
     "    switch theme {"
   );
