@@ -7,6 +7,9 @@
 // the built shadcn registry (dist/r from `bun run build`) at r/, so the registry is served next to
 // the gallery at design.hansenexus.dev/r/{name}.json (#65). The registry's dependency graph
 // (scripts/graph.ts) is built here too, as `virtual:graph` and gallery/dist/graph.json (#59).
+// The local server also takes the vote board's Decide control: POST /api/decide runs decide()
+// from scripts/variants.ts in this checkout and rebuilds the bundle (#76); the static site has
+// no such route, there the control opens a prefilled issue (gallery/decide.ts).
 // Run: bun scripts/gallery.ts [--serve] [--port 4410] [--out <dir>]
 import { createHash } from "node:crypto";
 import {
@@ -20,8 +23,9 @@ import {
 } from "node:fs";
 import { dirname, extname, resolve, sep } from "node:path";
 import type { BunPlugin } from "bun";
+import { DECIDE_PATH, type DecideBody, type DecideReply } from "../gallery/decide";
 import { graphSource, loadGraph } from "./graph";
-import { registrySource } from "./variants";
+import { decide, readDecision, registrySource } from "./variants";
 
 const ROOT = resolve(import.meta.dir, "..");
 const OUT = resolve(ROOT, "gallery/dist");
@@ -178,15 +182,79 @@ const TYPES: Record<string, string> = {
   ".json": "application/json",
 };
 
-export function serve(port: number) {
+const isBody = (v: unknown): v is DecideBody =>
+  typeof v === "object" &&
+  v !== null &&
+  ["category", "winner", "rationale"].every(
+    (k) => typeof (v as Record<string, unknown>)[k] === "string"
+  );
+
+/**
+ * POST /api/decide, the vote board's Decide control on the local server (#76): runs decide() in
+ * `root` (winner, rationale, today's date; the losers deleted), then `rebuild` so a reload shows
+ * the category decided. The owner commits and opens the PR as before. A refusal is decide()'s
+ * own message: 409 for a decided category, 400 for the rest. The server binds the loopback, and
+ * a request whose Origin is another site is 403, so no page on the web can press the control.
+ */
+export async function decideRoute(
+  req: Request,
+  root: string,
+  rebuild: () => Promise<void>
+): Promise<Response> {
+  const reply = (status: number, body: DecideReply, headers?: HeadersInit) =>
+    Response.json(body, { status, headers });
+  if (req.method !== "POST") return reply(405, { error: "POST only" }, { allow: "POST" });
+  const origin = req.headers.get("origin");
+  const self = new URL(req.url).origin;
+  if (origin && origin !== self) return reply(403, { error: `origin ${origin} is not ${self}` });
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return reply(400, { error: "the body is not JSON" });
+  }
+  if (!isBody(body)) {
+    return reply(400, { error: "the body needs category, winner and rationale as strings" });
+  }
+  let deleted: string[];
+  try {
+    deleted = decide(root, body.category, body.winner, body.rationale);
+  } catch (e) {
+    const error = e instanceof Error ? e.message : String(e);
+    return reply(/already decided/.test(error) ? 409 : 400, { error });
+  }
+  const date = readDecision(root, body.category)?.date ?? "";
+  try {
+    await rebuild();
+  } catch (e) {
+    const why = e instanceof Error ? e.message : String(e);
+    return reply(500, {
+      error: `${body.category} is decided for ${body.winner}, but rebuilding the gallery failed: ${why}. Restart the server.`,
+    });
+  }
+  return reply(200, { category: body.category, winner: body.winner, date, deleted });
+}
+
+export type ServeOptions = {
+  /** The package root the files are served from and decide() writes into. */
+  root?: string;
+  /** Runs after a decision, so the bundle carries the decided board. */
+  rebuild?: () => Promise<void>;
+};
+
+export function serve(port: number, { root = ROOT, rebuild = buildGallery }: ServeOptions = {}) {
   return Bun.serve({
     hostname: "127.0.0.1",
     port,
     async fetch(req) {
       let path = decodeURIComponent(new URL(req.url).pathname);
+      if (path === DECIDE_PATH) return decideRoute(req, root, rebuild);
+      if (req.method !== "GET" && req.method !== "HEAD") {
+        return new Response("method not allowed", { status: 405, headers: { allow: "GET, HEAD" } });
+      }
       if (path.endsWith("/")) path += "index.html";
-      const file = resolve(ROOT, `.${path}`);
-      if (file !== ROOT && !file.startsWith(ROOT + sep)) return new Response("no", { status: 403 });
+      const file = resolve(root, `.${path}`);
+      if (file !== root && !file.startsWith(root + sep)) return new Response("no", { status: 403 });
       const body = Bun.file(file);
       if (!(await body.exists())) return new Response("not found", { status: 404 });
       return new Response(body, {

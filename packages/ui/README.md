@@ -412,6 +412,15 @@ deletes the losing variant files, so a decided category keeps only its winner. O
 decides: a lane prepares the board and stops at "Awaiting decision". Adopting the winner into the
 primitive is a separate change.
 
+The board records the decision without the CLI (#76): an open category has a "Decide for …"
+control on each variant card with a rationale field (`gallery/decide.ts`). On the local server
+(`--serve`, 127.0.0.1) it POSTs to `/api/decide`, which runs the same `decide()` in that checkout,
+rebuilds the bundle and reloads the board decided; the owner then commits and opens the PR. An
+empty rationale, an unknown variant or a decided category comes back as `decide()`'s own error. On
+the hosted site (design.hansenexus.dev, a static build, nothing writes) the control opens a
+prefilled issue in hansenexus/design ("decide <category> <winner>", rationale and the command in
+the body) for an agent to run. Decided categories show no control, and agents never press it.
+
 | Category | Winner | Decided | In the kit |
 | --- | --- | --- | --- |
 | `skeleton-style` | pulse | 2026-09-27 | `Skeleton` pulses by default; reduced motion holds it on skeleton.base |

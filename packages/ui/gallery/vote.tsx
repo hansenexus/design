@@ -3,12 +3,123 @@
 // At 1280 px the variants are columns (a fixture may cap them per row, so a whole app screen
 // keeps room); at 390 px each fixture is a swipe row with the next variant peeking in, so every
 // comparison stays one gesture away. &variant=<id>&fixture=<id> opens one cell alone.
+// An open category carries a Decide control per variant (#76, gallery/decide.ts): on the local
+// server it records the decision through POST /api/decide, on the hosted site it opens a
+// prefilled issue. Only the owner presses it; agents prepare the board and stop.
 
 import { CATEGORIES } from "virtual:variants";
-import { type CSSProperties, useState } from "react";
-import { Badge, Button, StatusBadge } from "../src";
+import { type CSSProperties, type FormEvent, useState } from "react";
+import { Badge, Button, Field, FormAlert, StatusBadge, Textarea } from "../src";
+import {
+  DECIDE_PATH,
+  type DecideBody,
+  type DecideReply,
+  decideProblem,
+  decideTarget,
+  issueUrl,
+} from "./decide";
 
 const params = () => new URLSearchParams(location.search);
+
+/** The Decide form in one variant's header card: a rationale, then record or open the issue. */
+function Decide({
+  category,
+  variant,
+  considered,
+  onCancel,
+}: {
+  category: string;
+  variant: { id: string; label: string };
+  considered: readonly string[];
+  onCancel: () => void;
+}) {
+  const [rationale, setRationale] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+  const target = decideTarget(location.hostname);
+  const body: DecideBody = { category, winner: variant.id, rationale };
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    if (target === "issue") {
+      const problem = decideProblem(body);
+      if (problem) {
+        setError(problem);
+        return;
+      }
+      window.open(issueUrl(body, considered), "_blank", "noopener");
+      return;
+    }
+    setPending(true);
+    try {
+      const res = await fetch(DECIDE_PATH, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const reply = (await res.json()) as DecideReply;
+      if (!res.ok || "error" in reply) {
+        setError("error" in reply ? reply.error : `${res.status} ${res.statusText}`);
+        setPending(false);
+        return;
+      }
+      // decisions/<category>.json is written and the bundle rebuilt: the board reloads decided.
+      location.reload();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      setPending(false);
+    }
+  };
+
+  return (
+    <form
+      onSubmit={submit}
+      data-decide={variant.id}
+      className="mt-2 flex flex-col gap-3 border-t border-hn-line-subtle pt-3"
+    >
+      <fieldset disabled={pending} className="m-0 flex min-w-0 flex-col gap-3 border-0 p-0">
+        <Field
+          label={`Why ${variant.label}?`}
+          required
+          help={
+            target === "server"
+              ? `Owner only. Writes decisions/${category}.json in this checkout and deletes the other variants; commit and open the PR.`
+              : `Owner only. Opens a prefilled issue in hansenexus/design; an agent runs decide and opens the PR.`
+          }
+        >
+          <Textarea
+            rows={3}
+            value={rationale}
+            onChange={(e) => setRationale(e.target.value)}
+            placeholder="The rationale that goes into the decision file"
+          />
+        </Field>
+        {error ? (
+          <FormAlert
+            kind={target === "server" ? "server-error" : "invalid"}
+            title="Not decided"
+            data-decide-error=""
+          >
+            {error}
+          </FormAlert>
+        ) : null}
+        <div className="flex flex-wrap gap-2">
+          <Button type="submit">
+            {target === "server"
+              ? pending
+                ? "Recording…"
+                : "Record the decision"
+              : "Open the decide issue"}
+          </Button>
+          <Button variant="ghost" onClick={onCancel}>
+            Cancel
+          </Button>
+        </div>
+      </fieldset>
+    </form>
+  );
+}
 
 /** The link that opens one variant in one fixture alone, keeping the view. */
 function cellHref(variant: string, fixture: string): string {
@@ -20,6 +131,8 @@ function cellHref(variant: string, fixture: string): string {
 
 export function Vote() {
   const [run, setRun] = useState(0);
+  /** The variant whose Decide form is open, one at a time. */
+  const [pick, setPick] = useState<string | null>(null);
   const query = params();
   const id = query.get("category");
   const current = CATEGORIES.find((c) => c.id === id) ?? CATEGORIES[0];
@@ -84,7 +197,7 @@ export function Vote() {
           <p className="m-0 flex flex-wrap items-center gap-2 text-sm" data-vote="open">
             <StatusBadge status="busy">Awaiting decision</StatusBadge>
             <span className="text-hn-ink-muted">
-              Record it with{" "}
+              Owner: press Decide on the winning variant below, or run{" "}
               <code className="font-hn-mono text-hn-ink-primary">
                 bun run decide {current.id} &lt;variant&gt; --rationale "…"
               </code>
@@ -120,6 +233,25 @@ export function Vote() {
             <p className="m-0 text-sm text-hn-ink-muted">{v.summary}</p>
             <span className="font-hn-mono text-xs text-hn-ink-muted">{v.id}</span>
             {v.Controls && <v.Controls />}
+            {/* Decided categories carry no control: the vote is over. */}
+            {decision ? null : pick === v.id ? (
+              <Decide
+                category={current.id}
+                variant={v}
+                considered={variants.map((x) => x.id)}
+                onCancel={() => setPick(null)}
+              />
+            ) : (
+              <Button
+                variant="secondary"
+                className="mt-2 self-start"
+                data-decide-open={v.id}
+                aria-label={`Decide for ${v.label}`}
+                onClick={() => setPick(v.id)}
+              >
+                Decide
+              </Button>
+            )}
           </div>
         ))}
       </section>
