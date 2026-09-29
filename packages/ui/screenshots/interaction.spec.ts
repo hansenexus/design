@@ -85,7 +85,7 @@ test("scene nav: every scene linked, the current one marked, links resolve, bare
 }) => {
   await page.goto("/gallery/?scene=states");
   const nav = page.getByRole("navigation", { name: "Gallery scenes" });
-  await expect(nav.getByRole("link")).toHaveCount(16);
+  await expect(nav.getByRole("link")).toHaveCount(17);
   await expect(nav.locator('[aria-current="page"]')).toHaveText("states");
   await expect(nav.getByRole("link", { name: "kit", exact: true })).toHaveAttribute("href", "./");
   await nav.getByRole("link", { name: "forms", exact: true }).click();
@@ -193,4 +193,70 @@ test("auto-loop: the QueryState card cycles loading, empty, error and success", 
   const state = card.locator("[data-loop] [data-state]").first();
   for (const status of ["loading", "empty", "error", "data", "loading"])
     await expect(state).toHaveAttribute("data-state", status, { timeout: 5000 });
+});
+
+test("shell: the layout follows the shell's width, not the viewport's", async ({ page }, info) => {
+  await page.goto("/gallery/?scene=shell");
+  const [wide, phone] = [page.locator("[data-shell]").nth(0), page.locator("[data-shell]").nth(1)];
+  const box = async (shell: typeof wide, panel: string) =>
+    (await shell.locator(`[data-shell-panel="${panel}"]`).boundingBox()) ?? { x: 0, y: 0 };
+
+  // The narrow frame: header on top, main, the tab bar at the bottom, no context pane.
+  await expect(phone.locator('[data-shell-nav="tabs"]')).toBeVisible();
+  await expect(phone.locator('[data-shell-nav="rail"]')).toBeHidden();
+  await expect(phone.locator('[data-shell-panel="context"]')).toBeHidden();
+  await expect(phone.getByRole("button", { name: "Hide context panel" })).toBeHidden();
+  expect((await box(phone, "nav")).y).toBeGreaterThan((await box(phone, "main")).y);
+  expect((await box(phone, "main")).y).toBeGreaterThan((await box(phone, "header")).y);
+
+  if (info.project.name === "1280") {
+    // The full-width card: the nav rail left of main, the context pane right of it.
+    await expect(wide.locator('[data-shell-nav="rail"]')).toBeVisible();
+    await expect(wide.locator('[data-shell-panel="context"]')).toBeVisible();
+    expect((await box(wide, "nav")).x).toBeLessThan((await box(wide, "main")).x);
+    expect((await box(wide, "context")).x).toBeGreaterThan((await box(wide, "main")).x);
+    await wide.getByRole("button", { name: "Hide context panel" }).click();
+    await expect(wide.locator('[data-shell-panel="context"]')).toHaveCount(0);
+  }
+});
+
+test("shell: ⌘K opens its palette inside the shell, Enter runs the command", async ({ page }) => {
+  await page.goto("/gallery/?scene=shell");
+  const wide = page.locator("[data-shell]").nth(0);
+  await page.locator("body").press("Control+k");
+  // Only the shell that binds the shortcut opens, and its palette lives inside it.
+  const dialog = wide.getByRole("dialog", { name: "Command palette" });
+  await expect(dialog).toBeVisible();
+  await expect(page.getByRole("dialog")).toHaveCount(1);
+  // The shell contains its overlay: in the gallery card the palette opens over the card.
+  const [shellBox, dialogBox] = [await wide.boundingBox(), await dialog.boundingBox()];
+  expect(dialogBox?.y ?? 0).toBeGreaterThan(shellBox?.y ?? Number.POSITIVE_INFINITY);
+  const input = dialog.getByRole("combobox");
+  await expect(input).toBeFocused();
+  await input.fill("map");
+  await input.press("Enter");
+  await expect(dialog).toBeHidden();
+  await expect(wide.locator('nav a[href="#map"][aria-current="page"]').first()).toBeAttached();
+});
+
+test("shell: an ops preset mounts in the palette slot, the shell keeps focus and closing", async ({
+  page,
+}) => {
+  await page.goto("/gallery/?scene=shell");
+  const shell = page.locator("[data-shell]").nth(2);
+  const trigger = shell.getByRole("button", { name: "Search or run a command" });
+  await trigger.click();
+  const dialog = shell.getByRole("dialog");
+  await expect(dialog.locator('[data-preset="ops"]')).toBeVisible();
+  const input = dialog.getByRole("combobox");
+  await expect(input).toBeFocused();
+  await input.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toBeFocused();
+
+  await trigger.click();
+  await dialog.getByRole("combobox").fill("restart");
+  await dialog.getByRole("combobox").press("Enter");
+  await expect(dialog).toBeHidden();
+  await expect(shell.locator("[data-last-run]")).toHaveText("Ran: Restart lotsen-api");
 });

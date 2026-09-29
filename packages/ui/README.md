@@ -425,12 +425,13 @@ the body) for an agent to run. Decided categories show no control, and agents ne
 | --- | --- | --- | --- |
 | `skeleton-style` | pulse | 2026-09-27 | `Skeleton` pulses by default; reduced motion holds it on skeleton.base |
 | `illustration-style` | geometric | 2026-09-27 | All eight motifs of [`@hansenexus/illustrations`](../illustrations); the gallery's `states` scene fills the EmptyState/ErrorState slot with them |
-| `shell-layout` | floating-panels (glass off) | 2026-09-29 | Not yet; `@hansenexus/shell` adopts it in a separate change |
+| `shell-layout` | floating-panels (glass off) | 2026-09-29 | [`@hansenexus/shell`](../shell), flat; the gallery's `shell` scene and the board's winner mount the package |
 
 `shell-layout` (level `template`) was the first vote of `@hansenexus/shell`
 (`dec_2026-09-29_global-design-shell-gallery-atomic`). It compared rail + collapsible sidebar
 (kommandant's shell today), 3-pane with context pane, command-first minimal chrome and floating
-panels; floating panels won. It draws the app in a fixed-size screen, every theme at 1280 × 800
+panels; floating panels won and shipped as `@hansenexus/shell` (#64), which the winner's board
+column now draws. It draws the app in a fixed-size screen, every theme at 1280 × 800
 and 390 × 844, scaled to its cell; the screen sets its own `data-theme`, so the four themes share
 one board. "Open alone" (`&variant=<id>&fixture=<id>`) shows one screen at full size. The web
 stays flat (`dec_2026-09-25_kommandant-visual-flat-lime-only`): the winner was chosen with its glass

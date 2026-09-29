@@ -2,6 +2,8 @@
 // `meta.level: atom|molecule|organism|template` in packages/ui/registry.json, and a file may
 // import only items of the same or a lower level: an atom never pulls in a molecule, a molecule
 // never an organism. Folders stay flat; the level lives in that metadata only.
+// An item that installs an npm package instead of copying files (the shell, #64) names the items
+// it draws in `meta.uses`; the same rule holds for those.
 // It also fails when a gallery preview card names an item the registry lacks, or when an item
 // has no scene in packages/ui/gallery/levels.ts, so the gallery nav lists every item by level.
 // Run: bun scripts/levels.ts [--root <dir>]
@@ -74,6 +76,21 @@ export function checkLevels({ items, sources, gallery, scenes }: Input): string[
 
   for (const item of items) {
     const level = levelOf(item);
+    const uses = item.meta?.uses;
+    for (const name of Array.isArray(uses) ? (uses as string[]) : []) {
+      const dep = items.find((i) => i.name === name);
+      if (!dep) {
+        errors.push(
+          `${at("registry.json")}: ${item.name} uses ${name}, which is not a registry item`
+        );
+        continue;
+      }
+      const depLevel = levelOf(dep);
+      if (!level || !depLevel || rank(depLevel) <= rank(level)) continue;
+      errors.push(
+        `${at("registry.json")}: ${item.name} (${level}) uses ${name} (${depLevel}): a ${level} uses only ${LEVELS.slice(0, rank(level) + 1).join("|")}`
+      );
+    }
     for (const f of item.files ?? []) {
       for (const target of siblingImports(f.path, sources[f.path] ?? "")) {
         const dep = owner.get(target.replace(/\.tsx?$/, ""));

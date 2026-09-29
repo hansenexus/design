@@ -1,18 +1,16 @@
 // The shell-layout vote (hansenexus/design#63): four app shells for @hansenexus/shell, at level
-// template. Every variant draws the same app (nav, header, a machine list, one machine's context)
-// through its own Shell, in a Screen of fixed size: each theme at 1280 × 800 and at 390 × 844,
-// scaled down to its cell. The Screen sets data-theme itself, so all four themes sit on one page.
-// Web stays flat (dec_2026-09-25_kommandant-visual-flat-lime-only); only the floating-panels
-// variant carries a glass toggle, off by default. Names are an invented estate.
+// template. Decided for floating panels, glass off; the winner now draws the package itself
+// (#64), and the estate app below is what gallery/shell.tsx mounts in it. Each fixture is a Screen
+// of fixed size: each theme at 1280 × 800 and at 390 × 844, scaled down to its cell. The Screen
+// sets data-theme itself, so all four themes sit on one page. Web stays flat
+// (dec_2026-09-25_kommandant-visual-flat-lime-only); the glass toggle stays for comparison, off
+// by default. Names are an invented estate.
 import { type Theme, themes } from "@hansenexus/tokens";
 import { type ReactNode, useContext, useLayoutEffect, useRef, useState } from "react";
 import {
   Button,
-  Command,
-  type CommandGroup,
   cx,
   HansenexusMark,
-  Kbd,
   Meter,
   type Status,
   StatusBadge,
@@ -86,32 +84,6 @@ export function Brand({ compact = false }: { compact?: boolean }) {
         <span className="text-[13px] font-semibold tracking-tight">kommandant</span>
       )}
     </span>
-  );
-}
-
-/** An icon-only button with its name for assistive tech. */
-export function IconButton({
-  label,
-  onClick,
-  pressed,
-  children,
-}: {
-  label: string;
-  onClick?: () => void;
-  pressed?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <Button
-      variant="ghost"
-      aria-label={label}
-      title={label}
-      aria-pressed={pressed}
-      onClick={onClick}
-      className="px-2"
-    >
-      {children}
-    </Button>
   );
 }
 
@@ -226,49 +198,6 @@ export function MachineContext({ machine = SELECTED }: { machine?: Machine }) {
       </div>
       <Button variant="danger">Restart</Button>
     </div>
-  );
-}
-
-/** What the ⌘K palette offers in every shell. */
-export const COMMANDS: CommandGroup[] = [
-  {
-    id: "go",
-    heading: "Go to",
-    items: NAV.map((n) => ({ id: `go-${n.id}`, label: n.label, icon: n.icon })),
-  },
-  {
-    id: "act",
-    heading: "Actions",
-    items: [
-      { id: "poll", label: "Poll now", icon: <Restart />, shortcut: "⌘R" },
-      { id: "restart", label: "Restart lotsen-api", icon: <Server /> },
-    ],
-  },
-];
-
-/** The palette body, inline in the screen (a Dialog would portal out of the scaled frame). */
-export function Palette({ onClose, className }: { onClose: () => void; className?: string }) {
-  return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: Escape is caught here for the inline palette.
-    <div
-      className={cx(
-        "overflow-hidden rounded-hn-lg border border-hn-line-strong bg-hn-surface-card shadow-hn-lift",
-        className
-      )}
-      onKeyDown={(e) => e.key === "Escape" && onClose()}
-    >
-      <Command groups={COMMANDS} label="Command palette" onSelect={onClose} autoFocus showHints />
-    </div>
-  );
-}
-
-/** The ⌘K hint, a keycap pair. */
-export function CommandKeys() {
-  return (
-    <span className="flex gap-0.5">
-      <Kbd>⌘</Kbd>
-      <Kbd>K</Kbd>
-    </span>
   );
 }
 
