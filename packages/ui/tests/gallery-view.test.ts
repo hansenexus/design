@@ -4,6 +4,7 @@ import {
   frameQuery,
   installCommand,
   readView,
+  VIEW_OPTIONS,
   viewAttributes,
   writeView,
 } from "../gallery/view";
@@ -46,5 +47,14 @@ describe("gallery view (#57)", () => {
 
   test("the install command names the registry item", () => {
     expect(installCommand("skeleton")).toBe("/design add skeleton");
+  });
+
+  test("the theme list is every token theme, lexilink included (#62)", () => {
+    expect(VIEW_OPTIONS.theme).toEqual(["hansenexus", "kommandant", "portal", "lexilink"]);
+    const view = { ...DEFAULT_VIEW, theme: "lexilink" as const };
+    const q = writeView(new URLSearchParams(), view);
+    expect(q.toString()).toBe("theme=lexilink");
+    expect(readView(q)).toEqual(view);
+    expect(viewAttributes(view).theme).toBe("lexilink");
   });
 });
