@@ -30,16 +30,20 @@ for (const category of listCategories()) {
       );
       expect(overflow).toBeLessThanOrEqual(0);
 
-      // Side by side: at 1280 a fixture's variants share one row; at 390 they sit in one
-      // horizontal strip, the second peeking in from the right edge.
-      const boxes = await fixtures
-        .first()
-        .locator("[data-vote-variant]")
-        .evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON()));
-      const tops = new Set(boxes.map((b) => Math.round(b.top)));
-      expect(tops.size).toBe(1);
-      if (info.project.name === "390" && boxes.length > 1) {
-        expect(boxes[1]?.left ?? 0).toBeLessThan(390);
+      // Side by side: at 1280 a fixture's variants share one row, or as many rows as its column
+      // cap needs (a whole app screen per cell); at 390 they sit in one horizontal strip, the
+      // second peeking in from the right edge.
+      for (let i = 0; i < count; i++) {
+        const row = fixtures.nth(i).locator("[data-vote-columns]");
+        const columns = Number(await row.getAttribute("data-vote-columns"));
+        const boxes = await row
+          .locator("[data-vote-variant]")
+          .evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON()));
+        const tops = new Set(boxes.map((b) => Math.round(b.top)));
+        expect(tops.size).toBe(info.project.name === "390" ? 1 : Math.ceil(boxes.length / columns));
+        if (info.project.name === "390" && boxes.length > 1) {
+          expect(boxes[1]?.left ?? 0).toBeLessThan(390);
+        }
       }
     });
   }

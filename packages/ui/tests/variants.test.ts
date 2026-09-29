@@ -184,3 +184,96 @@ describe("illustration-style", () => {
     }
   });
 });
+
+describe("shell-layout", () => {
+  const found = listCategories(ROOT).find((c) => c.id === "shell-layout");
+  const load = async () => {
+    if (!found) throw new Error("shell-layout is missing");
+    const { category } = await import(found.spec);
+    const variants = await Promise.all(
+      found.variants.map(async (id) => ({
+        id,
+        ...(await import(resolve(found.spec, "..", `${id}.tsx`))),
+      }))
+    );
+    return { category, variants };
+  };
+
+  test("is an open vote on the four shells, at level template", async () => {
+    expect(found?.decision).toBeNull();
+    expect(found?.variants).toEqual([
+      "command-first",
+      "floating-panels",
+      "rail-sidebar",
+      "three-pane",
+    ]);
+    const { category } = await load();
+    expect(category.level).toBe("template");
+  });
+
+  test("the fixtures are every theme at 1280 and at 390 px", async () => {
+    const { themes } = await import("@hansenexus/tokens");
+    const { category } = await load();
+    expect(category.fixtures.map((f: { id: string }) => f.id).sort()).toEqual(
+      themes.flatMap((t) => [`${t}-desktop`, `${t}-phone`]).sort()
+    );
+  });
+
+  test("every variant renders in every fixture under the fixture's own theme", async () => {
+    const { category, variants } = await load();
+    for (const { variant } of variants) {
+      for (const fixture of category.fixtures) {
+        const [theme, screen] = fixture.id.split("-");
+        const html = renderToStaticMarkup(fixture.render(variant));
+        expect(html).toContain(`data-theme="${theme}"`);
+        expect(html).toContain(`data-screen="${screen}"`);
+        // The nav: a landmark, the drawer's menu button, or command-first's ⌘K field.
+        expect(html).toMatch(
+          /aria-label="App"|aria-label="Open navigation"|Search or run a command/
+        );
+        expect(html).toContain("kran-01");
+      }
+    }
+  });
+
+  // dec_2026-09-25_kommandant-visual-flat-lime-only: the web is flat unless the vote says otherwise.
+  test("flat by default: no blur anywhere; floating panels are inset with the one lift", async () => {
+    const { category, variants } = await load();
+    for (const { variant } of variants) {
+      for (const fixture of category.fixtures) {
+        const html = renderToStaticMarkup(fixture.render(variant));
+        expect(html).not.toMatch(/backdrop-blur|blur-3xl/);
+      }
+    }
+    const floating = variants.find((v) => v.id === "floating-panels");
+    expect(floating?.panelClass(false)).toContain("shadow-hn-lift");
+    expect(floating?.panelClass(false)).toContain("bg-hn-surface-card");
+    expect(floating?.panelClass(false)).not.toMatch(/blur|\//);
+    const html = renderToStaticMarkup(category.fixtures[0].render(floating?.variant));
+    expect(html).toContain('data-glass="off"');
+    expect(html).toMatch(/class="relative flex h-full w-full gap-3 bg-hn-surface-band p-3"/);
+  });
+
+  test("the floating-panels glass toggle turns every fixture translucent and blurred", async () => {
+    const { category, variants } = await load();
+    const floating = variants.find((v) => v.id === "floating-panels");
+    expect(floating?.variant.Controls).toBeFunction();
+    const toggle = renderToStaticMarkup(createElement(floating?.variant.Controls));
+    expect(toggle).toContain('role="switch"');
+    expect(toggle).toContain('aria-checked="false"');
+    floating?.setGlass(true);
+    try {
+      for (const fixture of category.fixtures) {
+        const html = renderToStaticMarkup(fixture.render(floating?.variant));
+        expect(html).toContain('data-glass="on"');
+        expect(html).toContain("backdrop-blur-xl");
+      }
+    } finally {
+      floating?.setGlass(false);
+    }
+    // Only the variant that carries the toggle has one.
+    expect(variants.filter((v) => v.variant.Controls).map((v) => v.id)).toEqual([
+      "floating-panels",
+    ]);
+  });
+});

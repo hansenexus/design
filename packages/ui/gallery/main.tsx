@@ -4,6 +4,7 @@
 // scene nav stays out of the frame.
 // Names are an invented estate: no real hostnames, IPs or people in a public repo.
 
+import { CATEGORIES } from "virtual:variants";
 import { NotFoundIllustration } from "@hansenexus/illustrations/404";
 import { EmptyIllustration } from "@hansenexus/illustrations/empty";
 import { ErrorIllustration } from "@hansenexus/illustrations/error";
@@ -104,7 +105,7 @@ import {
 import { Data } from "./data";
 import { Bell, Check, Key, MapIcon, More, Restart, Server } from "./icons";
 import { ItemPage, isItem } from "./item";
-import { itemsByLevel } from "./levels";
+import { itemsByLevel, type Level } from "./levels";
 import { Navigation } from "./navigation";
 import { Overlays } from "./overlays";
 import { BareContext, PreviewCard, useMotionTimings, ViewContext, ViewToolbar } from "./preview";
@@ -1197,10 +1198,13 @@ function SceneNav({ current, view }: { current: Scene | null; view: View }) {
   );
 }
 
+/** Open variant votes whose category sits at this level, e.g. the shell-layout templates (#63). */
+const openVotes = (level: Level) => CATEGORIES.filter((c) => c.spec.level === level && !c.decision);
+
 /**
  * The registry by atomic level (#58), lowest first: one row per level, each item linking to its
- * page with its blast radius (#59). Collapsed by default so the scene stays in view; the summary
- * counts them.
+ * page with its blast radius (#59), plus the open votes at that level (#63). Collapsed by default
+ * so the scene stays in view; the summary counts them.
  */
 function LevelNav({ view }: { view: View }) {
   const groups = itemsByLevel();
@@ -1211,13 +1215,29 @@ function LevelNav({ view }: { view: View }) {
     >
       <details>
         <summary className="cursor-pointer text-hn-ink-muted">
-          Items by level: {groups.map(([level, items]) => `${items.length} ${level}s`).join(", ")}
+          Items by level:{" "}
+          {groups
+            .map(([level, items]) => {
+              const votes = openVotes(level).length;
+              return `${items.length} ${level}s${votes ? ` (${votes} open vote)` : ""}`;
+            })
+            .join(", ")}
         </summary>
         <dl className="m-0 mt-2 grid gap-y-2 sm:grid-cols-[8rem_1fr]">
           {groups.map(([level, items]) => (
             <Fragment key={level}>
               <dt className="font-hn-mono text-hn-ink-muted">{level}s</dt>
               <dd className="m-0 flex flex-wrap gap-x-3 gap-y-1">
+                {openVotes(level).map((c) => (
+                  <a
+                    key={c.id}
+                    href={`?${writeView(new URLSearchParams({ scene: "vote", category: c.id }), view)}`}
+                    title={`${c.spec.title}: open vote`}
+                    className="text-hn-ink-primary"
+                  >
+                    {c.spec.title} (vote)
+                  </a>
+                ))}
                 {items.length ? (
                   items.map((item) => (
                     <a
@@ -1230,7 +1250,7 @@ function LevelNav({ view }: { view: View }) {
                       {item.title}
                     </a>
                   ))
-                ) : (
+                ) : openVotes(level).length ? null : (
                   <span className="text-hn-ink-muted">none yet</span>
                 )}
               </dd>
