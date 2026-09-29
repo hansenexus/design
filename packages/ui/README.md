@@ -417,6 +417,18 @@ primitive is a separate change.
 | `skeleton-style` | pulse | 2026-09-27 | `Skeleton` pulses by default; reduced motion holds it on skeleton.base |
 | `illustration-style` | geometric | 2026-09-27 | All eight motifs of [`@hansenexus/illustrations`](../illustrations); the gallery's `states` scene fills the EmptyState/ErrorState slot with them |
 
+`shell-layout` (level `template`, open) is the first vote of `@hansenexus/shell`
+(`dec_2026-09-29_global-design-shell-gallery-atomic`): rail + collapsible sidebar (kommandant's
+shell today), 3-pane with context pane, command-first minimal chrome and floating panels. Each
+draws the same app in a fixed-size screen, every theme at 1280 × 800 and 390 × 844, scaled to its
+cell; the screen sets its own `data-theme`, so the four themes share one board. "Open alone"
+(`&variant=<id>&fixture=<id>`) shows one screen at full size. The web stays flat
+(`dec_2026-09-25_kommandant-visual-flat-lime-only`): the floating-panels variant has a glass
+toggle, off by default (flat: inset, `shadow.lift`, no blur; `&glass=on` starts it on), and glass
+winning needs a ruling that supersedes the flat one before any glass ships. A category's `level`
+shows on the board and in the gallery's level nav; a fixture's `columns` caps the variants per row
+at 1280 px.
+
 The vote scenes
 have layout checks (`screenshots/vote.spec.ts`) but no pixel baselines, since a board is temporary.
 

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { Decision } from "../../scripts/variants";
+import type { Level } from "../levels";
 
 /** One alternative on the board. A category extends it with what its fixtures need. */
 export type Variant = {
@@ -12,6 +13,11 @@ export type Variant = {
    * so deleting a losing variant deletes its styles too. Semantic tokens only (the ratchet).
    */
   css?: string;
+  /**
+   * A control shown in the variant's header card that changes how every fixture draws it, e.g.
+   * the floating-panels glass toggle. Its state lives in the variant file.
+   */
+  Controls?: () => ReactNode;
 };
 
 /** A situation every variant is drawn in, so the columns compare like with like. */
@@ -20,6 +26,11 @@ export type Fixture<V extends Variant> = {
   label: string;
   /** What stays the same across variants, if anything does. */
   note?: string;
+  /**
+   * At most this many variants per row at 1280 px, so a wide fixture (a whole app screen) is not
+   * squeezed into a quarter of the page. Default: all of them in one row.
+   */
+  columns?: number;
   render(variant: V): ReactNode;
 };
 
@@ -28,6 +39,8 @@ export type CategorySpec<V extends Variant> = {
   title: string;
   /** The question the owner answers. */
   question: string;
+  /** The atomic level of what the vote chooses (#58), shown on the board and in the level nav. */
+  level?: Level;
   fixtures: Fixture<V>[];
 };
 
