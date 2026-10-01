@@ -92,16 +92,19 @@ describe("outdated (#65)", () => {
     ]);
   });
 
+  // biome-ignore lint/suspicious/noTemplateCurlyInString: names the literal ${VAR} header syntax
   test("reads the registry from components.json, else the default, and fills ${VAR} headers", () => {
     const withConfig = consumer({
       "components.json": JSON.stringify({
         registries: {
+          // biome-ignore lint/suspicious/noTemplateCurlyInString: literal shadcn env placeholder under test
           [NAMESPACE]: { url: "https://r.example/{name}.json", headers: { "X-Token": "${T}" } },
         },
       }),
     });
     expect(registryConfig(withConfig)).toEqual({
       url: "https://r.example/{name}.json",
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: literal shadcn env placeholder under test
       headers: { "X-Token": "${T}" },
     });
     expect(registryConfig(consumer({}))).toBe(REGISTRIES[NAMESPACE]);
