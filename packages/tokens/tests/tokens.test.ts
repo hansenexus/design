@@ -80,14 +80,14 @@ describe("contrast", () => {
     expect(run.stderr.toString()).toContain("placeholder: skeleton.base on surface.raised");
   });
 
-  test("all 16 terminal colours are text pairs on surface.page, every theme, both modes", async () => {
+  test("all 16 terminal colours are text pairs on surface.page and surface.card, every theme, both modes", async () => {
     const { results } = await checkAll();
     const terminal = results.filter((r) => r.fg.startsWith("terminal."));
     expect(new Set(terminal.map((r) => r.fg))).toEqual(new Set(TERMINAL));
     expect(TERMINAL).toHaveLength(16);
-    expect(new Set(terminal.map((r) => r.bg))).toEqual(new Set(["surface.page"]));
+    expect(new Set(terminal.map((r) => r.bg))).toEqual(new Set(["surface.page", "surface.card"]));
     expect(new Set(terminal.map((r) => r.kind))).toEqual(new Set(["text"]));
-    expect(terminal).toHaveLength(16 * THEMES.length * 2);
+    expect(terminal).toHaveLength(16 * 2 * THEMES.length * 2);
     expect(terminal.every((r) => r.ratio >= 4.5)).toBe(true);
   });
 
@@ -99,6 +99,18 @@ describe("contrast", () => {
     const run = Bun.spawnSync(["bun", CONTRAST, "--tokens", dir]);
     expect(run.exitCode).toBe(1);
     expect(run.stderr.toString()).toContain("text: terminal.bright-black on surface.page");
+  });
+
+  test("a terminal colour under 4.5:1 on surface.card fails the CLI", () => {
+    // warm.500 clears the dark Grund (4.9:1) but not the card a panel terminal draws on (4.4:1).
+    const dir = fixture("semantic/color.dark.json", (j) => {
+      setToken(j, "terminal", "black", "{palette.warm.500}");
+    });
+    const run = Bun.spawnSync(["bun", CONTRAST, "--tokens", dir]);
+    expect(run.exitCode).toBe(1);
+    const stderr = run.stderr.toString();
+    expect(stderr).toContain("text: terminal.black on surface.card");
+    expect(stderr).not.toContain("text: terminal.black on surface.page");
   });
 
   test("a colour token outside every rule fails the CLI", () => {
