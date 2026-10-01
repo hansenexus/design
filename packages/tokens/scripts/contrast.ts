@@ -53,8 +53,9 @@ export const RULES: Rule[] = [
     bg: SURFACES,
   },
   { kind: "placeholder", fg: ["skeleton.base", "skeleton.highlight"], bg: SURFACES },
-  // A terminal draws on surface.page; every ANSI colour, black and white included, is text there.
-  { kind: "text", fg: TERMINAL, bg: ["surface.page"] },
+  // A terminal draws on surface.page or, inset in a panel, surface.card (kommandant's xterm);
+  // every ANSI colour, black and white included, is text on both.
+  { kind: "text", fg: TERMINAL, bg: ["surface.page", "surface.card"] },
   // The mark is a graphic: 3:1 against the flat grounds it is allowed on (the app icon tile,
   // paper). Lime on paper is not a pair on purpose; on light the mark is lime-deep.
   { kind: "ui", fg: ["brand.lime", "brand.paper"], bg: ["brand.ink"] },

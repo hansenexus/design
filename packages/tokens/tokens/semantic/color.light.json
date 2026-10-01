@@ -54,7 +54,7 @@
   },
   "terminal": {
     "$type": "color",
-    "$description": "The 16 ANSI colours of a terminal drawn on surface.page. Every one is text-contrast (4.5:1) on surface.page. Lime is green, as elsewhere; magenta and cyan are muted so lime stays the only accent.",
+    "$description": "The 16 ANSI colours of a terminal drawn on surface.page or surface.card. Every one is text-contrast (4.5:1) on both. Lime is green, as elsewhere; magenta and cyan are muted so lime stays the only accent.",
     "black": { "$value": "{palette.warm.900}" },
     "red": { "$value": "{palette.coral.700}" },
     "green": { "$value": "{palette.lime.700}" },

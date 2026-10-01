@@ -24,6 +24,10 @@
       "400": {
         "$value": "#a39c8c"
       },
+      "450": {
+        "$value": "#8f8778",
+        "$description": "Terminal black in dark: the lowest grey that stays 4.5:1 on surface.card"
+      },
       "500": {
         "$value": "#8a8273",
         "$description": "Aus (off) in dark"

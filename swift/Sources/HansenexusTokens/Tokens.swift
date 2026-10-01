@@ -112,7 +112,7 @@ public struct HNColors: Sendable, Equatable {
   }
 
   public struct Terminal: Sendable, Equatable {
-    /// The lowest grey that stays 4.5:1
+    /// The lowest grey that stays 4.5:1 on surface.card
     public let black: HNRGBA
     public let blue: HNRGBA
     public let brightBlack: HNRGBA
@@ -203,7 +203,7 @@ public struct HNColors: Sendable, Equatable {
       tint: HNRGBA(0x253515)
     ),
     terminal: Terminal(
-      black: HNRGBA(0x8A8273),
+      black: HNRGBA(0x8F8778),
       blue: HNRGBA(0x8FB8FF),
       brightBlack: HNRGBA(0xA39C8C),
       brightBlue: HNRGBA(0xBED5FD),
@@ -337,7 +337,7 @@ public struct HNColors: Sendable, Equatable {
       tint: HNRGBA(0x253515)
     ),
     terminal: Terminal(
-      black: HNRGBA(0x8A8273),
+      black: HNRGBA(0x8F8778),
       blue: HNRGBA(0x8FB8FF),
       brightBlack: HNRGBA(0xA39C8C),
       brightBlue: HNRGBA(0xBED5FD),
@@ -471,7 +471,7 @@ public struct HNColors: Sendable, Equatable {
       tint: HNRGBA(0x253515)
     ),
     terminal: Terminal(
-      black: HNRGBA(0x8A8273),
+      black: HNRGBA(0x8F8778),
       blue: HNRGBA(0x8FB8FF),
       brightBlack: HNRGBA(0xA39C8C),
       brightBlue: HNRGBA(0xBED5FD),
@@ -605,7 +605,7 @@ public struct HNColors: Sendable, Equatable {
       tint: HNRGBA(0x1C1712)
     ),
     terminal: Terminal(
-      black: HNRGBA(0x8A8273),
+      black: HNRGBA(0x8F8778),
       blue: HNRGBA(0x8FB8FF),
       brightBlack: HNRGBA(0xA39C8C),
       brightBlue: HNRGBA(0xBED5FD),
