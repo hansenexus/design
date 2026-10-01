@@ -19,16 +19,18 @@ import (
 )
 
 // Verifier checks a Cloudflare Access JWT (the Cf-Access-Jwt-Assertion header): RS256 against the
-// team's JWKS, aud contains Audience, iss equals Issuer, exp and nbf within Leeway.
+// team's JWKS, aud contains one of Audiences, iss equals Issuer, exp and nbf within Leeway.
 //
 // The JWKS is cached. It is refetched when a token names an unknown kid and when the cached copy
 // is older than RefreshAfter. A cache older than MaxStale is dropped, and with no keys every token
 // fails: the proxy fails closed when the JWKS cannot be fetched.
 type Verifier struct {
-	JWKSURL  string
-	Issuer   string
-	Audience string
-	Client   *http.Client
+	JWKSURL string
+	Issuer  string
+	// Audiences are the AUD tags of the Access applications in front of this origin (#96): one
+	// path may sit under its own application, such as a service-token app for a CLI.
+	Audiences []string
+	Client    *http.Client
 
 	Leeway       time.Duration
 	RefreshAfter time.Duration
@@ -45,12 +47,12 @@ type Verifier struct {
 }
 
 // NewVerifier returns a Verifier for a Cloudflare Access team domain such as
-// hansenexus.cloudflareaccess.com.
-func NewVerifier(teamDomain, audience string) *Verifier {
+// hansenexus.cloudflareaccess.com that accepts tokens for any of audiences.
+func NewVerifier(teamDomain string, audiences []string) *Verifier {
 	return &Verifier{
 		JWKSURL:       "https://" + teamDomain + "/cdn-cgi/access/certs",
 		Issuer:        "https://" + teamDomain,
-		Audience:      audience,
+		Audiences:     audiences,
 		Client:        &http.Client{Timeout: 5 * time.Second},
 		Leeway:        30 * time.Second,
 		RefreshAfter:  time.Hour,
@@ -76,6 +78,18 @@ type jwtClaims struct {
 	Iss string       `json:"iss"`
 	Exp *json.Number `json:"exp"`
 	Nbf *json.Number `json:"nbf"`
+}
+
+// ParseAudiences splits a comma-separated CF_ACCESS_AUD into its tags, trimming blanks and
+// dropping empty items. An empty result means no audience is configured.
+func ParseAudiences(raw string) []string {
+	var auds []string
+	for _, a := range strings.Split(raw, ",") {
+		if a = strings.TrimSpace(a); a != "" {
+			auds = append(auds, a)
+		}
+	}
+	return auds
 }
 
 // audience accepts both JWT forms of aud: a single string or an array of strings.
@@ -130,7 +144,7 @@ func (v *Verifier) Verify(ctx context.Context, token string) error {
 	if err := decodeSegment(parts[1], &claims); err != nil {
 		return invalid("claims: %v", err)
 	}
-	if !slices.Contains(claims.Aud, v.Audience) {
+	if !slices.ContainsFunc(claims.Aud, func(a string) bool { return slices.Contains(v.Audiences, a) }) {
 		return invalid("aud")
 	}
 	if claims.Iss != v.Issuer {

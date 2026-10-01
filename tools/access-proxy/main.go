@@ -8,7 +8,8 @@
 //
 //   - cf-access (the default; the galleries, #47): a Cloudflare Access JWT in
 //     Cf-Access-Jwt-Assertion. Env CF_ACCESS_TEAM_DOMAIN (e.g. hansenexus.cloudflareaccess.com)
-//     and CF_ACCESS_AUD (the Access application's AUD tag); it refuses to start if either is empty.
+//     and CF_ACCESS_AUD (the Access applications' AUD tags, comma-separated, #96); it refuses to
+//     start if the domain is empty or CF_ACCESS_AUD holds no tag.
 //   - licence (the Lotse shadcn registry, #92): `Authorization: Bearer <key>` whose SHA-256 is
 //     listed in LICENCE_KEYS_FILE (licence.go); it refuses to start if the file cannot be read.
 package main
@@ -49,21 +50,21 @@ func newGate() (gate, string, error) {
 	switch mode := strings.TrimSpace(os.Getenv("ACCESS_MODE")); mode {
 	case "", "cf-access":
 		teamDomain := strings.TrimSpace(os.Getenv("CF_ACCESS_TEAM_DOMAIN"))
-		aud := strings.TrimSpace(os.Getenv("CF_ACCESS_AUD"))
-		if teamDomain == "" || aud == "" {
+		auds := ParseAudiences(os.Getenv("CF_ACCESS_AUD"))
+		if teamDomain == "" || len(auds) == 0 {
 			return nil, "", errors.New("CF_ACCESS_TEAM_DOMAIN and CF_ACCESS_AUD must both be set")
 		}
 		if strings.ContainsAny(teamDomain, "/:@?# ") {
 			return nil, "", fmt.Errorf("CF_ACCESS_TEAM_DOMAIN must be a bare host name, got %q", teamDomain)
 		}
-		verifier := NewVerifier(teamDomain, aud)
+		verifier := NewVerifier(teamDomain, auds)
 		// Warm the cache. A failure is not fatal: requests are refused until a later fetch succeeds.
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		if err := verifier.Refresh(ctx); err != nil {
 			log.Printf("initial JWKS fetch failed, refusing every request until it succeeds: %v", err)
 		}
-		return verifier, "team " + teamDomain, nil
+		return verifier, fmt.Sprintf("team %s, %d audiences", teamDomain, len(auds)), nil
 	case "licence":
 		path := strings.TrimSpace(os.Getenv("LICENCE_KEYS_FILE"))
 		if path == "" {

@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -20,8 +21,9 @@ import (
 )
 
 const (
-	testAud = "test-aud-tag"
-	testIss = "https://team.example.cloudflareaccess.com"
+	testAud  = "test-aud-tag"
+	testAud2 = "test-aud-tag-r"
+	testIss  = "https://team.example.cloudflareaccess.com"
 )
 
 var now = time.Unix(1_800_000_000, 0)
@@ -137,7 +139,7 @@ func newFixture(t *testing.T, signers ...signer) *fixture {
 	f.verifier = &Verifier{
 		JWKSURL:       f.jwks.URL,
 		Issuer:        testIss,
-		Audience:      testAud,
+		Audiences:     []string{testAud},
 		Client:        f.jwks.Client(),
 		Leeway:        30 * time.Second,
 		RefreshAfter:  time.Hour,
@@ -215,6 +217,37 @@ func TestWrongAud(t *testing.T) {
 	claims := goodClaims()
 	claims["aud"] = []string{"some-other-app"}
 	expectForbidden(t, f, "/", s.token(t, claims))
+}
+
+func TestSeveralAuds(t *testing.T) {
+	s := newSigner(t, "k1")
+	f := newFixture(t, s)
+	f.verifier.Audiences = ParseAudiences(" " + testAud + " ,, " + testAud2 + ", ")
+	for _, aud := range []any{testAud, testAud2, []string{"some-other-app", testAud2}} {
+		claims := goodClaims()
+		claims["aud"] = aud
+		if code, _ := f.get(t, http.MethodGet, "/", s.token(t, claims)); code != http.StatusOK {
+			t.Fatalf("aud %v: status %d, want 200", aud, code)
+		}
+	}
+	claims := goodClaims()
+	claims["aud"] = []string{"some-other-app"}
+	expectForbidden(t, f, "/", s.token(t, claims))
+}
+
+func TestParseAudiences(t *testing.T) {
+	for raw, want := range map[string][]string{
+		testAud:                                  {testAud},
+		" " + testAud + " ":                      {testAud},
+		testAud + "," + testAud2:                 {testAud, testAud2},
+		" ," + testAud + " , ," + testAud2 + ",": {testAud, testAud2},
+		"":                                       nil,
+		" , ,":                                   nil,
+	} {
+		if got := ParseAudiences(raw); !slices.Equal(got, want) {
+			t.Fatalf("ParseAudiences(%q) = %q, want %q", raw, got, want)
+		}
+	}
 }
 
 func TestWrongIss(t *testing.T) {
@@ -397,6 +430,8 @@ func TestRefusesToStartWithoutConfig(t *testing.T) {
 	cases := []struct{ domain, aud string }{
 		{"", ""},
 		{"team.example.cloudflareaccess.com", ""},
+		{"team.example.cloudflareaccess.com", ","},
+		{"team.example.cloudflareaccess.com", " , ,"},
 		{"", testAud},
 		{"https://team.example.cloudflareaccess.com", testAud},
 	}
