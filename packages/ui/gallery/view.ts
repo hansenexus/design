@@ -1,15 +1,8 @@
 // The gallery view: theme, density, mode and viewport, plus the review tools of #60 (compare,
 // speed, motion), read from and written to the query so a view can be linked. Pure functions, so
 // tests/gallery-view.test.ts covers them without a DOM.
-import {
-  type Density,
-  densities,
-  type Mode,
-  modes,
-  ms,
-  type Theme,
-  themes,
-} from "@hansenexus/tokens";
+import { type Density, densities, type Mode, modes, type Theme, themes } from "@hansenexus/tokens";
+import { motionMs } from "../src/motion";
 
 /** The gallery scenes, one page each: kit is ./, the rest ?scene=<name>. */
 export const SCENES = [
@@ -136,12 +129,18 @@ export function frameQuery(query: URLSearchParams, view: View): URLSearchParams 
   return next;
 }
 
-/** The attributes @hansenexus/tokens reads: data-theme, data-mode, data-density. */
-export function viewAttributes(view: View): Record<"theme" | "mode" | "density", string | null> {
+/**
+ * The attributes @hansenexus/tokens reads: data-theme, data-mode, data-density, and
+ * data-reduced-motion, which its motion-reduce: variant matches whatever the OS says (#91).
+ */
+export function viewAttributes(
+  view: View
+): Record<"theme" | "mode" | "density" | "reducedMotion", string | null> {
   return {
     theme: view.theme,
     mode: view.mode,
     density: view.density === "auto" ? null : view.density,
+    reducedMotion: view.motion === "reduced" ? "" : null,
   };
 }
 
@@ -155,17 +154,11 @@ export function motionScale(view: Pick<View, "speed" | "motion">): number {
   return view.motion === "reduced" ? 0 : 1 / Number(view.speed);
 }
 
-/** Every duration token as [css variable, ms], from the ms export of @hansenexus/tokens. */
-export function motionTokens(): [string, number][] {
-  const out: [string, number][] = [];
-  const walk = (node: object, path: string[]) => {
-    for (const [key, value] of Object.entries(node)) {
-      if (typeof value === "number") out.push([`--hn-${[...path, key].join("-")}`, value]);
-      else walk(value, [...path, key]);
-    }
-  };
-  walk(ms, []);
-  return out;
+/** Every duration token as [css variable, ms] at `scale`, from motionMs of @hansenexus/ui. */
+export function motionTokens(scale = 1): [string, number][] {
+  return Object.entries(motionMs(scale)).flatMap(([group, values]) =>
+    Object.entries(values).map(([key, value]): [string, number] => [`--hn-${group}-${key}`, value])
+  );
 }
 
 /**
@@ -176,7 +169,7 @@ export function motionTokens(): [string, number][] {
 export function motionVariables(view: Pick<View, "speed" | "motion">): Record<string, string> {
   const scale = motionScale(view);
   if (scale === 1) return {};
-  return Object.fromEntries(motionTokens().map(([name, value]) => [name, `${value * scale}ms`]));
+  return Object.fromEntries(motionTokens(scale).map(([name, value]) => [name, `${value}ms`]));
 }
 
 /** QueryState's statuses in the order the auto-loop shows them; "data" is the success state. */
@@ -194,9 +187,10 @@ export const LOOP_HOLD_MS = 2000;
  */
 export function loopTimings(view: Pick<View, "speed" | "motion">) {
   const pace = 1 / Number(view.speed);
-  const scale = motionScale(view);
-  const delayMs = ms.delay.pending * scale;
-  const minVisibleMs = ms["min-visible"].pending * scale;
+  const ms = motionMs();
+  const scaled = motionMs(motionScale(view));
+  const delayMs = scaled.delay.pending;
+  const minVisibleMs = scaled["min-visible"].pending;
   return {
     delayMs,
     minVisibleMs,

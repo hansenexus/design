@@ -109,7 +109,7 @@ import { itemsByLevel, type Level } from "./levels";
 import { Motion } from "./motion-scene";
 import { Navigation } from "./navigation";
 import { Overlays } from "./overlays";
-import { BareContext, PreviewCard, useMotionTimings, ViewContext, ViewToolbar } from "./preview";
+import { BareContext, PreviewCard, ViewProvider, ViewToolbar } from "./preview";
 import { ShellScene } from "./shell";
 import {
   frameQuery,
@@ -461,7 +461,6 @@ function MachineSkeleton({ surface }: { surface: string }) {
  * shows its base colour and the ring its start angle.
  */
 function Loading() {
-  const timings = useMotionTimings();
   return (
     <main className="mx-auto flex max-w-[1280px] flex-col gap-10 px-4 py-10 sm:px-10">
       <header className="flex flex-col gap-2">
@@ -493,7 +492,7 @@ function Loading() {
             <SpinnerGlyph size={16} />
             <SpinnerGlyph size={24} />
             <Button variant="secondary" disabled>
-              <Spinner label="Saving" {...timings} />
+              <Spinner label="Saving" />
               Saving
             </Button>
           </div>
@@ -527,7 +526,7 @@ function Frame({ children }: { children: ReactNode }) {
  */
 /** The skeleton QueryState shows while loading, held back and held on by the motion timings. */
 function DelayedSkeleton() {
-  const visible = useDelayedVisibility(true, useMotionTimings());
+  const visible = useDelayedVisibility(true);
   return visible ? <Skeleton shape="text" lines={3} className="text-sm" /> : null;
 }
 
@@ -1269,9 +1268,10 @@ function LevelNav({ view }: { view: View }) {
 }
 
 /**
- * Sets data-theme, data-mode and data-density on <html>, where @hansenexus/tokens reads them, and
+ * Sets data-theme, data-mode, data-density and data-reduced-motion on <html>, where
+ * @hansenexus/tokens reads them (the last one for motion-reduce:, #91), and
  * the motion variables scaled by speed and motion (#60) inline on it, where they win over the
- * theme's own values. Component code only ever reads the variables.
+ * theme's own values. CSS reads the variables; TS timers get the same scale from ViewProvider.
  */
 function applyView(view: View) {
   const html = document.documentElement;
@@ -1319,7 +1319,7 @@ function Gallery() {
     setView(next);
   };
   return (
-    <ViewContext.Provider value={view}>
+    <ViewProvider view={view}>
       <SceneNav current={itemParam ? null : scene} view={view} />
       <LevelNav view={view} />
       <ViewToolbar view={view} onChange={change} />
@@ -1335,7 +1335,7 @@ function Gallery() {
           />
         </div>
       )}
-    </ViewContext.Provider>
+    </ViewProvider>
   );
 }
 
@@ -1345,9 +1345,9 @@ if (root) {
     <StrictMode>
       <BareContext.Provider value={bare}>
         {framed ? (
-          <ViewContext.Provider value={readView(query)}>
+          <ViewProvider view={readView(query)}>
             <Page />
-          </ViewContext.Provider>
+          </ViewProvider>
         ) : (
           <Gallery />
         )}

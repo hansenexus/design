@@ -34,6 +34,7 @@ export const ITEM_SCENES: Record<string, Scene> = {
   toast: "toast",
   tooltip: "tooltip",
   "delayed-visibility": "loading",
+  motion: "motion",
   skeleton: "loading",
   spinner: "loading",
   "state-copy": "states",

@@ -1,10 +1,13 @@
-import { ms } from "@hansenexus/tokens";
 import { useEffect, useState } from "react";
+import { motionMs, useMotionMs } from "./motion";
 
 export type DelayedVisibilityOptions = {
-  /** Wait before showing; work that finishes sooner shows nothing. Default: the delay.pending token. */
+  /**
+   * Wait before showing; work that finishes sooner shows nothing. Default: the delay.pending
+   * token, scaled by a MotionProvider in the hook.
+   */
   delayMs?: number;
-  /** Once shown, stay at least this long. Default: the min-visible.pending token. */
+  /** Once shown, stay at least this long. Default: the min-visible.pending token, scaled alike. */
   minVisibleMs?: number;
 };
 
@@ -16,8 +19,8 @@ export type DelayedVisibilityOptions = {
 export function createDelayedVisibility(
   onChange: (visible: boolean) => void,
   {
-    delayMs = ms.delay.pending,
-    minVisibleMs = ms["min-visible"].pending,
+    delayMs = motionMs().delay.pending,
+    minVisibleMs = motionMs()["min-visible"].pending,
   }: DelayedVisibilityOptions = {}
 ) {
   let visible = false;
@@ -50,12 +53,19 @@ export function createDelayedVisibility(
 
 /**
  * Whether a pending indicator for `pending` should render: not before `delayMs`, and once it
- * does, for at least `minVisibleMs`. Both default to the motion tokens (200 ms, 400 ms) and are
- * read once, on mount. Starts hidden, so server markup never contains the indicator.
+ * does, for at least `minVisibleMs`. Both default to the motion tokens (200 ms, 400 ms) at the
+ * nearest MotionProvider's scale and are read once, on mount. Starts hidden, so server markup
+ * never contains the indicator.
  */
 export function useDelayedVisibility(pending: boolean, options?: DelayedVisibilityOptions) {
+  const timing = useMotionMs();
   const [visible, setVisible] = useState(false);
-  const [controller] = useState(() => createDelayedVisibility(setVisible, options));
+  const [controller] = useState(() =>
+    createDelayedVisibility(setVisible, {
+      delayMs: options?.delayMs ?? timing.delay.pending,
+      minVisibleMs: options?.minVisibleMs ?? timing["min-visible"].pending,
+    })
+  );
   useEffect(() => controller.set(pending), [controller, pending]);
   useEffect(() => controller.dispose, [controller]);
   return visible;

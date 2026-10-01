@@ -214,6 +214,13 @@ describe("build", () => {
     expect(tw).toContain("--ease-hn-pulse: var(--hn-pulse-easing);");
     expect(tw).toContain("--animate-hn-pulse: hn-pulse var(--hn-pulse-duration)");
     expect(tw).toContain("@keyframes hn-spin");
+    // motion-reduce: and motion-safe: also follow data-reduced-motion, outside @theme (#91).
+    const variants = tw.slice(tw.lastIndexOf("}\n\n@custom-variant"));
+    expect(variants).toContain("@custom-variant motion-reduce {");
+    expect(variants).toContain("@media (prefers-reduced-motion: reduce) {");
+    expect(variants).toContain("&:where([data-reduced-motion], [data-reduced-motion] *) {");
+    expect(variants).toContain("@custom-variant motion-safe {");
+    expect(variants).toContain("&:not(:where([data-reduced-motion], [data-reduced-motion] *)) {");
     const mod = await import(join(dist, "index.js"));
     expect(mod.ms.delay.pending).toBe(200);
     expect(mod.ms["min-visible"].pending).toBe(400);

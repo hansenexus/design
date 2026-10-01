@@ -110,9 +110,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
   useDelayedVisibility,
+  useMotionMs,
 } from "../src";
 import { Bell, More, Restart, Server } from "./icons";
-import { useMotionTimings } from "./preview";
 import { DemoShell } from "./shell";
 
 const TODAY = new Date(2026, 8, 14);
@@ -128,7 +128,7 @@ function Frame({ children }: { children: ReactNode }) {
 
 /** A pending indicator that shows after the delay token and holds for the minimum. */
 function DelayedDot() {
-  const visible = useDelayedVisibility(true, useMotionTimings());
+  const visible = useDelayedVisibility(true);
   return (
     <span className="font-hn-mono text-[13px] text-hn-ink-body">
       {visible ? "pending: shown" : "pending: held back"}
@@ -136,12 +136,24 @@ function DelayedDot() {
   );
 }
 
+/** The pending timings at the toolbar's speed and motion, as MotionProvider hands them to timers. */
+function MotionReadout() {
+  const timing = useMotionMs();
+  return (
+    <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 font-hn-mono text-[13px] text-hn-ink-body">
+      <dt className="text-hn-ink-muted">delay.pending</dt>
+      <dd className="m-0">{timing.delay.pending} ms</dd>
+      <dt className="text-hn-ink-muted">min-visible.pending</dt>
+      <dd className="m-0">{timing["min-visible"].pending} ms</dd>
+    </dl>
+  );
+}
+
 /** A spinner that shows after its delay, the way a button's pending state renders it. */
 function SavingButton() {
-  const timings = useMotionTimings();
   return (
     <Button variant="secondary" disabled>
-      <Spinner label="Saving" {...timings} />
+      <Spinner label="Saving" />
       Saving
     </Button>
   );
@@ -369,6 +381,7 @@ export const DEMOS: Record<string, () => ReactNode> = {
     </TooltipProvider>
   ),
   "delayed-visibility": () => <DelayedDot />,
+  motion: () => <MotionReadout />,
   skeleton: () => (
     <div className="flex items-start gap-4">
       <Skeleton shape="circle" width={40} />

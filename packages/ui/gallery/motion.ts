@@ -7,9 +7,9 @@
 // is a lookup and replay is t = 0. Recording from Playwright was rejected: it needs a recorder and
 // a mapping from DOM events back to component props, and a recording breaks when a label changes.
 
-import { ms } from "@hansenexus/tokens";
 import motion from "@hansenexus/tokens/tokens/semantic/motion.json";
 import scale from "@hansenexus/tokens/tokens/semantic/scale.json";
+import { motionMs } from "../src/motion";
 import type { View } from "./view";
 
 export type Bezier = readonly [number, number, number, number];
@@ -147,6 +147,8 @@ export type PaletteSheetState = {
   /** The machine whose sheet is open. */
   sheet: string | null;
 };
+
+const ms = motionMs();
 
 /**
  * The flow of #61: open the command palette, narrow it to one machine, pick it, and its sheet
