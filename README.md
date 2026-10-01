@@ -50,6 +50,10 @@ workflow on its own tag. The tag must match the package's `package.json` version
 | `@hansenexus/illustrations` | `illustrations-v<version>` | `.github/workflows/release-illustrations.yml` |
 | `@hansenexus/shell` | `shell-v<version>` | `.github/workflows/release-shell.yml` |
 
+The tokens release also pushes a plain `<version>` tag on the same commit: the Swift package
+(`Package.swift`, [swift/README.md](swift/README.md)) resolves from those, so its version tracks
+`@hansenexus/tokens`.
+
 Run a workflow by hand (`gh workflow run <file> -f dry_run=true`) to pack and validate without
 publishing.
 
