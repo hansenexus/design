@@ -10,6 +10,10 @@ name: release
 #
 # Trigger: push a `tokens-v<version>` tag. Semver: a token rename or removal is
 # a major. The workflow refuses a tag that disagrees with package.json.
+#
+# The same release pushes a plain `<version>` tag on the same commit for the
+# Swift package (Package.swift at the repo root): SwiftPM resolves plain semver
+# tags only, so the Swift version tracks @hansenexus/tokens (#31).
 
 on:
   push:
@@ -71,6 +75,22 @@ jobs:
       - name: Publish (dry run)
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
         run: npm publish --access public --dry-run
+
+      # A tag pushed with the workflow token starts no other workflow.
+      - name: Swift package tag
+        if: startsWith(github.ref, 'refs/tags/tokens-v')
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#tokens-v}"
+          # Last line is the peeled commit when the tag is annotated.
+          existing=$(git ls-remote --tags origin "refs/tags/$version" "refs/tags/$version^{}" | tail -n 1 | cut -f 1)
+          if [ -z "$existing" ]; then
+            git tag "$version" "$GITHUB_SHA"
+            git push origin "refs/tags/$version"
+          elif [ "$existing" != "$GITHUB_SHA" ]; then
+            echo "::error::tag $version already exists on another commit ($existing)"
+            exit 1
+          fi
 
       - name: GitHub release
         if: startsWith(github.ref, 'refs/tags/tokens-v')

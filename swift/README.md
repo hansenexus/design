@@ -6,12 +6,17 @@ The hansenexus design tokens for Swift and SwiftUI, generated from the same DTCG
 ## Add the package
 
 ```swift
-.package(url: "https://github.com/hansenexus/design.git", from: "0.1.0"),
+.package(url: "https://github.com/hansenexus/design.git", from: "0.5.0"),
 // target dependency:
 .product(name: "HansenexusTokens", package: "design"),
 ```
 
-SwiftPM resolves plain semver git tags (`0.1.0`), not the npm release tags (`tokens-v0.1.0`).
+SwiftPM resolves plain semver git tags (`0.5.0`), not the npm release tags (`tokens-v0.5.0`).
+Every `@hansenexus/tokens` release (`.github/workflows/release.yml`) also pushes the plain tag of
+its version on the same commit, so the Swift package version is the tokens version. A Swift change
+that touches only the brand files ships with the next tokens release. The first plain tag comes with
+the release after `tokens-v0.4.0`; until then pin `revision:`.
+
 iOS 16 and macOS 13 or later.
 
 ## Colour
