@@ -3,6 +3,7 @@ import { join, relative, sep } from "node:path";
 import ts from "typescript";
 import { type Baseline, compare, type Entry } from "./baseline";
 import { covering, type Directive, directives } from "./ignore";
+import { clientRoute } from "./rules/client-route";
 import { convexQuery } from "./rules/convex-query";
 import { nextRoute } from "./rules/next-route";
 import { pendingAction } from "./rules/pending-action";
@@ -11,6 +12,7 @@ import type { CheckOptions, Rule, RuleContext, Violation } from "./types";
 /** Every rule set by id. The route rule is the default; the others are opt-in (see config.ts). */
 export const RULES: Record<string, Rule> = {
   [nextRoute.id]: nextRoute,
+  [clientRoute.id]: clientRoute,
   [convexQuery.id]: convexQuery,
   [pendingAction.id]: pendingAction,
 };

@@ -1,10 +1,11 @@
 # @hansenexus/state-check
 
-The hansenexus frontend state contract as a deterministic check. Three rule sets:
+The hansenexus frontend state contract as a deterministic check. Four rule sets:
 
 | Rule | Default | |
 | --- | --- | --- |
 | `next-route` | on | a dynamic Next.js App Router segment is covered by a `loading.tsx` or a `<Suspense>` |
+| `client-route` | opt-in | a client router route (wouter, React Router) renders in an error boundary, a `lazy()` page in a `<Suspense>` |
 | `convex-query` | opt-in | a Convex `useQuery` result is rendered with its `undefined` (loading) branch |
 | `pending-action` | opt-in | a form action, submit handler or mutation button shows that it is pending |
 
@@ -51,14 +52,16 @@ Exit 0 when nothing is beyond the baseline, 1 on a new violation or an ignore wi
   "authHelpers": ["requirePageSession"],
   "queryWrappers": ["BauhausQuery"],
   "mutationHooks": ["useSaveDraft"],
-  "pendingComponents": ["SubmitButton"]
+  "pendingComponents": ["SubmitButton"],
+  "errorBoundaries": ["RouteErrorBoundary"]
 }
 ```
 
 `rules` overrides the defaults per rule; a Vite app such as kommandant turns `next-route` off and the
-other two on. The lists add to each rule's built-ins: `authHelpers` for `next-route` (the
-`--auth-helper` flag adds more), `queryWrappers` for `convex-query`, `mutationHooks` and
-`pendingComponents` for `pending-action`. An unknown rule or key exits 2.
+other three on. The lists add to each rule's built-ins: `authHelpers` for `next-route` (the
+`--auth-helper` flag adds more), `errorBoundaries` for `client-route`, `queryWrappers` for
+`convex-query`, `mutationHooks` and `pendingComponents` for `pending-action`. An unknown rule or key
+exits 2.
 
 ## The rule: `next-route`
 
@@ -86,6 +89,33 @@ covers it.
 
 Limits: helpers are followed within the page file only, and any `<Suspense>` in the page file
 counts as covering its async children.
+
+## The rule: `client-route` (opt-in)
+
+For Vite apps without file-based routing. A route is a `<Route>` imported from `wouter`,
+`react-router` or `react-router-dom` (aliases and `import * as` included). Its page is what
+`component={…}` names (both arms of a ternary), or the outermost elements of `element={…}` or of its
+children.
+
+A route has an **error state** when any of these holds:
+
+- an error boundary is a JSX ancestor: a class component of the app with `static
+  getDerivedStateFromError` or `componentDidCatch`, an `ErrorBoundary` element (as
+  react-error-boundary exports it), or one of `errorBoundaries`;
+- the route or an ancestor `<Route>` has an `errorElement` or `ErrorBoundary` prop (React Router data
+  routers);
+- the page's outermost element is an error boundary, or the page component returns one.
+
+A route has a **loading state** unless its page is `lazy(() => import(…))` (declared in the router
+file or one import away) and no `<Suspense>` is a JSX ancestor of the route. Data loading inside a
+page is left to `convex-query` and `pending-action`.
+
+Ancestors are followed out of the component that holds the routes: when `Shell` renders the
+`<Switch>`, every `<Shell />` in the app must sit under the boundary, or its own parent component
+must. The violation is reported on the `<Route>`, one per route.
+
+Limits: components are matched by name across the app, the page component is followed one import
+deep, and route objects (`createBrowserRouter([{ … }])`) are not read.
 
 ## The rule: `convex-query` (opt-in)
 

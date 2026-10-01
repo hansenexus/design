@@ -17,6 +17,8 @@ export type CheckOptions = {
   mutationHooks?: string[];
   /** pending-action: extra components that render their own pending state (a useFormStatus button). */
   pendingComponents?: string[];
+  /** client-route: extra components that catch render errors (on top of ErrorBoundary and the app's own classes). */
+  errorBoundaries?: string[];
 };
 
 /** What a rule sees: the app's files and a parsed-source cache shared across rules. */
@@ -31,8 +33,8 @@ export type RuleContext = {
 };
 
 /**
- * A rule set. The route rule is on by default; the Convex query and pending action rules are
- * opt-in through the app's config. A rule reports that a state is missing, never which library should
+ * A rule set. The route rule is on by default; the client route, Convex query and pending action
+ * rules are opt-in through the app's config. A rule reports that a state is missing, never which library should
  * render it.
  */
 export type Rule = {

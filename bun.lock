@@ -50,7 +50,7 @@
     },
     "packages/state-check": {
       "name": "@hansenexus/state-check",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "bin": {
         "state-check": "./dist/cli.js",
       },

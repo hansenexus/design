@@ -1,10 +1,11 @@
 // Which rule sets run for an app, and their options. Read from `state-check.config.json` in the
 // app, or else the `"state-check"` key of its package.json. The route rule is on by default; the
-// Convex query and pending action rules are opt-in:
+// client route, Convex query and pending action rules are opt-in:
 //
-//   { "rules": { "next-route": false, "convex-query": true, "pending-action": true },
+//   { "rules": { "next-route": false, "client-route": true, "convex-query": true },
 //     "authHelpers": ["requireSession"], "queryWrappers": ["BauhausQuery"],
-//     "mutationHooks": ["useSave"], "pendingComponents": ["SubmitButton"] }
+//     "mutationHooks": ["useSave"], "pendingComponents": ["SubmitButton"],
+//     "errorBoundaries": ["RouteGuard"] }
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { DEFAULT_RULES, RULES } from "./check";
@@ -21,7 +22,13 @@ export type Config = {
   source?: string;
 };
 
-const LISTS = ["authHelpers", "queryWrappers", "mutationHooks", "pendingComponents"] as const;
+const LISTS = [
+  "authHelpers",
+  "queryWrappers",
+  "mutationHooks",
+  "pendingComponents",
+  "errorBoundaries",
+] as const;
 
 /** Validates a raw config object against the defaults. `where` names it in errors. */
 export function parseConfig(raw: unknown, where: string): Omit<Config, "source"> {
