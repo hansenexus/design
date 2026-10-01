@@ -1,5 +1,8 @@
 // Syntax helpers shared by the rules.
+import { posix } from "node:path";
 import ts from "typescript";
+
+const EXTENSIONS = [".ts", ".tsx", ".js", ".jsx", "/index.ts", "/index.tsx", "/index.js"];
 
 export type FunctionLike =
   | ts.FunctionDeclaration
@@ -66,4 +69,17 @@ const TEST = /(?:\.(?:test|spec|stories)\.[^/]+$)|(?:^|\/)__(?:tests|mocks)__\//
 export function scriptFiles(files: string[], jsxOnly = false): string[] {
   const ext = jsxOnly ? /\.(?:tsx|jsx|js)$/ : /\.(?:tsx|jsx|ts|js)$/;
   return files.filter((f) => ext.test(f) && !f.endsWith(".d.ts") && !TEST.test(f));
+}
+
+/** An import specifier resolved to an app file, for relative, `@/` and `~/` paths. */
+export function resolveImport(from: string, spec: string, files: Set<string>): string | undefined {
+  let bases: string[];
+  if (spec.startsWith(".")) bases = [posix.join(posix.dirname(from), spec)];
+  else if (spec.startsWith("@/") || spec.startsWith("~/"))
+    bases = [`src/${spec.slice(2)}`, spec.slice(2)];
+  else return undefined;
+  for (const base of bases)
+    for (const candidate of [base, ...EXTENSIONS.map((ext) => base + ext)])
+      if (files.has(candidate)) return candidate;
+  return undefined;
 }

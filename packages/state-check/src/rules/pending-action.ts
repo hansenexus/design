@@ -19,7 +19,6 @@
 //
 // Limits: the pending name is matched by spelling, not traced to useTransition / useFormStatus,
 // and a handler imported from another file is not followed.
-import { posix } from "node:path";
 import ts from "typescript";
 import type { Rule, RuleContext, Violation } from "../types";
 import {
@@ -27,6 +26,7 @@ import {
   functionName,
   isFunctionLike,
   lineOf,
+  resolveImport,
   scriptFiles,
   tagName,
 } from "./ast";
@@ -34,7 +34,6 @@ import {
 export const MUTATION_HOOKS = ["useMutation", "useAction"];
 export const PENDING_PROPS = ["pending", "isPending", "loading", "isLoading", "aria-busy"];
 const PENDING_NAME = /pending|loading|submitting|saving|busy|mutating|inflight|processing/i;
-const EXTENSIONS = [".ts", ".tsx", ".js", ".jsx", "/index.ts", "/index.tsx", "/index.js"];
 
 type Element = ts.JsxOpeningElement | ts.JsxSelfClosingElement;
 
@@ -67,19 +66,6 @@ function formStatusComponents(sf: ts.SourceFile): string[] {
   };
   visit(sf);
   return out;
-}
-
-/** An import specifier resolved to an app file, for relative, `@/` and `~/` paths. */
-function resolveImport(from: string, spec: string, files: Set<string>): string | undefined {
-  let bases: string[];
-  if (spec.startsWith(".")) bases = [posix.join(posix.dirname(from), spec)];
-  else if (spec.startsWith("@/") || spec.startsWith("~/"))
-    bases = [`src/${spec.slice(2)}`, spec.slice(2)];
-  else return undefined;
-  for (const base of bases)
-    for (const candidate of [base, ...EXTENSIONS.map((ext) => base + ext)])
-      if (files.has(candidate)) return candidate;
-  return undefined;
 }
 
 /** Local names bound to a mutation: hook results (and what is destructured) and server actions. */
