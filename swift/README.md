@@ -1,4 +1,4 @@
-# HansenexusTokens and HansenexusBrand (Swift)
+# HansenexusTokens, HansenexusBrand and HansenexusPopover (Swift)
 
 The hansenexus design tokens for Swift and SwiftUI, generated from the same DTCG source as
 `@hansenexus/tokens`. Semantic tier only: the raw palette never reaches Swift.
@@ -82,6 +82,54 @@ HNBrandAsset.url(HNBrandAsset.trayTemplate)              // NSImage: set isTempl
 
 The name, mark and wordmark are trademarks, not covered by the MIT licence
 ([TRADEMARK.md](../TRADEMARK.md)); usage rules in [brand/README.md](../brand/README.md).
+
+## Menu bar popover
+
+The `HansenexusPopover` product holds the popover look hn-tools and meeting-recorder share:
+`BrandHeader`, `SectionHeader`, `Card`, `SettingRow`, `Chip`, `IconTabBar`, `PillButtonStyle`,
+`TileButtonStyle`, the `Emblem` shape and `PopoverPalette` (danger, ok, well, card, hairline). It
+depends on `HansenexusTokens` and `HansenexusBrand`; those two stay free of it.
+
+The accent is the one per-app colour. Without `.hnAccent(_:)` every component draws the brand look,
+`HNAccent.brand` (lime from `action.primary`, ink on it, `action.text`, `surface.tint`). An app
+sets its own once, at the root of the popover:
+
+```swift
+.product(name: "HansenexusPopover", package: "design"),
+
+import HansenexusPopover
+import HansenexusTokens
+
+extension HNAccent {
+  /// hn-tools indigo. Every value is the app's choice: keep `onFill` at 4.5:1 on `fill`.
+  static let hnTools = HNAccent(
+    fill: HNModePair(HNRGBA(0x4F46E5)),
+    onFill: HNModePair(HNRGBA(0xFFFFFF)),
+    text: HNModePair(dark: HNRGBA(0xA7A2F2), light: HNRGBA(0x3E37B3)),
+    soft: HNModePair(dark: HNRGBA(0x4F46E5, alpha: 0x38), light: HNRGBA(0xE8E7FC))
+  )
+}
+
+PopoverView()
+  .hnAccent(.hnTools)        // omit it for the brand look
+
+VStack {
+  BrandHeader(title: "hn-tools") { Chip(text: "Ready", tone: .accent) }
+  SectionHeader(title: "Displays")
+  Card {
+    SettingRow(title: "Share this Mac", detail: "Over the tailnet", systemImage: "display") {
+      Toggle("", isOn: $sharing).labelsHidden()
+    }
+  }
+  Button("Connect") { connect() }.buttonStyle(PillButtonStyle())
+  Button("Quit") { quit() }.buttonStyle(TileButtonStyle())
+}
+```
+
+`fill` and `onFill` are the primary pill and the emblem, `text` the selected tab and accent chips,
+`soft` the tint behind them; each has a dark and a light value. Cards and the tab strip are flat;
+glass, if an app wants it, stays the system material around the popover. The hairlines between
+card rows need macOS 15 / iOS 18; on macOS 13 and 14 the rows stack without them.
 
 ## Regenerate
 
