@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { SCENES } from "../gallery/view";
 
 // Keyboard and ARIA behaviour of the overlay and navigation set, driven through the live
 // triggers of the gallery's overlays and navigation scenes. No pixel baselines here.
@@ -85,7 +86,7 @@ test("scene nav: every scene linked, the current one marked, links resolve, bare
 }) => {
   await page.goto("/gallery/?scene=states");
   const nav = page.getByRole("navigation", { name: "Gallery scenes" });
-  await expect(nav.getByRole("link")).toHaveCount(17);
+  await expect(nav.getByRole("link")).toHaveCount(SCENES.length);
   await expect(nav.locator('[aria-current="page"]')).toHaveText("states");
   await expect(nav.getByRole("link", { name: "kit", exact: true })).toHaveAttribute("href", "./");
   await nav.getByRole("link", { name: "forms", exact: true }).click();
