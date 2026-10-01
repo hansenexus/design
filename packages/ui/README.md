@@ -419,10 +419,33 @@ deletes the losing variant files, so a decided category keeps only its winner. O
 decides: a lane prepares the board and stops at "Awaiting decision". Adopting the winner into the
 primitive is a separate change.
 
+The board records the decision without the CLI (#76): an open category has a "Decide for …"
+control on each variant card with a rationale field (`gallery/decide.ts`). On the local server
+(`--serve`, 127.0.0.1) it POSTs to `/api/decide`, which runs the same `decide()` in that checkout,
+rebuilds the bundle and reloads the board decided; the owner then commits and opens the PR. An
+empty rationale, an unknown variant or a decided category comes back as `decide()`'s own error. On
+the hosted site (design.hansenexus.dev, a static build, nothing writes) the control opens a
+prefilled issue in hansenexus/design ("decide <category> <winner>", rationale and the command in
+the body) for an agent to run. Decided categories show no control, and agents never press it.
+
 | Category | Winner | Decided | In the kit |
 | --- | --- | --- | --- |
 | `skeleton-style` | pulse | 2026-09-27 | `Skeleton` pulses by default; reduced motion holds it on skeleton.base |
 | `illustration-style` | geometric | 2026-09-27 | All eight motifs of [`@hansenexus/illustrations`](../illustrations); the gallery's `states` scene fills the EmptyState/ErrorState slot with them |
+| `shell-layout` | floating-panels (glass off) | 2026-09-29 | [`@hansenexus/shell`](../shell), flat; the gallery's `shell` scene and the board's winner mount the package |
+
+`shell-layout` (level `template`) was the first vote of `@hansenexus/shell`
+(`dec_2026-09-29_global-design-shell-gallery-atomic`). It compared rail + collapsible sidebar
+(kommandant's shell today), 3-pane with context pane, command-first minimal chrome and floating
+panels; floating panels won and shipped as `@hansenexus/shell` (#64), which the winner's board
+column now draws. It draws the app in a fixed-size screen, every theme at 1280 × 800
+and 390 × 844, scaled to its cell; the screen sets its own `data-theme`, so the four themes share
+one board. "Open alone" (`&variant=<id>&fixture=<id>`) shows one screen at full size. The web
+stays flat (`dec_2026-09-25_kommandant-visual-flat-lime-only`): the winner was chosen with its glass
+toggle off (flat: inset, `shadow.lift`, no blur). The toggle stays on the board for comparison
+(`&glass=on` starts it on), but glass does not ship without a ruling that supersedes the flat one. A category's `level`
+shows on the board and in the gallery's level nav; a fixture's `columns` caps the variants per row
+at 1280 px.
 
 The vote scenes
 have layout checks (`screenshots/vote.spec.ts`) but no pixel baselines, since a board is temporary.

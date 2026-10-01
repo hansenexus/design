@@ -8,6 +8,7 @@ hansenexus design system: DTCG tokens, UI primitives, state illustrations, the s
 | [`HansenexusTokens`](swift) | SwiftPM package: generated colours, fonts and spacing for SwiftUI |
 | [`@hansenexus/ui`](packages/ui) | 16 primitives on Radix, the form set, DatePicker, Combobox and DataTable, Skeleton, Spinner, `useDelayedVisibility`, EmptyState, ErrorState, Progress, QueryState (DE/EN copy), semantic tokens only, shadcn registry, screenshot baselines; `HansenexusMark`, `HansenexusWordmark` |
 | [`@hansenexus/illustrations`](packages/illustrations) | Eight geometric state motifs (empty, no-results, error, 404, offline, no-permission, success, maintenance) as React SVG, one import path each, colour only through `currentColor` and `--hn-*`, ≤ 3 KB gzip each |
+| [`@hansenexus/shell`](packages/shell) | The app shell from the shell-layout vote: floating panels with the slots nav, header, main and an optional context pane, container-query layout (tab bar below 768 px), capability-based nav visibility, and a ⌘K container that takes external command sets or a whole palette (the Lotse ops preset mounts there) |
 | [`@hansenexus/state-check`](packages/state-check) | The frontend state contract as a CI ratchet: dynamic Next.js routes need `loading.tsx` or `<Suspense>`; opt-in Convex `useQuery` loading-branch and pending-action rules; CLI, config, per-app baseline |
 | [`brand/`](brand) | The mark and wordmark in every variant, favicons, app icon, menu bar template; usage rules |
 
@@ -26,7 +27,15 @@ may only shrink (`bun scripts/ratchet.ts --update`).
 `bun run ratchet` also runs `scripts/levels.ts`: every `@hansenexus/ui` registry item carries
 `meta.level` (`atom|molecule|organism|template`) in `packages/ui/registry.json`, and a file may import
 only items of the same or a lower level. Folders stay flat; the level lives in that metadata. The
-gallery lists the items by level and shows each preview card's level.
+gallery lists the items by level and shows each preview card's level. An item that installs an npm
+package instead of copying files (`shell`, level `template`) names the items it draws in
+`meta.uses`, and the same rule applies to them.
+
+Each item has a gallery page, `?item=<name>`, with its blast radius: every item that uses it,
+directly or transitively, through `registryDependencies`, a source import or `meta.uses`, each as a replayable
+preview card in the current toolbar view ("Replay all" replays every card at once). The graph is
+built with the gallery (`packages/ui/scripts/graph.ts`, also written to
+`packages/ui/gallery/dist/graph.json`); the gallery parses nothing at runtime.
 
 ## Releases
 
@@ -39,12 +48,14 @@ workflow on its own tag. The tag must match the package's `package.json` version
 | `@hansenexus/ui` | `ui-v<version>` | `.github/workflows/release-ui.yml` |
 | `@hansenexus/state-check` | `state-check-v<version>` | `.github/workflows/release-state-check.yml` |
 | `@hansenexus/illustrations` | `illustrations-v<version>` | `.github/workflows/release-illustrations.yml` |
+| `@hansenexus/shell` | `shell-v<version>` | `.github/workflows/release-shell.yml` |
 
 Run a workflow by hand (`gh workflow run <file> -f dry_run=true`) to pack and validate without
 publishing.
 
 ```sh
 bun add @hansenexus/tokens @hansenexus/ui
+bun add @hansenexus/shell   # the app shell, on top of both
 ```
 
 ## Hosted gallery

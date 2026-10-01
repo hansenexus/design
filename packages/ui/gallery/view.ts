@@ -29,6 +29,7 @@ export const SCENES = [
   "overlays",
   "navigation",
   "motion",
+  "shell",
   "vote",
 ] as const;
 export type Scene = (typeof SCENES)[number];
@@ -108,6 +109,11 @@ export function sceneHref(scene: Scene, view: View): string {
     view
   ).toString();
   return q ? `?${q}` : "./";
+}
+
+/** A relative link to a registry item's page (#59), keeping the view: ?item=<name>. */
+export function itemHref(item: string, view: View): string {
+  return `?${writeView(new URLSearchParams({ item }), view).toString()}`;
 }
 
 /** A copy of `query` with the view's keys set; defaults are dropped so plain links stay plain. */

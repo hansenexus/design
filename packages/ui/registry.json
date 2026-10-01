@@ -878,6 +878,18 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "shell",
+      "type": "registry:block",
+      "title": "Shell",
+      "description": "The app shell from the shell-layout vote: floating panels for nav, header, main and an optional context pane, and a ⌘K container for external command sets or a whole palette. Installs the npm package @hansenexus/shell; it copies no files.",
+      "meta": {
+        "level": "template",
+        "uses": ["button", "command", "cx", "dialog", "kbd", "rail-item", "state-copy"]
+      },
+      "dependencies": ["@hansenexus/shell@^0.1.0"],
+      "registryDependencies": ["@hansenexus/tokens"]
     }
   ]
 }

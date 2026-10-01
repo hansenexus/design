@@ -62,6 +62,7 @@ export const ITEM_SCENES: Record<string, Scene> = {
   breadcrumb: "navigation",
   pagination: "navigation",
   command: "overlays",
+  shell: "shell",
 };
 
 export type LevelItem = { name: string; title: string; level: Level | undefined };

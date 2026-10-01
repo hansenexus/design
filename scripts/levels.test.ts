@@ -79,6 +79,22 @@ describe("levels (#58)", () => {
     ]);
   });
 
+  test("meta.uses (a package item, #64) follows the same rule and names real items", () => {
+    const f = fixture();
+    f.items.push({ name: "shell", meta: { level: "template", uses: ["field", "button"] } });
+    f.scenes.shell = "shell";
+    expect(checkLevels(f)).toEqual([]);
+    f.items[0] = {
+      name: "cx",
+      meta: { level: "atom", uses: ["field", "gone"] },
+      files: [{ path: "src/cx.ts" }],
+    };
+    expect(checkLevels(f)).toEqual([
+      "packages/ui/registry.json: cx (atom) uses field (molecule): a atom uses only atom",
+      "packages/ui/registry.json: cx uses gone, which is not a registry item",
+    ]);
+  });
+
   test("an import of a file no item owns fails", () => {
     const f = fixture();
     f.sources["src/cx.ts"] = 'import { x } from "./stray";';
