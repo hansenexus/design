@@ -119,6 +119,27 @@ const ANIMATIONS = [
   "  }",
 ];
 
+// motion-reduce: and motion-safe: follow the OS setting, as Tailwind's own do, and also a
+// data-reduced-motion attribute on the element or an ancestor, so an app (or the gallery's motion
+// switch) can force reduced motion whatever the OS says. Without the attribute nothing changes.
+const MOTION_VARIANTS = [
+  "@custom-variant motion-reduce {",
+  "  @media (prefers-reduced-motion: reduce) {",
+  "    @slot;",
+  "  }",
+  "  &:where([data-reduced-motion], [data-reduced-motion] *) {",
+  "    @slot;",
+  "  }",
+  "}",
+  "@custom-variant motion-safe {",
+  "  @media (prefers-reduced-motion: no-preference) {",
+  "    &:not(:where([data-reduced-motion], [data-reduced-motion] *)) {",
+  "      @slot;",
+  "    }",
+  "  }",
+  "}",
+];
+
 export function renderTailwind(all: Resolved): string {
   const lines: string[] = [];
   for (const t of all[DEFAULT_THEME][DEFAULT_MODE]) {
@@ -138,6 +159,8 @@ export function renderTailwind(all: Resolved): string {
     "@theme inline {",
     ...lines,
     "}",
+    "",
+    ...MOTION_VARIANTS,
     "",
   ].join("\n");
 }

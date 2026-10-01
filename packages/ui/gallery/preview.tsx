@@ -5,7 +5,8 @@
 // The review tools (hansenexus/design#60): compare renders the card once per theme side by side,
 // speed and motion scale the motion variables (set at the gallery root, and again on each compare
 // panel, whose data-theme redeclares them), and a card with a `loop` gets an auto-loop toggle
-// that drives its content through QueryState's states.
+// that drives its content through QueryState's states. ViewProvider carries the same scale to the
+// timers that read the motion tokens in TS (MotionProvider, #91).
 import { themes } from "@hansenexus/tokens";
 import {
   type CSSProperties,
@@ -15,7 +16,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { Badge, Button } from "../src";
+import { Badge, Button, MotionProvider } from "../src";
 import { Check, Restart } from "./icons";
 import { levelOf } from "./levels";
 import {
@@ -24,6 +25,7 @@ import {
   LOOP,
   type LoopStatus,
   loopTimings,
+  motionScale,
   motionVariables,
   VIEW_OPTIONS,
   type View,
@@ -36,10 +38,16 @@ export const BareContext = createContext(false);
 /** The current view, for the compare panels and the motion timings. */
 export const ViewContext = createContext<View>(DEFAULT_VIEW);
 
-/** The pending indicator's delay and minimum at the current speed and motion. */
-export function useMotionTimings() {
-  const { delayMs, minVisibleMs } = loopTimings(useContext(ViewContext));
-  return { delayMs, minVisibleMs };
+/**
+ * Provides the view, and scales the TS motion timings (Spinner, useDelayedVisibility) by the
+ * same factor as the motion variables, so speed and reduced motion reach every timer.
+ */
+export function ViewProvider({ view, children }: { view: View; children: ReactNode }) {
+  return (
+    <ViewContext.Provider value={view}>
+      <MotionProvider scale={motionScale(view)}>{children}</MotionProvider>
+    </ViewContext.Provider>
+  );
 }
 
 /** Steps through loopTimings' states while `on`, starting at loading, and around again. */

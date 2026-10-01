@@ -184,6 +184,23 @@ test("speed and motion scale the motion variables at the root and on compare pan
   expect(await read("html", "--hn-delay-pending")).toBe("200ms");
 });
 
+test("the reduced-motion switch applies motion-reduce: styles whatever the OS says (#91)", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/gallery/?scene=loading");
+  const ring = page.locator('[data-preview="spinner"] svg[role="status"]').first();
+  const animation = () => ring.evaluate((el) => getComputedStyle(el).animationName);
+  expect(await animation()).toBe("hn-spin");
+  const motion = page.getByRole("toolbar", { name: "Gallery view" }).getByLabel("Motion");
+  await motion.selectOption("reduced");
+  await expect(page.locator("html")).toHaveAttribute("data-reduced-motion", "");
+  expect(await animation()).toBe("none");
+  await motion.selectOption("full");
+  await expect(page.locator("html")).not.toHaveAttribute("data-reduced-motion");
+  expect(await animation()).toBe("hn-spin");
+});
+
 test("auto-loop: the QueryState card cycles loading, empty, error and success", async ({
   page,
 }) => {

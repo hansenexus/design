@@ -63,6 +63,7 @@
     "@fontsource-variable/jetbrains-mono": "5.3.0",
     "@hansenexus/illustrations": "workspace:*",
     "@hansenexus/tokens": "workspace:*",
+    "@happy-dom/global-registrator": "20.14.5",
     "@playwright/test": "1.63.0",
     "@tailwindcss/cli": "4.3.3",
     "@types/react": "19.3.0",

@@ -346,13 +346,27 @@
       ]
     },
     {
+      "name": "motion",
+      "type": "registry:ui",
+      "title": "MotionProvider",
+      "description": "The motion tokens in ms for timers, scaled by a MotionProvider: slower playback, or 0 under reduced motion.",
+      "meta": { "level": "atom" },
+      "dependencies": ["@hansenexus/tokens"],
+      "registryDependencies": ["@hansenexus/tokens"],
+      "files": [
+        {
+          "path": "src/motion.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "delayed-visibility",
       "type": "registry:ui",
       "title": "useDelayedVisibility",
       "description": "The pending-indicator timing rule: show after 200 ms, then stay at least 400 ms (motion tokens).",
       "meta": { "level": "atom" },
-      "dependencies": ["@hansenexus/tokens"],
-      "registryDependencies": ["@hansenexus/tokens"],
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/motion"],
       "files": [
         {
           "path": "src/delayed-visibility.ts",

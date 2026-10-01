@@ -53,8 +53,11 @@ describe("gallery view (#57)", () => {
       theme: "kommandant",
       mode: "dark",
       density: null,
+      reducedMotion: null,
     });
     expect(viewAttributes({ ...DEFAULT_VIEW, density: "compact" }).density).toBe("compact");
+    // data-reduced-motion="" on <html> turns motion-reduce: on whatever the OS says (#91).
+    expect(viewAttributes({ ...DEFAULT_VIEW, motion: "reduced" }).reducedMotion).toBe("");
   });
 
   test("the install command names the registry item", () => {

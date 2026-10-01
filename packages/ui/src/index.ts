@@ -27,6 +27,7 @@ export * from "./label";
 export * from "./layout-copy";
 export * from "./menu";
 export * from "./meter";
+export * from "./motion";
 export * from "./pagination";
 export * from "./popover";
 export * from "./progress";

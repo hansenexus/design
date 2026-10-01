@@ -40,6 +40,11 @@ Two loading animations come with their keyframes: `animate-hn-pulse` (a skeleton
 `skeleton.base` to `skeleton.highlight` and back) and `animate-hn-spin`. Pair each with
 `motion-reduce:animate-none`.
 
+`motion-reduce:` and `motion-safe:` follow the OS setting as Tailwind's own do, and also a
+`data-reduced-motion` attribute on the element or any ancestor. Set it (on `<html>`, say) to force
+reduced motion whatever the OS says; without it nothing changes. The gallery's motion switch uses
+it.
+
 ## TypeScript
 
 ```ts
