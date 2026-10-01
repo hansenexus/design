@@ -26,13 +26,18 @@ Go standard library only, no third-party modules.
 ## `cf-access`
 
 - Every request needs a `Cf-Access-Jwt-Assertion` header with an RS256 token that verifies against
-  `https://$CF_ACCESS_TEAM_DOMAIN/cdn-cgi/access/certs`, whose `aud` contains `$CF_ACCESS_AUD`,
-  whose `iss` is `https://$CF_ACCESS_TEAM_DOMAIN`, and whose `exp`/`nbf` hold (30 s leeway).
-  Anything else gets a bare 403.
+  `https://$CF_ACCESS_TEAM_DOMAIN/cdn-cgi/access/certs`, whose `aud` contains one of the tags in
+  `$CF_ACCESS_AUD`, whose `iss` is `https://$CF_ACCESS_TEAM_DOMAIN`, and whose `exp`/`nbf` hold
+  (30 s leeway). Anything else gets a bare 403.
+- `CF_ACCESS_AUD` is one AUD tag or a comma-separated list (#96), for an origin behind several
+  Access applications, e.g. the gallery app plus a service-token app on `/r` for the shadcn CLI:
+  `CF_ACCESS_AUD=<gallery-aud>,<registry-aud>`. Blanks around items are trimmed and empty items
+  dropped. Every listed app's tokens pass on every path; Cloudflare decides which app guards
+  which path.
 - The JWKS is cached, refetched hourly and when a token names an unknown kid (at most once per
   10 s). If a refresh fails the cached keys stay usable for up to 24 h; with no keys every request
   is refused (fails closed).
-- Refuses to start if `CF_ACCESS_TEAM_DOMAIN` or `CF_ACCESS_AUD` is empty.
+- Refuses to start if `CF_ACCESS_TEAM_DOMAIN` is empty or `CF_ACCESS_AUD` holds no tag (e.g. `,`).
 
 ## `licence`
 
