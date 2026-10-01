@@ -28,6 +28,7 @@ export const SCENES = [
   "data",
   "overlays",
   "navigation",
+  "motion",
   "shell",
   "vote",
 ] as const;
