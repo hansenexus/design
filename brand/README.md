@@ -106,12 +106,54 @@ Below that, use the mark alone; below the mark's minimum, use the favicon tile.
 
 ## Do not
 
-- Recolour it: only the five variants above. No other colour from the palette or from a theme.
+- Recolour it: only the five variants above. No other colour from the palette, a theme or a
+  [per-app accent](#per-app-accents-in-native-apps).
 - Add a gradient, sheen, glow, coloured shadow, glass or any effect. The mark is always flat.
 - Outline it or draw it as a stroke.
 - Rotate, skew, stretch or squash it; scale it only uniformly.
 - Redraw it, change the gap, or set the wordmark in another font or in capitals.
 - Put lime on paper or other light surfaces: use lime-deep there.
+
+## Per-app accents in native apps
+
+The brand look is lime and ink. First-party native apps (the macOS menu bar apps and other Swift
+clients of this estate) may draw their own controls in one accent colour of their own. This is an
+exception, decided by the owner on 2026-10-01 (hansenexus/hn-tools#60, design#87), and it has
+limits.
+
+May take the accent, inside the app only:
+
+- the popover emblem (`Emblem` in `HansenexusPopover`),
+- controls: the primary pill, the selected tab, toggles and other interactive elements,
+- accent chips and the soft tint behind them.
+
+Must not take the accent, and stays lime and ink as described above:
+
+- the mark and the wordmark in every variant, wherever they appear (the five variants, no others),
+- the favicon, the app icon and the menu bar template,
+- marketing assets: websites, slides, print, social images,
+- the `brand.*` tokens. An accent is never added to `@hansenexus/tokens` or to `brand/assets`.
+
+Contrast:
+
+- Text and icons on the accent fill (`onFill` on `fill`) meet 4.5:1 (WCAG 1.4.3), in dark and in
+  light.
+- The emblem and other non-text accent shapes meet 3:1 against the surface they stand on (WCAG
+  1.4.11), in dark and in light.
+
+How an app declares its accent: one `HNAccent` value in the app's own code, set once with
+`.hnAccent(_:)` at the root of the popover. Without it the components draw the brand look
+(`HNAccent.brand`). See [Menu bar popover](../swift/README.md#menu-bar-popover).
+
+Approved accents:
+
+| App | Accent |
+| --- | --- |
+| hn-tools | indigo |
+| meeting-recorder | orange |
+
+A new accent, or a change of an approved one, needs an issue in this repository first, with the
+app, the colour values for dark and light and their contrast ratios.
 
 ## In code
 

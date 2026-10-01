@@ -64,7 +64,9 @@ static names (`HNRadius.md`, `HNFontFamily.sans`) stay the default theme's value
   system material of window chrome (sidebar, toolbar), which the OS draws. No glow, gradient,
   coloured shadow or sheen; `HNShadow.lift` is the one neutral lift.
 - Lime is the only accent: a flat fill with `action.primaryInk` on it; on light, lime text is
-  `action.text`.
+  `action.text`. The one exception is the per-app accent of a first-party native app in
+  `HansenexusPopover`, within the limits of
+  [brand/README.md](../brand/README.md#per-app-accents-in-native-apps).
 - Status is never colour alone: ok dot, busy ring, warn triangle, crit diamond, off hollow circle,
   unknown dashed circle.
 
@@ -95,7 +97,11 @@ The `HansenexusPopover` product holds the popover look hn-tools and meeting-reco
 `TileButtonStyle`, the `Emblem` shape and `PopoverPalette` (danger, ok, well, card, hairline). It
 depends on `HansenexusTokens` and `HansenexusBrand`; those two stay free of it.
 
-The accent is the one per-app colour. Without `.hnAccent(_:)` every component draws the brand look,
+The accent is the one per-app colour, a documented exception to the brand's lime and ink: what may
+take it (emblem, controls, chips), what may not (mark, wordmark, favicon, app icon, marketing
+assets, `brand.*` tokens), the contrast rules and the approved accents are in
+[Per-app accents in native apps](../brand/README.md#per-app-accents-in-native-apps). A new accent
+needs an issue in this repository first. Without `.hnAccent(_:)` every component draws the brand look,
 `HNAccent.brand` (lime from `action.primary`, ink on it, `action.text`, `surface.tint`). An app
 sets its own once, at the root of the popover:
 
