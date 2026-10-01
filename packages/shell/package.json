@@ -1,6 +1,6 @@
 {
   "name": "@hansenexus/shell",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "hansenexus app shell: floating panels with nav, header, main and an optional context pane, a ⌘K container that takes external command sets or a whole palette, and capability-based nav visibility. Semantic tokens only.",
   "license": "MIT",
   "keywords": [

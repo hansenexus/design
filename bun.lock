@@ -27,7 +27,7 @@
     },
     "packages/shell": {
       "name": "@hansenexus/shell",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "dependencies": {
         "radix-ui": "1.6.7",
       },
