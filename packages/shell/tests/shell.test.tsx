@@ -46,6 +46,34 @@ function render(node: ReactNode) {
   return renderToStaticMarkup(node);
 }
 
+type PackEntry = { files: { path: string }[] };
+
+function isPackEntry(value: unknown): value is PackEntry {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    Array.isArray((value as { files?: unknown }).files)
+  );
+}
+
+// `npm pack --json` prints an array of entries up to npm 11 and, from npm 12 (the release
+// workflow installs npm@latest, issue 101), an object keyed by package name. Both are accepted.
+function packedFiles(json: unknown): string[] {
+  const entries = Array.isArray(json)
+    ? json
+    : typeof json === "object" && json !== null
+      ? isPackEntry(json)
+        ? [json]
+        : Object.values(json)
+      : [];
+  const entry = entries.find(isPackEntry);
+  if (!entry)
+    throw new Error(
+      `npm pack --json: expected an array of {files} or an object of them, got ${JSON.stringify(json)?.slice(0, 200)}`
+    );
+  return entry.files.map((f) => f.path);
+}
+
 describe("package", () => {
   test("one entry and the stylesheet, built with the production JSX runtime", () => {
     expect(pkg.name).toBe("@hansenexus/shell");
@@ -62,8 +90,7 @@ describe("package", () => {
       cwd: ROOT,
     });
     expect(proc.exitCode).toBe(0);
-    const [packed] = JSON.parse(proc.stdout.toString()) as { files: { path: string }[] }[];
-    const files = packed?.files.map((f) => f.path) ?? [];
+    const files = packedFiles(JSON.parse(proc.stdout.toString()));
     for (const path of ["dist/index.js", "dist/index.d.ts", "dist/styles.css"])
       expect(files).toContain(path);
   });
