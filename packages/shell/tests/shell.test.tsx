@@ -56,6 +56,18 @@ describe("package", () => {
     expect(readFileSync(resolve(ROOT, "dist/styles.css"), "utf8")).toContain("@container");
   });
 
+  // 0.1.0 went to npm unbuilt, without dist/ (#90): the tarball must carry what exports names.
+  test("the npm tarball carries the built entry, its declarations and the stylesheet", () => {
+    const proc = Bun.spawnSync(["npm", "pack", "--dry-run", "--json", "--ignore-scripts"], {
+      cwd: ROOT,
+    });
+    expect(proc.exitCode).toBe(0);
+    const [packed] = JSON.parse(proc.stdout.toString()) as { files: { path: string }[] }[];
+    const files = packed?.files.map((f) => f.path) ?? [];
+    for (const path of ["dist/index.js", "dist/index.d.ts", "dist/styles.css"])
+      expect(files).toContain(path);
+  });
+
   test("exports the shell, its slots' helpers and the ⌘K mechanics", () => {
     for (const name of [
       "Shell",
