@@ -26,7 +26,9 @@ export const REGISTRIES = {
   [NAMESPACE]: {
     url: REGISTRY_URL,
     headers: {
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: shadcn CLI env placeholder, not a JS template
       "CF-Access-Client-Id": "${HN_REGISTRY_CLIENT_ID}",
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: shadcn CLI env placeholder, not a JS template
       "CF-Access-Client-Secret": "${HN_REGISTRY_CLIENT_SECRET}",
     },
   },

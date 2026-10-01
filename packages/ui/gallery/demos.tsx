@@ -556,7 +556,7 @@ export const DEMOS: Record<string, () => ReactNode> = {
 export function Demo({ item }: { item: string }) {
   const demo = DEMOS[item];
   return demo ? (
-    <>{demo()}</>
+    demo()
   ) : (
     <span className="text-[13px] text-hn-ink-muted">No demo for {item} yet.</span>
   );
