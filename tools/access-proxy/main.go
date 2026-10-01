@@ -1,12 +1,16 @@
-// access-proxy is the origin-side Cloudflare Access check for the design gallery images
-// (hansenexus/design#47). It listens on :8080, verifies the Cf-Access-Jwt-Assertion header on
-// every request and forwards the good ones to static-web-server on 127.0.0.1:8081, which it starts
-// and supervises as its child: if either one exits, the container exits.
+// access-proxy is the origin-side access check for the design images. It listens on :8080,
+// checks every request and forwards the good ones to static-web-server on 127.0.0.1:8081, which
+// it starts and supervises as its child: if either one exits, the container exits.
 //
 //	access-proxy -- /static-web-server [args...]
 //
-// Env: CF_ACCESS_TEAM_DOMAIN (e.g. hansenexus.cloudflareaccess.com) and CF_ACCESS_AUD (the Access
-// application's AUD tag). It refuses to start if either is empty.
+// ACCESS_MODE picks the check:
+//
+//   - cf-access (the default; the galleries, #47): a Cloudflare Access JWT in
+//     Cf-Access-Jwt-Assertion. Env CF_ACCESS_TEAM_DOMAIN (e.g. hansenexus.cloudflareaccess.com)
+//     and CF_ACCESS_AUD (the Access application's AUD tag); it refuses to start if either is empty.
+//   - licence (the Lotse shadcn registry, #92): `Authorization: Bearer <key>` whose SHA-256 is
+//     listed in LICENCE_KEYS_FILE (licence.go); it refuses to start if the file cannot be read.
 package main
 
 import (
@@ -40,14 +44,45 @@ func main() {
 	}
 }
 
-func run(args []string) error {
-	teamDomain := strings.TrimSpace(os.Getenv("CF_ACCESS_TEAM_DOMAIN"))
-	aud := strings.TrimSpace(os.Getenv("CF_ACCESS_AUD"))
-	if teamDomain == "" || aud == "" {
-		return errors.New("CF_ACCESS_TEAM_DOMAIN and CF_ACCESS_AUD must both be set")
+// newGate builds the check ACCESS_MODE names from the environment.
+func newGate() (gate, string, error) {
+	switch mode := strings.TrimSpace(os.Getenv("ACCESS_MODE")); mode {
+	case "", "cf-access":
+		teamDomain := strings.TrimSpace(os.Getenv("CF_ACCESS_TEAM_DOMAIN"))
+		aud := strings.TrimSpace(os.Getenv("CF_ACCESS_AUD"))
+		if teamDomain == "" || aud == "" {
+			return nil, "", errors.New("CF_ACCESS_TEAM_DOMAIN and CF_ACCESS_AUD must both be set")
+		}
+		if strings.ContainsAny(teamDomain, "/:@?# ") {
+			return nil, "", fmt.Errorf("CF_ACCESS_TEAM_DOMAIN must be a bare host name, got %q", teamDomain)
+		}
+		verifier := NewVerifier(teamDomain, aud)
+		// Warm the cache. A failure is not fatal: requests are refused until a later fetch succeeds.
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := verifier.Refresh(ctx); err != nil {
+			log.Printf("initial JWKS fetch failed, refusing every request until it succeeds: %v", err)
+		}
+		return verifier, "team " + teamDomain, nil
+	case "licence":
+		path := strings.TrimSpace(os.Getenv("LICENCE_KEYS_FILE"))
+		if path == "" {
+			return nil, "", errors.New("ACCESS_MODE=licence needs LICENCE_KEYS_FILE")
+		}
+		licences, err := LoadLicences(path)
+		if err != nil {
+			return nil, "", fmt.Errorf("licence keys: %w", err)
+		}
+		return licences, fmt.Sprintf("licence mode, %d keys", licences.Count()), nil
+	default:
+		return nil, "", fmt.Errorf("ACCESS_MODE must be cf-access or licence, got %q", mode)
 	}
-	if strings.ContainsAny(teamDomain, "/:@?# ") {
-		return fmt.Errorf("CF_ACCESS_TEAM_DOMAIN must be a bare host name, got %q", teamDomain)
+}
+
+func run(args []string) error {
+	g, describe, err := newGate()
+	if err != nil {
+		return err
 	}
 	if len(args) > 0 && args[0] == "--" {
 		args = args[1:]
@@ -55,14 +90,6 @@ func run(args []string) error {
 	if len(args) == 0 {
 		return errors.New("usage: access-proxy -- <static-web-server> [args...]")
 	}
-
-	verifier := NewVerifier(teamDomain, aud)
-	// Warm the cache. A failure is not fatal: requests are refused until a later fetch succeeds.
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	if err := verifier.Refresh(ctx); err != nil {
-		log.Printf("initial JWKS fetch failed, refusing every request until it succeeds: %v", err)
-	}
-	cancel()
 
 	child := exec.Command(args[0], args[1:]...)
 	// The proxy owns the address contract, so a consumer image cannot expose the server directly.
@@ -78,13 +105,13 @@ func run(args []string) error {
 	target := &url.URL{Scheme: "http", Host: upstream}
 	server := &http.Server{
 		Addr:              listenAddr,
-		Handler:           NewHandler(verifier, target),
+		Handler:           NewHandler(g, target),
 		ReadHeaderTimeout: 10 * time.Second,
 		IdleTimeout:       120 * time.Second,
 	}
 	serveDone := make(chan error, 1)
 	go func() { serveDone <- server.ListenAndServe() }()
-	log.Printf("listening on %s, forwarding to %s, team %s", listenAddr, upstream, teamDomain)
+	log.Printf("listening on %s, forwarding to %s, %s", listenAddr, upstream, describe)
 
 	// SIGQUIT too: the static-web-server base image declares it as STOPSIGNAL, and an uncaught
 	// SIGQUIT makes a Go program dump every goroutine and exit 2.
@@ -119,13 +146,22 @@ func shutdown(server *http.Server) {
 	_ = server.Shutdown(ctx)
 }
 
-// NewHandler forwards requests with a valid Access token to target and answers everything else
-// with a bare 403. Only GET and HEAD of the health path pass without a token.
-func NewHandler(verifier *Verifier, target *url.URL) http.Handler {
+// gate is one access check. allow returns who the request is for (logged when not empty) or why
+// it is refused (logged only); refuse writes the refusal, which tells the client nothing more.
+type gate interface {
+	allow(r *http.Request) (who string, err error)
+	refuse(w http.ResponseWriter)
+}
+
+// NewHandler forwards the requests g allows to target and lets g refuse everything else. Only GET
+// and HEAD of the health path pass unchecked. The Authorization header never reaches the
+// upstream, so a licence key cannot end up in its logs.
+func NewHandler(g gate, target *url.URL) http.Handler {
 	proxy := &httputil.ReverseProxy{
 		Rewrite: func(r *httputil.ProxyRequest) {
 			r.SetURL(target)
 			r.Out.Host = r.In.Host
+			r.Out.Header.Del("Authorization")
 		},
 		ErrorLog: log.Default(),
 	}
@@ -134,22 +170,30 @@ func NewHandler(verifier *Verifier, target *url.URL) http.Handler {
 			proxy.ServeHTTP(w, r)
 			return
 		}
-		token := r.Header.Get("Cf-Access-Jwt-Assertion")
-		if token == "" {
-			forbid(w, r, errors.New("no Cf-Access-Jwt-Assertion header"))
+		who, err := g.allow(r)
+		if err != nil {
+			log.Printf("refused %s %s: %v", r.Method, r.URL.Path, err)
+			g.refuse(w)
 			return
 		}
-		if err := verifier.Verify(r.Context(), token); err != nil {
-			forbid(w, r, err)
-			return
+		if who != "" {
+			log.Printf("%s %s %s", who, r.Method, r.URL.Path)
 		}
 		proxy.ServeHTTP(w, r)
 	})
 }
 
-// forbid logs why and tells the client nothing beyond the status.
-func forbid(w http.ResponseWriter, r *http.Request, reason error) {
-	log.Printf("403 %s %s: %v", r.Method, r.URL.Path, reason)
+// allow admits a request with a valid Cf-Access-Jwt-Assertion.
+func (v *Verifier) allow(r *http.Request) (string, error) {
+	token := r.Header.Get("Cf-Access-Jwt-Assertion")
+	if token == "" {
+		return "", errors.New("no Cf-Access-Jwt-Assertion header")
+	}
+	return "", v.Verify(r.Context(), token)
+}
+
+// refuse answers a bare 403.
+func (v *Verifier) refuse(w http.ResponseWriter) {
 	w.Header().Set("Cache-Control", "no-store")
 	w.WriteHeader(http.StatusForbidden)
 }
