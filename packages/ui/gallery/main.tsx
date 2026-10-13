@@ -213,6 +213,38 @@ function Kit() {
               Disabled
             </Button>
           </div>
+          <div className="flex flex-wrap items-center gap-2.5" data-testid="button-sizes">
+            <Button variant="outline">
+              <Restart />
+              Outline
+            </Button>
+            <Button variant="outline" size="sm">
+              <Restart />
+              Small
+            </Button>
+            <Button variant="outline" size="xs">
+              Extra small
+            </Button>
+            <Button size="sm">Approve</Button>
+            <Button variant="ghost" size="xs">
+              Logs
+            </Button>
+            <Button variant="outline" size="icon-lg" aria-label="Restart">
+              <Restart />
+            </Button>
+            <Button variant="outline" size="icon" aria-label="Restart">
+              <Restart />
+            </Button>
+            <Button variant="secondary" size="icon-sm" aria-label="Machine actions">
+              <More />
+            </Button>
+            <Button variant="ghost" size="icon-xs" aria-label="Machine actions">
+              <More />
+            </Button>
+            <Button variant="outline" size="sm" disabled>
+              Disabled
+            </Button>
+          </div>
         </Spec>
         <Spec title="Switch">
           <div className="flex flex-col items-start gap-1">

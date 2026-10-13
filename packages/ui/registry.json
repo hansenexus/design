@@ -74,7 +74,7 @@
       "name": "button",
       "type": "registry:ui",
       "title": "Button",
-      "description": "Primary (flat lime), secondary, ghost and danger buttons in two sizes.",
+      "description": "Primary (flat lime), secondary, outline, ghost and danger buttons; xs, sm, md and lg sizes plus four square icon sizes.",
       "meta": { "level": "atom" },
       "dependencies": ["radix-ui"],
       "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],

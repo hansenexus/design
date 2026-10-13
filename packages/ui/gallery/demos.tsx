@@ -239,6 +239,7 @@ export const DEMOS: Record<string, () => ReactNode> = {
     <div className="flex flex-wrap gap-2">
       <Button>Approve</Button>
       <Button variant="secondary">Poll now</Button>
+      <Button variant="outline">Filter</Button>
       <Button variant="ghost">Cancel</Button>
       <Button variant="danger">Scale to 2</Button>
     </div>
