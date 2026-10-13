@@ -160,6 +160,60 @@ describe("markup", () => {
     expect(ui.sparklinePoints([], 10, 10)).toBe("");
   });
 
+  test("sparklinePoints takes a fixed domain and caps values outside it", () => {
+    expect(ui.sparklinePoints([0, 50], 100, 20, { min: 0, max: 100 })).toBe("1.0,18.0 99.0,10.0");
+    expect(ui.sparklinePoints([150], 10, 20, { min: 0, max: 100 })).toBe("5.0,2.0");
+  });
+
+  test("Sparkline area fills under the line with a gradient of its colour", () => {
+    const html = renderToStaticMarkup(
+      <ui.Sparkline values={[1, 3, 2]} width={100} height={20} area color="var(--series-2)" />
+    );
+    expect(html).toContain("<linearGradient");
+    expect(html).toMatch(/<polygon points="1,20 [^"]+ 99,20" fill="url\(#hn-spark-/);
+    expect(html).toContain("color:var(--series-2)");
+    expect(renderToStaticMarkup(<ui.Sparkline values={[1, 2]} />)).not.toContain("<polygon");
+  });
+
+  test("StatusDot names its state, never colour alone", () => {
+    const html = renderToStaticMarkup(<ui.StatusDot status="crit" label="Offline" />);
+    expect(html).toContain('role="img"');
+    expect(html).toContain('aria-label="Offline"');
+    expect(html).toContain("<title>Offline</title>");
+    expect(html).toContain("text-hn-status-crit");
+  });
+
+  test("UsageBar turns warn and crit at its thresholds and reads its value", () => {
+    const tone = (value: number) =>
+      renderToStaticMarkup(<ui.UsageBar label="Disk" value={value} />).match(
+        /data-tone="(\w+)"/
+      )?.[1];
+    expect([tone(69), tone(70), tone(89), tone(90), tone(140)]).toEqual([
+      "ok",
+      "warn",
+      "warn",
+      "crit",
+      "crit",
+    ]);
+    const html = renderToStaticMarkup(<ui.UsageBar label="Disk" value={42} />);
+    expect(html).toContain('role="meter"');
+    expect(html).toContain('aria-label="Disk"');
+    expect(html).toContain('aria-valuetext="42%"');
+    expect(ui.usageTone(60, { warn: 50, crit: 80 })).toBe("warn");
+  });
+
+  test("RingGauge shows its value as text and as a meter", () => {
+    const html = renderToStaticMarkup(<ui.RingGauge label="CPU" value={34} caption="CPU" />);
+    expect(html).toContain('role="meter"');
+    expect(html).toContain('aria-valuetext="34%"');
+    expect(html).toContain(">34%</div>");
+    expect(html).toContain("text-hn-action-primary");
+    expect(renderToStaticMarkup(<ui.RingGauge label="GPU" value={150} />)).toContain(
+      'aria-valuenow="100"'
+    );
+    expect(ui.ringFontSize("100%", 100)).toBeLessThan(ui.ringFontSize("7%", 100));
+  });
+
   test("Switch with a label points a <label> at the control", () => {
     const html = renderToStaticMarkup(<ui.Switch id="motion" label="Motion" defaultChecked />);
     expect(html).toContain('<label for="motion"');
