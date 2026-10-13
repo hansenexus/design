@@ -242,12 +242,54 @@
       "name": "sparkline",
       "type": "registry:ui",
       "title": "Sparkline",
-      "description": "A flat trend line.",
+      "description": "A flat trend line, optionally with a fading area fill.",
       "meta": { "level": "atom" },
       "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],
       "files": [
         {
           "path": "src/sparkline.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "status-dot",
+      "type": "registry:ui",
+      "title": "StatusDot",
+      "description": "A status dot with a halo ring and a required accessible name.",
+      "meta": { "level": "atom" },
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx", "@hansenexus/status-glyph"],
+      "files": [
+        {
+          "path": "src/status-dot.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "usage-bar",
+      "type": "registry:ui",
+      "title": "UsageBar",
+      "description": "A bare usage bar whose fill turns warn and crit at thresholds; a meter with its value in text.",
+      "meta": { "level": "atom" },
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],
+      "files": [
+        {
+          "path": "src/usage-bar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "ring-gauge",
+      "type": "registry:ui",
+      "title": "RingGauge",
+      "description": "A radial gauge with an auto-sized centre value and an optional caption.",
+      "meta": { "level": "atom" },
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],
+      "files": [
+        {
+          "path": "src/ring-gauge.tsx",
           "type": "registry:ui"
         }
       ]
