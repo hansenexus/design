@@ -64,6 +64,11 @@ export const ITEM_SCENES: Record<string, Scene> = {
   pagination: "navigation",
   command: "overlays",
   shell: "shell",
+  "context-menu": "controls",
+  "scroll-area": "controls",
+  slider: "controls",
+  toggle: "controls",
+  "toggle-group": "controls",
 };
 
 export type LevelItem = { name: string; title: string; level: Level | undefined };

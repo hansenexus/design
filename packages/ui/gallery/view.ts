@@ -21,6 +21,7 @@ export const SCENES = [
   "data",
   "overlays",
   "navigation",
+  "controls",
   "motion",
   "shell",
   "vote",

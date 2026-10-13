@@ -1242,6 +1242,126 @@ describe("overlays and navigation", () => {
   });
 });
 
+describe("controls", () => {
+  const tag = (html: string, marker: string) =>
+    html.match(new RegExp(`<[a-z]+[^>]*${marker}[^>]*>`))?.[0] ?? "";
+
+  test("the set and the Menu sub and radio parts are exported and in the registry", () => {
+    const names = [
+      "ContextMenuContent",
+      "ContextMenuItem",
+      "ContextMenuSubTrigger",
+      "ContextMenuSubContent",
+      "ContextMenuRadioItem",
+      "ScrollArea",
+      "Slider",
+      "Toggle",
+      "ToggleGroup",
+      "ToggleGroupItem",
+      "MenuSubTrigger",
+      "MenuSubContent",
+      "MenuRadioItem",
+    ];
+    const exported = ui as Record<string, unknown>;
+    expect(names.filter((n) => typeof exported[n] !== "function")).toEqual([]);
+    for (const n of ["ContextMenu", "MenuSub", "MenuRadioGroup", "ContextMenuRadioGroup"])
+      expect(exported[n]).toBeDefined();
+    const items = new Set(loadRegistry().items.map((i) => i.name));
+    for (const n of ["context-menu", "scroll-area", "slider", "toggle", "toggle-group"])
+      expect(items.has(n)).toBe(true);
+  });
+
+  test("ContextMenu and Menu share one look", () => {
+    const menu = readFileSync(resolve(ROOT, "src/context-menu.tsx"), "utf8");
+    expect(menu).toContain('from "./menu"');
+    expect(ui.MENU_STYLES.content).toContain("bg-hn-surface-card");
+    expect(ui.MENU_STYLES.item).toContain("data-highlighted:bg-hn-surface-raised");
+  });
+
+  test("ContextMenuTrigger renders the area, the menu stays closed", () => {
+    const html = renderToStaticMarkup(
+      <ui.ContextMenu>
+        <ui.ContextMenuTrigger>kran-04</ui.ContextMenuTrigger>
+        <ui.ContextMenuContent>
+          <ui.ContextMenuItem>Open terminal</ui.ContextMenuItem>
+        </ui.ContextMenuContent>
+      </ui.ContextMenu>
+    );
+    expect(html).toContain('data-state="closed"');
+    expect(html).toContain("kran-04");
+    expect(html).not.toContain("Open terminal");
+  });
+
+  test("Toggle: aria-pressed follows pressed, variant and size are kept", () => {
+    const off = renderToStaticMarkup(<ui.Toggle aria-label="Mute">M</ui.Toggle>);
+    expect(off).toContain('aria-pressed="false"');
+    expect(off).toContain('data-variant="ghost"');
+    expect(off).toContain('type="button"');
+    const on = renderToStaticMarkup(
+      <ui.Toggle variant="outline" size="sm" defaultPressed>
+        Map
+      </ui.Toggle>
+    );
+    expect(on).toContain('aria-pressed="true"');
+    expect(on).toContain('data-state="on"');
+    expect(on).toContain("border-hn-line-strong");
+    expect(on).toContain("h-8");
+  });
+
+  test("ToggleGroup: single is a radio group, multiple are pressed buttons, items take the look", () => {
+    const single = renderToStaticMarkup(
+      <ui.ToggleGroup type="single" variant="outline" defaultValue="grid" aria-label="View">
+        <ui.ToggleGroupItem value="map">Map</ui.ToggleGroupItem>
+        <ui.ToggleGroupItem value="grid">Grid</ui.ToggleGroupItem>
+      </ui.ToggleGroup>
+    );
+    expect(tag(single, 'role="radiogroup"')).toContain('aria-label="View"');
+    expect(tag(single, 'aria-checked="true"')).toContain('role="radio"');
+    expect(tag(single, 'aria-checked="true"')).toContain("first:rounded-l-hn-md");
+    const multi = renderToStaticMarkup(
+      <ui.ToggleGroup type="multiple" defaultValue={["crit", "warn"]} aria-label="Statuses">
+        <ui.ToggleGroupItem value="crit">Crit</ui.ToggleGroupItem>
+        <ui.ToggleGroupItem value="warn">Warn</ui.ToggleGroupItem>
+        <ui.ToggleGroupItem value="ok">OK</ui.ToggleGroupItem>
+      </ui.ToggleGroup>
+    );
+    expect(multi.match(/aria-pressed="true"/g)?.length).toBe(2);
+    expect(multi.match(/aria-pressed="false"/g)?.length).toBe(1);
+    expect(multi).not.toContain("first:rounded-l-hn-md");
+  });
+
+  test("Slider: one thumb per value, each thumb named (aria-valuenow lands on mount)", () => {
+    const single = renderToStaticMarkup(
+      <ui.Slider defaultValue={[3]} min={0} max={8} aria-label="Replicas" />
+    );
+    expect(single.match(/role="slider"/g)?.length).toBe(1);
+    expect(tag(single, 'role="slider"')).toContain('aria-label="Replicas"');
+    expect(tag(single, 'role="slider"')).toContain('aria-valuemax="8"');
+    const labelled = renderToStaticMarkup(
+      <ui.Slider defaultValue={[3]} aria-labelledby="replicas-label" />
+    );
+    expect(tag(labelled, 'role="slider"')).toContain('aria-labelledby="replicas-label"');
+    const range = renderToStaticMarkup(
+      <ui.Slider defaultValue={[25, 75]} thumbLabels={["Minimum", "Maximum"]} />
+    );
+    const thumbs = range.match(/<[a-z]+[^>]*role="slider"[^>]*>/g) ?? [];
+    expect(thumbs).toHaveLength(2);
+    expect(thumbs[0]).toContain('aria-label="Minimum"');
+    expect(thumbs[1]).toContain('aria-label="Maximum"');
+  });
+
+  test("ScrollArea: content sits in a viewport that scrolls natively", () => {
+    const html = renderToStaticMarkup(
+      <ui.ScrollArea className="h-40">
+        <p>kran-01</p>
+      </ui.ScrollArea>
+    );
+    expect(html).toContain("data-radix-scroll-area-viewport");
+    expect(html).toContain("<p>kran-01</p>");
+    expect(html).toContain("h-40");
+  });
+});
+
 describe("dist", () => {
   // The npm build must use react/jsx-runtime: a production React exports jsxDEV as
   // undefined, so a dev-runtime dist crashes every production render (design#27).

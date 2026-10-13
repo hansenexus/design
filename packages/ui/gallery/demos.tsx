@@ -31,6 +31,10 @@ import {
   Checkbox,
   Combobox,
   Command,
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
   cx,
   DataTable,
   type DataTableColumn,
@@ -69,6 +73,7 @@ import {
   RadioGroup,
   RadioGroupItem,
   RailItem,
+  ScrollArea,
   Select,
   SelectContent,
   SelectItem,
@@ -83,6 +88,7 @@ import {
   SheetTitle,
   SheetTrigger,
   Skeleton,
+  Slider,
   Sparkline,
   Spinner,
   STATE_COPY,
@@ -105,6 +111,9 @@ import {
   ToastProvider,
   ToastTitle,
   ToastViewport,
+  Toggle,
+  ToggleGroup,
+  ToggleGroupItem,
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -289,6 +298,36 @@ export const DEMOS: Record<string, () => ReactNode> = {
         <MenuItem variant="danger">Restart machine</MenuItem>
       </MenuContent>
     </Menu>
+  ),
+  "context-menu": () => (
+    <ContextMenu>
+      <ContextMenuTrigger className="flex h-20 items-center justify-center rounded-hn-lg border border-dashed border-hn-line-strong font-hn-mono text-sm text-hn-ink-body select-none">
+        kran-04 · right-click
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem>Open terminal</ContextMenuItem>
+        <ContextMenuItem variant="danger">Restart machine</ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
+  ),
+  "scroll-area": () => (
+    <ScrollArea type="always" className="h-24 rounded-hn-md border border-hn-line-subtle">
+      <div className="p-3">{hosts([...HOSTS, "lotsen-api", "speicher-web", "zoll-gateway"])}</div>
+    </ScrollArea>
+  ),
+  slider: () => <Slider defaultValue={[25, 75]} thumbLabels={["Minimum", "Maximum"]} />,
+  toggle: () => (
+    <Toggle variant="outline" defaultPressed>
+      <Bell />
+      Mute alerts
+    </Toggle>
+  ),
+  "toggle-group": () => (
+    <ToggleGroup type="single" variant="outline" defaultValue="grid" aria-label="View">
+      <ToggleGroupItem value="map">Map</ToggleGroupItem>
+      <ToggleGroupItem value="grid">Grid</ToggleGroupItem>
+      <ToggleGroupItem value="list">List</ToggleGroupItem>
+    </ToggleGroup>
   ),
   meter: () => <Meter label="Memory" value={88} tone="warn" />,
   "rail-item": () => (

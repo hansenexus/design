@@ -183,7 +183,7 @@
       "name": "menu",
       "type": "registry:ui",
       "title": "Menu",
-      "description": "A dropdown menu on Radix DropdownMenu.",
+      "description": "A dropdown menu on Radix DropdownMenu, with checkbox, radio and sub-menu parts.",
       "meta": { "level": "molecule" },
       "dependencies": ["radix-ui"],
       "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx", "@hansenexus/icons"],
@@ -904,6 +904,86 @@
       },
       "dependencies": ["@hansenexus/shell@^0.1.0"],
       "registryDependencies": ["@hansenexus/tokens"]
+    },
+    {
+      "name": "context-menu",
+      "type": "registry:ui",
+      "title": "ContextMenu",
+      "description": "A right-click and long-press menu on Radix ContextMenu, the same surface, rows, sub-menus and radio parts as Menu.",
+      "meta": { "level": "molecule" },
+      "dependencies": ["radix-ui"],
+      "registryDependencies": [
+        "@hansenexus/tokens",
+        "@hansenexus/cx",
+        "@hansenexus/icons",
+        "@hansenexus/menu"
+      ],
+      "files": [
+        {
+          "path": "src/context-menu.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "scroll-area",
+      "type": "registry:ui",
+      "title": "ScrollArea",
+      "description": "A scrolling box with thin token-coloured bars on Radix ScrollArea; native scrolling stays.",
+      "meta": { "level": "atom" },
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],
+      "files": [
+        {
+          "path": "src/scroll-area.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "slider",
+      "type": "registry:ui",
+      "title": "Slider",
+      "description": "A value or a range on a track, on Radix Slider, one named thumb per value.",
+      "meta": { "level": "atom" },
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],
+      "files": [
+        {
+          "path": "src/slider.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "toggle",
+      "type": "registry:ui",
+      "title": "Toggle",
+      "description": "A two-state pressed button on Radix Toggle, ghost or outline.",
+      "meta": { "level": "atom" },
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],
+      "files": [
+        {
+          "path": "src/toggle.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "toggle-group",
+      "type": "registry:ui",
+      "title": "ToggleGroup",
+      "description": "A single- or multi-select row of toggles on Radix ToggleGroup, arrow keys inside.",
+      "meta": { "level": "molecule" },
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx", "@hansenexus/toggle"],
+      "files": [
+        {
+          "path": "src/toggle-group.tsx",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
