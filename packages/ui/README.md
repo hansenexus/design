@@ -10,7 +10,9 @@ area). For forms: Field, Label, FieldHelp, FieldError, Textarea,
 Checkbox, RadioGroup and FormAlert. For layout: Card (CardHeader, CardTitle, CardDescription,
 CardBody, CardFooter, CardSkeleton), Alert and Banner, Avatar, Separator, Accordion. For dates and
 data: Popover, Calendar, DatePicker, Combobox and DataTable. Overlays and navigation: Sheet,
-Breadcrumb, Pagination and the command palette (Command, CommandDialog, `useCommandShortcut`). For
+Breadcrumb, Pagination and the command palette (Command, CommandDialog, `useCommandShortcut`).
+Controls: ContextMenu, Toggle, ToggleGroup, Slider and ScrollArea; Menu also has sub-menu
+(`MenuSub*`) and radio (`MenuRadioGroup`, `MenuRadioItem`) parts. For
 loading: Skeleton (block, text, circle), SkeletonGroup,
 Spinner and the `useDelayedVisibility` hook. For the other states: EmptyState, ErrorState, Progress
 and QueryState, with German and English default copy (`STATE_COPY`). Plus the brand: `HansenexusMark` and `HansenexusWordmark`
@@ -345,6 +347,62 @@ useCommandShortcut(() => setOpen((o) => !o));               // ⌘K / Ctrl+K
 - **Copy.** `STATE_COPY[locale].overlay`, `.navigation` and `.command`; `{page}`, `{count}` and
   `{query}` are filled by `fillCopy`.
 
+### Controls
+
+```tsx
+import {
+  ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger,
+  Menu, MenuContent, MenuRadioGroup, MenuRadioItem, MenuSub, MenuSubContent, MenuSubTrigger,
+  MenuTrigger, ScrollArea, Slider, Toggle, ToggleGroup, ToggleGroupItem,
+} from "@hansenexus/ui";
+
+<Menu>
+  <MenuTrigger asChild><Button variant="secondary">View</Button></MenuTrigger>
+  <MenuContent>
+    <MenuRadioGroup value={density} onValueChange={setDensity}>
+      <MenuRadioItem value="compact">Compact</MenuRadioItem>
+      <MenuRadioItem value="comfortable">Comfortable</MenuRadioItem>
+    </MenuRadioGroup>
+    <MenuSub>
+      <MenuSubTrigger>Move to quay</MenuSubTrigger>
+      <MenuSubContent><MenuItem>Quay 3</MenuItem></MenuSubContent>
+    </MenuSub>
+  </MenuContent>
+</Menu>
+
+<ContextMenu>
+  <ContextMenuTrigger asChild><MachineCard host="kran-04" /></ContextMenuTrigger>
+  <ContextMenuContent><ContextMenuItem>Open terminal</ContextMenuItem></ContextMenuContent>
+</ContextMenu>
+
+<Toggle variant="outline" pressed={muted} onPressedChange={setMuted}><Bell />Mute</Toggle>
+<ToggleGroup type="single" variant="outline" value={view} onValueChange={setView} aria-label="View">
+  <ToggleGroupItem value="map">Map</ToggleGroupItem>
+  <ToggleGroupItem value="grid">Grid</ToggleGroupItem>
+</ToggleGroup>
+<Slider value={band} onValueChange={setBand} thumbLabels={["Minimum", "Maximum"]} />
+<ScrollArea className="h-64">{rows}</ScrollArea>
+```
+
+- **Menu** sub-menus open on hover or ArrowRight and close on ArrowLeft or Escape; the trigger row
+  carries a chevron. A checked `MenuRadioItem` shows a lime dot where `MenuCheckboxItem` shows its
+  check. `MENU_STYLES` holds the shared look.
+- **ContextMenu** opens at the pointer on a right click, a long press, Shift+F10 or the
+  context-menu key, with the same surface, rows, check, radio and sub-menu parts as Menu
+  (`ContextMenu*` for each `Menu*`). The trigger is the area; wrap an element with `asChild`.
+- **Toggle** is a two-state button (`aria-pressed`), ghost or outline, `sm` or `md`; pressed is the
+  tint surface. An icon-only toggle needs `aria-label`.
+- **ToggleGroup** with `type="single"` is a `radiogroup` of at most one on; `type="multiple"` a
+  row of pressed buttons. Tab enters it, the arrow keys move, disabled items are skipped. The
+  group's `variant` and `size` reach every item; outline joins them into one segmented row.
+- **Slider** draws one thumb per entry of `value`; two make a range. The arrow keys step, Page
+  Up/Down step by ten, Home/End jump. `aria-label` or `aria-labelledby` name a single thumb,
+  `thumbLabels` each thumb of a range.
+- **ScrollArea** keeps native scrolling (wheel, touch, keyboard) and draws thin bars in
+  `line.strong`; `scrollbars` picks vertical, horizontal or both, and Radix's `type` when they
+  show (`hover` by default). In a grid or flex row, give the column `min-w-0` so wide content
+  scrolls instead of widening it.
+
 ## shadcn registry
 
 The same sources ship as a shadcn registry (`registry.json`; built items in `dist/r/`, also in the
@@ -410,10 +468,10 @@ bun run outdated -- ~/repos/some-app --json                  # every block with 
 ## Screenshot baselines
 
 `screenshots/baselines/` holds the kit gallery (`gallery/`, every primitive in its states), the
-loading scene (Skeleton and Spinner), the states, illustrations, forms, layout, data, overlays and navigation scenes and each overlay at 390 and 1280 px, dark and light. Pixels depend on the OS and browser build, so
+loading scene (Skeleton and Spinner), the states, illustrations, forms, layout, data, overlays, navigation and controls scenes (plus the controls scene with its context menu open) and each overlay at 390 and 1280 px, dark and light. Pixels depend on the OS and browser build, so
 `scripts/screenshots.sh` runs Playwright inside the pinned `mcr.microsoft.com/playwright` image,
 the same one CI uses. It needs Docker. `screenshots/interaction.spec.ts` drives the live palette, sheet,
-popover and pager in the same run (keyboard, focus return, `aria-current` after load).
+popover, pager, context menu, toggles and sliders in the same run (keyboard, focus return, `aria-current` after load).
 Every scene carries a top nav linking all the others; the baselines load their scene with
 `&bare=1`, which leaves the nav out of the frame.
 

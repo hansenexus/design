@@ -114,6 +114,27 @@ for (const mode of MODES) {
     });
   });
 
+  test(`controls ${mode}`, async ({ page }, info) => {
+    await page.goto(`/gallery/?scene=controls&mode=${mode}&bare=1`);
+    await page.evaluate(() => document.fonts.ready);
+    // The open Menu with its open sub-menu, inside their frame.
+    await expect(page.locator('[data-frame] [role="menu"]')).toHaveCount(2);
+    // Slider thumbs get their position after mount.
+    await expect(page.getByRole("slider", { name: "Maximum" })).toHaveAttribute(
+      "aria-valuenow",
+      "75"
+    );
+    await expect(page).toHaveScreenshot(`controls-${info.project.name}-${mode}.png`, {
+      fullPage: true,
+    });
+    // The context menu, opened at a fixed point of its area.
+    const target = page.getByTestId("context-target");
+    await target.scrollIntoViewIfNeeded();
+    await target.click({ button: "right", position: { x: 24, y: 24 } });
+    await expect(page.getByRole("menu").filter({ hasText: "Open terminal" })).toBeVisible();
+    await expect(page).toHaveScreenshot(`context-menu-${info.project.name}-${mode}.png`);
+  });
+
   for (const scene of OVERLAYS) {
     test(`${scene} ${mode}`, async ({ page }, info) => {
       await page.goto(`/gallery/?scene=${scene}&mode=${mode}&bare=1`);

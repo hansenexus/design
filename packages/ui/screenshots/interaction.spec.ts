@@ -313,3 +313,101 @@ test("shell: an ops preset mounts in the palette slot, the shell keeps focus and
   await expect(dialog).toBeHidden();
   await expect(shell.locator("[data-last-run]")).toHaveText("Ran: Restart lotsen-api");
 });
+
+test("context menu: right click opens it, the sub-menu and radio work from the keyboard", async ({
+  page,
+}) => {
+  await page.goto("/gallery/?scene=controls");
+  const target = page.getByTestId("context-target");
+  await target.click({ button: "right" });
+  const menu = page.getByRole("menu").filter({ hasText: "Open terminal" });
+  await expect(menu).toBeVisible();
+  await expect(menu.getByRole("menuitemcheckbox", { name: "Follow logs" })).toHaveAttribute(
+    "aria-checked",
+    "true"
+  );
+  const sub = menu.getByRole("menuitem", { name: "Move to quay" });
+  await sub.focus();
+  await page.keyboard.press("ArrowRight");
+  const quays = page
+    .getByRole("menu")
+    .filter({ has: page.getByRole("menuitemradio") })
+    .filter({
+      hasText: "Quay 3",
+    });
+  await expect(quays).toBeVisible();
+  await expect(quays.getByRole("menuitemradio", { name: "Quay 4" })).toHaveAttribute(
+    "aria-checked",
+    "true"
+  );
+  await expect(quays.getByRole("menuitemradio", { name: "Quay 3" })).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(quays).toBeHidden();
+  await expect(page.getByTestId("context-quay")).toHaveText("3");
+
+  await target.click({ button: "right" });
+  await menu.getByRole("menuitem", { name: "Restart machine" }).click();
+  await expect(menu).toBeHidden();
+  await expect(page.getByTestId("context-picked")).toHaveText("Restart machine");
+});
+
+test("menu: the open sub-menu sits beside its trigger, radio marks one choice", async ({
+  page,
+}) => {
+  await page.goto("/gallery/?scene=controls");
+  const menus = page.locator("[data-frame] [role=menu]");
+  await expect(menus).toHaveCount(2);
+  const radios = page.getByRole("menu", { name: "Machine actions" }).getByRole("menuitemradio");
+  await expect(radios).toHaveCount(3);
+  await expect(page.getByRole("menuitemradio", { name: "Comfortable" })).toHaveAttribute(
+    "aria-checked",
+    "true"
+  );
+  const trigger = await page.getByRole("menuitem", { name: "Move to quay" }).boundingBox();
+  const sub = await page.getByRole("menu", { name: "Move to quay" }).boundingBox();
+  expect(sub && trigger && sub.x >= trigger.x + trigger.width - 8).toBe(true);
+});
+
+test("toggle, toggle group, slider: keyboard and ARIA", async ({ page }) => {
+  await page.goto("/gallery/?scene=controls");
+  const mute = page.getByRole("button", { name: "Mute alerts" }).first();
+  await expect(mute).toHaveAttribute("aria-pressed", "false");
+  await mute.focus();
+  await page.keyboard.press("Space");
+  await expect(mute).toHaveAttribute("aria-pressed", "true");
+
+  const view = page.getByRole("radiogroup", { name: "View" });
+  const grid = view.getByRole("radio", { name: "Grid" });
+  await expect(grid).toHaveAttribute("aria-checked", "true");
+  await grid.focus();
+  await page.keyboard.press("ArrowRight");
+  const list = view.getByRole("radio", { name: "List" });
+  await expect(list).toBeFocused();
+  await page.keyboard.press("Space");
+  await expect(list).toHaveAttribute("aria-checked", "true");
+  await expect(grid).toHaveAttribute("aria-checked", "false");
+
+  const statuses = page.getByTestId("status-filter");
+  const ok = statuses.getByRole("button", { name: "OK" });
+  await ok.click();
+  await expect(statuses.locator('[aria-pressed="true"]')).toHaveCount(3);
+  // The disabled item is skipped by the arrow keys.
+  await page.keyboard.press("ArrowRight");
+  await expect(statuses.getByRole("button", { name: "Crit" })).toBeFocused();
+
+  const replicas = page.getByRole("slider", { name: "Replicas" });
+  await expect(replicas).toHaveAttribute("aria-valuenow", "3");
+  await replicas.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(replicas).toHaveAttribute("aria-valuenow", "4");
+  await page.keyboard.press("End");
+  await expect(replicas).toHaveAttribute("aria-valuenow", "8");
+  const min = page.getByRole("slider", { name: "Minimum" });
+  await min.focus();
+  await page.keyboard.press("Home");
+  await expect(min).toHaveAttribute("aria-valuenow", "0");
+  await expect(page.getByRole("slider", { name: "Maximum" })).toHaveAttribute(
+    "aria-valuenow",
+    "75"
+  );
+});

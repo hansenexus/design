@@ -102,6 +102,7 @@ import {
   TooltipTrigger,
   useDelayedVisibility,
 } from "../src";
+import { Controls } from "./controls";
 import { Data } from "./data";
 import { Bell, Check, Key, MapIcon, More, Restart, Server } from "./icons";
 import { ItemPage, isItem } from "./item";
@@ -1087,6 +1088,8 @@ function Scenes({ scene }: { scene: Scene }) {
       return <Overlays />;
     case "navigation":
       return <Navigation />;
+    case "controls":
+      return <Controls />;
     case "motion":
       return <Motion />;
     case "shell":
