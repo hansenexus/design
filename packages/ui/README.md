@@ -50,6 +50,17 @@ import { Button, StatusBadge, Meter } from "@hansenexus/ui";
 
 `className` is appended, not merged: to change a look, prefer a variant or wrap the component.
 
+Button variants: `primary` (default), `secondary`, `outline` (secondary on the opaque card fill,
+for buttons over rows, media or tinted panels), `ghost` and `danger`. Sizes: `xs` (24 px), `sm`
+(32 px), `md` (36 px, default) and `lg` (48 px), plus the square `icon-xs`, `icon-sm`, `icon` and
+`icon-lg` for a single icon, which need an `aria-label`. No size goes below the density's minimum
+target (`--hn-target`), so `xs` grows to 44 px under `data-density="touch"`.
+
+```tsx
+<Button variant="outline" size="sm">Filter</Button>
+<Button variant="ghost" size="icon-xs" aria-label="Machine actions"><EllipsisIcon /></Button>
+```
+
 ### Small charts
 
 ```tsx

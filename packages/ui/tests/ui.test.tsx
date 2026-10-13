@@ -101,6 +101,38 @@ describe("markup", () => {
     expect(html).toContain("bg-hn-action-danger");
   });
 
+  test("Button outline sits on the card fill with the strong line", () => {
+    const html = renderToStaticMarkup(<ui.Button variant="outline">Filter</ui.Button>);
+    expect(html).toContain('data-variant="outline"');
+    expect(html).toContain("bg-hn-surface-card");
+    expect(html).toContain("border-hn-line-strong");
+  });
+
+  test("Button sizes: compact ones keep the density target, icon ones are square", () => {
+    const sizes = ["xs", "sm", "md", "lg", "icon-xs", "icon-sm", "icon", "icon-lg"] as const;
+    for (const size of sizes) {
+      const html = renderToStaticMarkup(
+        <ui.Button size={size} aria-label="Restart">
+          x
+        </ui.Button>
+      );
+      expect(html).toContain(`data-size="${size}"`);
+      expect(html).toContain("min-h-hn-target");
+      // One gap, one radius, one icon size per size: cx appends, it does not merge.
+      const cls = html.match(/class="([^"]*)"/)?.[1].split(" ") ?? [];
+      expect(cls.filter((c) => /^gap-/.test(c)).length).toBeLessThanOrEqual(1);
+      expect(cls.filter((c) => /^rounded-/.test(c))).toHaveLength(1);
+      // The markup escapes "&": [&amp;_svg]:size-4.
+      expect(cls.filter((c) => /_svg\]:size-/.test(c))).toHaveLength(1);
+      if (size.startsWith("icon")) {
+        expect(cls.some((c) => /^size-\d/.test(c))).toBe(true);
+        expect(cls).toContain("min-w-hn-target");
+        expect(cls).toContain("p-0");
+      }
+    }
+    expect(renderToStaticMarkup(<ui.Button>Go</ui.Button>)).toContain('data-size="md"');
+  });
+
   test("StatusBadge carries a shape per status, not colour alone", () => {
     const shapes = ui.STATUSES.map((s) => {
       const html = renderToStaticMarkup(<ui.StatusBadge status={s} />);
