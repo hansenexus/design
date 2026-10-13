@@ -69,6 +69,7 @@ import {
   RadioGroup,
   RadioGroupItem,
   RailItem,
+  RingGauge,
   Select,
   SelectContent,
   SelectItem,
@@ -87,6 +88,7 @@ import {
   Spinner,
   STATE_COPY,
   StatusBadge,
+  StatusDot,
   StatusGlyph,
   Switch,
   Table,
@@ -109,6 +111,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
+  UsageBar,
   useDelayedVisibility,
   useMotionMs,
 } from "../src";
@@ -313,12 +316,47 @@ export const DEMOS: Record<string, () => ReactNode> = {
     </Select>
   ),
   sparkline: () => (
-    <Sparkline
-      values={[30, 33, 41, 38, 35, 31, 36, 34, 37, 40]}
-      width={240}
-      height={40}
-      label="Requests per minute, rising"
-    />
+    <div className="flex flex-col gap-3">
+      <Sparkline
+        values={[30, 33, 41, 38, 35, 31, 36, 34, 37, 40]}
+        width={240}
+        height={40}
+        label="Requests per minute, rising"
+      />
+      <Sparkline
+        values={[12, 18, 25, 22, 40, 61, 48, 55, 72, 66]}
+        width={240}
+        height={40}
+        tone="action"
+        area
+        min={0}
+        max={100}
+        label="CPU over the last minute, peaking at 72%"
+      />
+    </div>
+  ),
+  "status-dot": () => (
+    <ul className="m-0 flex list-none flex-col gap-2 p-0 font-hn-sans text-sm text-hn-ink-primary">
+      <li className="flex items-center gap-2">
+        <StatusDot status="ok" label="Online" /> hn-hub
+      </li>
+      <li className="flex items-center gap-2">
+        <StatusDot status="crit" label="Offline" /> hn-jetson
+      </li>
+    </ul>
+  ),
+  "usage-bar": () => (
+    <div className="flex max-w-60 flex-col gap-3">
+      <UsageBar label="Disk /" value={42} />
+      <UsageBar label="Disk /data" value={78} />
+      <UsageBar label="Disk /var" value={95} />
+    </div>
+  ),
+  "ring-gauge": () => (
+    <div className="flex gap-4">
+      <RingGauge label="CPU" value={34} size={74} caption="CPU" />
+      <RingGauge label="GPU" value={100} size={74} tone="warn" caption="GPU" />
+    </div>
   ),
   "status-badge": () => (
     <div className="flex gap-2">

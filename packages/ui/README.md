@@ -5,7 +5,8 @@ through the semantic tokens of [`@hansenexus/tokens`](../tokens). Dark and light
 colour follows `data-mode`, `data-theme` and `data-density` on an ancestor.
 
 Button, Badge, StatusBadge, Switch, Dialog, Menu, Tabs, Table, Meter, Sparkline, Kbd, Toast,
-Tooltip, Input, Select, RailItem. For forms: Field, Label, FieldHelp, FieldError, Textarea,
+Tooltip, Input, Select, RailItem. Small charts: StatusDot, UsageBar, RingGauge and Sparkline (line or
+area). For forms: Field, Label, FieldHelp, FieldError, Textarea,
 Checkbox, RadioGroup and FormAlert. For layout: Card (CardHeader, CardTitle, CardDescription,
 CardBody, CardFooter, CardSkeleton), Alert and Banner, Avatar, Separator, Accordion. For dates and
 data: Popover, Calendar, DatePicker, Combobox and DataTable. Overlays and navigation: Sheet,
@@ -48,6 +49,26 @@ import { Button, StatusBadge, Meter } from "@hansenexus/ui";
 ```
 
 `className` is appended, not merged: to change a look, prefer a variant or wrap the component.
+
+### Small charts
+
+```tsx
+import { RingGauge, Sparkline, StatusDot, UsageBar } from "@hansenexus/ui";
+
+<StatusDot status="ok" label="Online" />                  {/* role=img, the label is required */}
+<UsageBar label="Disk /" value={78} />                    {/* ok, warn from 70, crit from 90 */}
+<RingGauge label="CPU" value={34} caption="CPU" />        {/* centre text auto-sizes */}
+<Sparkline values={cpu} area min={0} max={100} stretch color="var(--series-2)" label="CPU, last minute" />
+```
+
+- **Never colour alone.** StatusDot needs `label` (its accessible name and tooltip). UsageBar and
+  RingGauge are `meter`s with `aria-valuetext`; RingGauge also shows the value in its centre.
+- **Colour.** StatusDot, UsageBar and RingGauge use the status tokens; RingGauge and Sparkline also
+  take `tone="action"` or a free `color` (any CSS colour, e.g. an app's series variable), which
+  overrides `tone`. `usageTone(pct, thresholds)` gives the UsageBar tone for your own markup.
+- **Sparkline** `area` adds a fading fill under the line; `min`/`max` fix the scale (values outside
+  are capped); `stretch` fills the container's width with a crisp stroke.
+- The UsageBar fill and the RingGauge arc animate over `duration.base`, not under reduced motion.
 
 ### Loading
 
