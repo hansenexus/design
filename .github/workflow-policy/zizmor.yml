@@ -1,0 +1,10 @@
+# zizmor config shipped with the workflow policy (hn-infra#528). Own actions and
+# reusable workflows are referenced by tag (workflow-policy-v1, tresor
+# op-ref-lint@main); everything else, actions/* included, is SHA-pinned with a
+# `# vX` comment.
+rules:
+  unpinned-uses:
+    config:
+      policies:
+        "hansenexus/*": ref-pin
+        "*": hash-pin

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Rules of the hansenexus shared preset (hn-infra renovate/default), inlined: this repo is public and Renovate cannot read a preset from the private hn-infra.",
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
+  "packageRules": [
+    {
+      "description": "One weekly PR for every GitHub Actions update, digest pins and pin-moves included.",
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions",
+      "groupSlug": "github-actions",
+      "schedule": ["before 8am on Monday"]
+    }
+  ],
+  "timezone": "Europe/Berlin"
+}

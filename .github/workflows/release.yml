@@ -43,11 +43,11 @@ jobs:
       run:
         working-directory: packages/tokens
     steps:
-      - uses: actions/checkout@v5
-      - uses: oven-sh/setup-bun@v2
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: 1.4.2
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
@@ -72,12 +72,12 @@ jobs:
       # Already on npm with the same contents (a re-run): skip. Different contents: fail.
       - name: Publish
         if: ${{ github.event_name == 'push' || !inputs.dry_run }}
-        run: $GITHUB_WORKSPACE/scripts/npm-publish.sh
+        run: '"$GITHUB_WORKSPACE/scripts/npm-publish.sh"'
 
       # A collision with the published version counts as success here only; see the script.
       - name: Publish (dry run)
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
-        run: $GITHUB_WORKSPACE/scripts/npm-publish.sh --dry-run
+        run: '"$GITHUB_WORKSPACE/scripts/npm-publish.sh" --dry-run'
 
       # A tag pushed with the workflow token starts no other workflow.
       - name: Swift package tag
