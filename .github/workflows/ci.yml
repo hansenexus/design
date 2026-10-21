@@ -124,13 +124,14 @@ jobs:
           xcodebuild build -scheme "$scheme" -destination 'generic/platform=iOS' -quiet
 
   workflow-policy:
-    # Workflow baseline and zizmor (hn-infra#528), mode block. A vendored copy of hn-infra's
-    # workflow-policy-v1: a public repo cannot call a private repo's reusable workflow
-    # (.github/workflow-policy/README.md). Same steps as hn-infra's action.yml.
+    # Workflow baseline, zizmor and actionlint (hn-infra#528), all blocking. The baseline is a
+    # vendored copy of hn-infra's workflow-policy-v1: a public repo cannot call a private repo's
+    # reusable workflow (.github/workflow-policy/README.md).
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
       ZIZMOR_VERSION: "1.30.1"
+      ACTIONLINT_VERSION: "1.7.12.25" # actionlint-py, the actionlint binary on PyPI
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
@@ -145,6 +146,10 @@ jobs:
         run: |
           uvx "zizmor@${ZIZMOR_VERSION}" --offline --no-progress --config .github/workflow-policy/zizmor.yml \
             --format github --min-severity medium --min-confidence medium .github/workflows
+      # Shellcheck on run: blocks comes from the runner image.
+      - name: actionlint
+        if: ${{ !cancelled() }}
+        run: uvx --from "actionlint-py==${ACTIONLINT_VERSION}" actionlint -color
 
   result:
     name: CI Result

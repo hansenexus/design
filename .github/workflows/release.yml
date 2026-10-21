@@ -72,12 +72,12 @@ jobs:
       # Already on npm with the same contents (a re-run): skip. Different contents: fail.
       - name: Publish
         if: ${{ github.event_name == 'push' || !inputs.dry_run }}
-        run: $GITHUB_WORKSPACE/scripts/npm-publish.sh
+        run: '"$GITHUB_WORKSPACE/scripts/npm-publish.sh"'
 
       # A collision with the published version counts as success here only; see the script.
       - name: Publish (dry run)
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
-        run: $GITHUB_WORKSPACE/scripts/npm-publish.sh --dry-run
+        run: '"$GITHUB_WORKSPACE/scripts/npm-publish.sh" --dry-run'
 
       # A tag pushed with the workflow token starts no other workflow.
       - name: Swift package tag
