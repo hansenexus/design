@@ -124,12 +124,27 @@ jobs:
           xcodebuild build -scheme "$scheme" -destination 'generic/platform=iOS' -quiet
 
   workflow-policy:
-    # Workflow baseline and zizmor (hn-infra#528). Hosted runner, like every job here: the
-    # reusable workflow defaults to the Hetzner fleet, which must not run fork pull requests.
-    uses: hansenexus/hn-infra/.github/workflows/workflow-policy.yml@f72490443fd464b0366dc21ca4356d86fba04859 # workflow-policy-v1
-    with:
-      mode: block
-      runs-on: '["ubuntu-latest"]'
+    # Workflow baseline and zizmor (hn-infra#528), mode block. A vendored copy of hn-infra's
+    # workflow-policy-v1: a public repo cannot call a private repo's reusable workflow
+    # (.github/workflow-policy/README.md). Same steps as hn-infra's action.yml.
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      ZIZMOR_VERSION: "1.30.1"
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+      - name: Baseline policy
+        run: |
+          uv run --no-project --with 'pyyaml==6.0.3' python .github/workflow-policy/workflow_policy.py \
+            --mode block --annotate --summary "$GITHUB_STEP_SUMMARY" .github/workflows
+      - name: zizmor
+        if: ${{ !cancelled() }}
+        run: |
+          uvx "zizmor@${ZIZMOR_VERSION}" --offline --no-progress --config .github/workflow-policy/zizmor.yml \
+            --format github --min-severity medium --min-confidence medium .github/workflows
 
   result:
     name: CI Result
