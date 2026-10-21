@@ -14,14 +14,15 @@ permissions:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v5
-      - uses: oven-sh/setup-bun@v2
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: 1.4.2
       - run: bun install --frozen-lockfile
@@ -41,9 +42,10 @@ jobs:
 
   package:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v5
-      - uses: oven-sh/setup-bun@v2
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: 1.4.2
       - run: bun install --frozen-lockfile
@@ -55,10 +57,11 @@ jobs:
     # Baselines are pixels, so they render in the same pinned image as scripts/screenshots.sh
     # uses locally. Bump the tag together with @playwright/test in packages/ui.
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     container:
       image: mcr.microsoft.com/playwright:v1.63.0-noble
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - name: Bun (the image has no unzip for setup-bun)
         run: npm install --global bun@1.4.2
       - run: bun install --frozen-lockfile
@@ -68,7 +71,7 @@ jobs:
         run: bun run screenshots
       - name: Upload diffs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: screenshot-diffs
           path: |
@@ -79,12 +82,13 @@ jobs:
   go:
     # tools/access-proxy, the Cloudflare Access JWT check in front of the gallery images (#47).
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: tools/access-proxy
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
           go-version-file: tools/access-proxy/go.mod
           cache: false
@@ -103,8 +107,9 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - run: swift --version
       - name: Build
         run: swift build
@@ -118,16 +123,28 @@ jobs:
           scheme=$(python3 -c 'import json; s=json.load(open("schemes.json"))["workspace"]["schemes"]; print(next((x for x in s if x.endswith("-Package")), s[0]))')
           xcodebuild build -scheme "$scheme" -destination 'generic/platform=iOS' -quiet
 
+  workflow-policy:
+    # Workflow baseline and zizmor (hn-infra#528). Hosted runner, like every job here: the
+    # reusable workflow defaults to the Hetzner fleet, which must not run fork pull requests.
+    uses: hansenexus/hn-infra/.github/workflows/workflow-policy.yml@f72490443fd464b0366dc21ca4356d86fba04859 # workflow-policy-v1
+    with:
+      mode: block
+      runs-on: '["ubuntu-latest"]'
+
   result:
     name: CI Result
     if: always()
-    needs: [check, package, screenshots, go, swift]
+    needs: [check, package, screenshots, go, swift, workflow-policy]
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: All jobs passed
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+          FAILED: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}
         run: |
-          echo '${{ toJSON(needs) }}'
-          if [ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}" = "true" ]; then
+          echo "$NEEDS"
+          if [ "$FAILED" = "true" ]; then
             echo "::error::a required job did not pass"
             exit 1
           fi
