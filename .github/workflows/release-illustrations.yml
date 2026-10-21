@@ -32,6 +32,7 @@ concurrency:
 jobs:
   release:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: write # GitHub release
       id-token: write # provenance attestation
@@ -67,18 +68,25 @@ jobs:
         working-directory: packages/illustrations
         run: npm pack --dry-run
 
+      # Already on npm with the same contents (a re-run): skip. Different contents: fail.
       - name: Publish
         if: ${{ github.event_name == 'push' || !inputs.dry_run }}
         working-directory: packages/illustrations
-        run: npm publish --access public --provenance
+        run: $GITHUB_WORKSPACE/scripts/npm-publish.sh
 
+      # A collision with the published version counts as success here only; see the script.
       - name: Publish (dry run)
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
         working-directory: packages/illustrations
-        run: npm publish --access public --dry-run
+        run: $GITHUB_WORKSPACE/scripts/npm-publish.sh --dry-run
 
       - name: GitHub release
         if: startsWith(github.ref, 'refs/tags/illustrations-v')
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "::notice::GitHub release $GITHUB_REF_NAME already exists. Skipping."
+          else
+            gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
+          fi
