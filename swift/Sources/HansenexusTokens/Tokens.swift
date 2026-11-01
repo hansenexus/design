@@ -83,6 +83,11 @@ public struct HNColors: Sendable, Equatable {
     public let line: HNRGBA
     /// Rail meta, inactive item
     public let muted: HNRGBA
+    public let statusBusy: HNRGBA
+    public let statusCrit: HNRGBA
+    /// Status shapes on the rail
+    public let statusOk: HNRGBA
+    public let statusWarn: HNRGBA
   }
 
   public struct Skeleton: Sendable, Equatable {
@@ -198,7 +203,11 @@ public struct HNColors: Sendable, Equatable {
     rail: Rail(
       ink: HNRGBA(0xF4F0E6),
       line: HNRGBA(0x3A352C),
-      muted: HNRGBA(0xA39C8C)
+      muted: HNRGBA(0xA39C8C),
+      statusBusy: HNRGBA(0x8FB8FF),
+      statusCrit: HNRGBA(0xFF7A66),
+      statusOk: HNRGBA(0x42C501),
+      statusWarn: HNRGBA(0xF0A53A)
     ),
     skeleton: Skeleton(
       base: HNRGBA(0x3A352C),
@@ -271,7 +280,11 @@ public struct HNColors: Sendable, Equatable {
     rail: Rail(
       ink: HNRGBA(0xF4F0E6),
       line: HNRGBA(0x3A352C),
-      muted: HNRGBA(0xA39C8C)
+      muted: HNRGBA(0xA39C8C),
+      statusBusy: HNRGBA(0x8FB8FF),
+      statusCrit: HNRGBA(0xFF7A66),
+      statusOk: HNRGBA(0x42C501),
+      statusWarn: HNRGBA(0xF0A53A)
     ),
     skeleton: Skeleton(
       base: HNRGBA(0xD8CFBD),
@@ -321,7 +334,7 @@ public struct HNColors: Sendable, Equatable {
       primaryHover: HNRGBA(0x8BE45F),
       primaryInk: HNRGBA(0x16140F),
       text: HNRGBA(0x8BE45F),
-      textHover: HNRGBA(0x8BE45F)
+      textHover: HNRGBA(0xB0ED92)
     ),
     brand: Brand(
       ink: HNRGBA(0x16140F),
@@ -344,7 +357,11 @@ public struct HNColors: Sendable, Equatable {
     rail: Rail(
       ink: HNRGBA(0xF4F0E6),
       line: HNRGBA(0x353125),
-      muted: HNRGBA(0x9A927F)
+      muted: HNRGBA(0x9A927F),
+      statusBusy: HNRGBA(0x6EA0FF),
+      statusCrit: HNRGBA(0xFF6B5E),
+      statusOk: HNRGBA(0x8BE45F),
+      statusWarn: HNRGBA(0xE0A04A)
     ),
     skeleton: Skeleton(
       base: HNRGBA(0x3A352C),
@@ -353,7 +370,7 @@ public struct HNColors: Sendable, Equatable {
     status: Status(
       busy: HNRGBA(0x6EA0FF),
       crit: HNRGBA(0xFF6B5E),
-      off: HNRGBA(0x8A8273),
+      off: HNRGBA(0x7A7262),
       ok: HNRGBA(0x8BE45F),
       unknown: HNRGBA(0xA39C8C),
       warn: HNRGBA(0xE0A04A)
@@ -364,7 +381,7 @@ public struct HNColors: Sendable, Equatable {
       page: HNRGBA(0x121109),
       rail: HNRGBA(0x1F1C14),
       raised: HNRGBA(0x262218),
-      tint: HNRGBA(0x253515)
+      tint: HNRGBA(0x1F2A12)
     ),
     terminal: Terminal(
       black: HNRGBA(0x8F8778),
@@ -417,7 +434,11 @@ public struct HNColors: Sendable, Equatable {
     rail: Rail(
       ink: HNRGBA(0xF4F0E6),
       line: HNRGBA(0x353125),
-      muted: HNRGBA(0x9A927F)
+      muted: HNRGBA(0x9A927F),
+      statusBusy: HNRGBA(0x6EA0FF),
+      statusCrit: HNRGBA(0xFF6B5E),
+      statusOk: HNRGBA(0x8BE45F),
+      statusWarn: HNRGBA(0xE0A04A)
     ),
     skeleton: Skeleton(
       base: HNRGBA(0xD8CFBD),
@@ -490,7 +511,11 @@ public struct HNColors: Sendable, Equatable {
     rail: Rail(
       ink: HNRGBA(0xF4F0E6),
       line: HNRGBA(0x3A352C),
-      muted: HNRGBA(0xA39C8C)
+      muted: HNRGBA(0xA39C8C),
+      statusBusy: HNRGBA(0x8FB8FF),
+      statusCrit: HNRGBA(0xFF7A66),
+      statusOk: HNRGBA(0x42C501),
+      statusWarn: HNRGBA(0xF0A53A)
     ),
     skeleton: Skeleton(
       base: HNRGBA(0x3A352C),
@@ -563,7 +588,11 @@ public struct HNColors: Sendable, Equatable {
     rail: Rail(
       ink: HNRGBA(0xF4F0E6),
       line: HNRGBA(0x3A352C),
-      muted: HNRGBA(0xA39C8C)
+      muted: HNRGBA(0xA39C8C),
+      statusBusy: HNRGBA(0x8FB8FF),
+      statusCrit: HNRGBA(0xFF7A66),
+      statusOk: HNRGBA(0x42C501),
+      statusWarn: HNRGBA(0xF0A53A)
     ),
     skeleton: Skeleton(
       base: HNRGBA(0xD8CFBD),
@@ -636,7 +665,11 @@ public struct HNColors: Sendable, Equatable {
     rail: Rail(
       ink: HNRGBA(0xF4F0E6),
       line: HNRGBA(0x3A352C),
-      muted: HNRGBA(0xA39C8C)
+      muted: HNRGBA(0xA39C8C),
+      statusBusy: HNRGBA(0x8FB8FF),
+      statusCrit: HNRGBA(0xFF7A66),
+      statusOk: HNRGBA(0x42C501),
+      statusWarn: HNRGBA(0xF0A53A)
     ),
     skeleton: Skeleton(
       base: HNRGBA(0x3F3A34),
@@ -709,7 +742,11 @@ public struct HNColors: Sendable, Equatable {
     rail: Rail(
       ink: HNRGBA(0xF4F0E6),
       line: HNRGBA(0x3A352C),
-      muted: HNRGBA(0xA39C8C)
+      muted: HNRGBA(0xA39C8C),
+      statusBusy: HNRGBA(0x8FB8FF),
+      statusCrit: HNRGBA(0xFF7A66),
+      statusOk: HNRGBA(0x42C501),
+      statusWarn: HNRGBA(0xF0A53A)
     ),
     skeleton: Skeleton(
       base: HNRGBA(0xDEDEDE),

@@ -59,6 +59,11 @@ export const RULES: Rule[] = [
   { kind: "divider", fg: ["line.subtle"], bg: ["surface.card"] },
   { kind: "text", fg: ["rail.ink", "rail.muted"], bg: ["surface.rail"] },
   { kind: "divider", fg: ["rail.line"], bg: ["surface.rail"] },
+  {
+    kind: "ui",
+    fg: ["rail.status-ok", "rail.status-busy", "rail.status-warn", "rail.status-crit"],
+    bg: ["surface.rail"],
+  },
   // A terminal draws on surface.page or, inset in a panel, surface.card (kommandant's xterm);
   // every ANSI colour, black and white included, is text on both.
   { kind: "text", fg: TERMINAL, bg: ["surface.page", "surface.card"] },

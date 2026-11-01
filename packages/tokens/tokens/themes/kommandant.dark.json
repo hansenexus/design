@@ -10,7 +10,8 @@
     "raised": {
       "$value": "{palette.leitstand.raised}",
       "$description": "Erhöht: chips, active nav"
-    }
+    },
+    "tint": { "$value": "{palette.leitstand.tint}", "$description": "Tönung: icon ground" }
   },
   "ink": {
     "$type": "color",
@@ -31,14 +32,19 @@
   },
   "action": {
     "$type": "color",
-    "text": { "$value": "{palette.lime.300}", "$description": "Links, text actions" }
+    "text": { "$value": "{palette.lime.300}", "$description": "Links, text actions" },
+    "text-hover": { "$value": "{palette.leitstand.lime-hover}" }
   },
   "status": {
     "$type": "color",
     "ok": { "$value": "{palette.lime.300}", "$description": "filled dot" },
     "busy": { "$value": "{palette.leitstand.busy}", "$description": "open ring" },
     "warn": { "$value": "{palette.leitstand.warn}", "$description": "triangle" },
-    "crit": { "$value": "{palette.leitstand.crit}", "$description": "diamond" }
+    "crit": { "$value": "{palette.leitstand.crit}", "$description": "diamond" },
+    "off": {
+      "$value": "{palette.leitstand.off}",
+      "$description": "hollow circle. A shape colour only; label text uses ink.muted."
+    }
   },
   "terminal": {
     "$type": "color",

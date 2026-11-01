@@ -263,6 +263,18 @@
       "crit": {
         "$value": "#ff6b5e",
         "$description": "Kritisch (crit), dark"
+      },
+      "off": {
+        "$value": "#7a7262",
+        "$description": "Aus (off), dark: 3.33:1 on raised"
+      },
+      "tint": {
+        "$value": "#1f2a12",
+        "$description": "Tönung, dark"
+      },
+      "lime-hover": {
+        "$value": "#b0ed92",
+        "$description": "Text-action hover, dark: lime.300 (#8be45f) one HSL lightness step up (63 to 75 %), 13.85:1 on page"
       }
     }
   }

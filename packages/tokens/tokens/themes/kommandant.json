@@ -27,6 +27,10 @@
     "$type": "color",
     "ink": { "$value": "{palette.warm.50}" },
     "muted": { "$value": "{palette.leitstand.muted}" },
-    "line": { "$value": "{palette.leitstand.line}" }
+    "line": { "$value": "{palette.leitstand.line}" },
+    "status-ok": { "$value": "{palette.lime.300}" },
+    "status-busy": { "$value": "{palette.leitstand.busy}" },
+    "status-warn": { "$value": "{palette.leitstand.warn}" },
+    "status-crit": { "$value": "{palette.leitstand.crit}" }
   }
 }

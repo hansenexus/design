@@ -86,9 +86,10 @@ tracking per role) are component styling and stay in the app.
 swaps the warm grounds for an ink set (`palette.leitstand`: page `#121109`, card `#1b1912`,
 raised `#262218`, band `#1f1c14`) with its own ink, lines and status colours; light mode keeps the
 shared paper set. `font.display` is the sans stack: the theme references no serif. The rail
-(`surface.rail` with `rail.ink`, `rail.muted`, `rail.line`) is the same in both modes, so it stays
-ink on paper. Every other theme carries the rail tokens too, as the warm dark band set, because the
-Swift output needs the same colour names in every theme.
+(`surface.rail` with `rail.ink`, `rail.muted`, `rail.line` and `rail.status-*`) is the same in
+both modes, so it stays ink on paper; its status shapes are the dark status set. Every other theme
+carries the rail tokens too, as the warm dark band and status set, because the Swift output needs
+the same colour names in every theme.
 
 ## Rules the tokens cannot enforce
 
@@ -98,7 +99,9 @@ Swift output needs the same colour names in every theme.
   unknown dashed circle. `status.off` is a shape colour; its label uses `ink.muted`.
 - A destructive action is the flat `action.danger` fill with `action.danger-ink` on it.
 - `line.subtle` is decoration only; a control's boundary uses `line.strong`.
-- `rail.*` is for text and lines on `surface.rail` only; the rail stays ink in both modes.
+- `rail.*` is for text, lines and status shapes on `surface.rail` only; the rail stays ink in
+  both modes. On the rail, status shapes use `rail.status-ok`, `-busy`, `-warn` and `-crit`
+  (3:1 on `surface.rail`), never `status.*`, whose light set fails on ink.
 - `brand.*` (lime, lime-deep, ink, paper) is for the mark and wordmark only, the same in both
   modes. Usage in [brand/README.md](../../brand/README.md).
 - `terminal.*` (`black` … `white`, `bright-black` … `bright-white`) is the 16-colour ANSI palette of
@@ -113,7 +116,8 @@ Swift output needs the same colour names in every theme.
 not a WCAG minimum, since a placeholder carries no information, but it must read as a shape; and
 4.5:1 for all 16 `terminal.*` colours on `surface.page` and `surface.card`; a 1.3:1 floor for
 `line.subtle` on `surface.card` and `rail.line` on `surface.rail`, again not a WCAG minimum, so a
-divider still divides; `rail.ink` and `rail.muted` are text on `surface.rail`). It fails on a pair below AA and on a colour token
+divider still divides; `rail.ink` and `rail.muted` are text and `rail.status-*` UI on
+`surface.rail`). It fails on a pair below AA and on a colour token
 that no rule covers and that is not explicitly exempt.
 
 ## Versioning

@@ -10,7 +10,7 @@ final class TokensTests: XCTestCase {
     XCTAssertEqual(dark.ink.primary.hex, "#f4f0e6")
     XCTAssertEqual(dark.status.crit.hex, "#ff6b5e")
     XCTAssertEqual(dark.status.busy.hex, "#6ea0ff")
-    XCTAssertEqual(dark.status.off.hex, "#8a8273")
+    XCTAssertEqual(dark.status.off.hex, "#7a7262")
     // The other themes keep the warm dark set.
     XCTAssertEqual(HNColors.of(.hansenexus, .dark).surface.page.hex, "#16140f")
   }
@@ -22,6 +22,8 @@ final class TokensTests: XCTestCase {
     XCTAssertEqual(dark.surface.rail, light.surface.rail)
     XCTAssertEqual(dark.rail, light.rail)
     XCTAssertEqual(light.surface.rail.hex, "#1f1c14")
+    XCTAssertEqual(light.rail.statusOk, dark.status.ok)
+    XCTAssertEqual(light.rail.statusCrit.hex, "#ff6b5e")
     XCTAssertEqual(HNFontFamily.of(.kommandant).display, HNFontFamily.of(.kommandant).sans)
     XCTAssertEqual(HNFontFamily.display.first, "Fraunces")
   }

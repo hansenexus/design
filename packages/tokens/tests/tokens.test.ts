@@ -267,6 +267,14 @@ describe("kommandant Leitstand", () => {
     expect(dark.surface.rail).toBe("#1f1c14");
     expect(light.surface.rail).toBe(dark.surface.rail);
     expect(light.rail).toEqual(dark.rail);
+    // The rail's status shapes are the dark status set, whatever the mode.
+    for (const s of ["ok", "busy", "warn", "crit"]) {
+      expect(light.rail[`status-${s}`]).toBe(dark.status[s]);
+    }
+    expect(dark.surface.tint).toBe("#1f2a12");
+    expect(dark.status.off).toBe("#7a7262");
+    expect(dark.action["text-hover"]).toBe("#b0ed92");
+    expect(dark.action["text-hover"]).not.toBe(dark.action.text);
     const css = readFileSync(join(dist, "tokens.css"), "utf8");
     expect(blocks(css).get('[data-theme="kommandant"]')).toContain("--hn-surface-rail: #1f1c14;");
   });
