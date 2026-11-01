@@ -50,7 +50,7 @@ it.
 ```ts
 import { tokens, vars, density, ms } from "@hansenexus/tokens";
 
-tokens.kommandant.dark.status.crit; // "#ff7a66", for charts and canvas
+tokens.kommandant.dark.status.crit; // "#ff6b5e", for charts and canvas
 vars.surface.page; // "var(--hn-surface-page)", follows the active mode
 density.touch.target; // "44px"
 ms.delay.pending; // 200, every duration in milliseconds for timers
@@ -80,6 +80,16 @@ the focus ring on light is ink (orange on paper is 2.6:1), and `line.strong` on 
 (the 38 % dividing line, `line.subtle`, is 1.8:1). lexilink's type recipes (weight, width,
 tracking per role) are component styling and stay in the app.
 
+## kommandant
+
+`data-theme="kommandant"` is the Leitstand (PRD hansenexus/kommandant#472, variant A). Dark mode
+swaps the warm grounds for an ink set (`palette.leitstand`: page `#121109`, card `#1b1912`,
+raised `#262218`, band `#1f1c14`) with its own ink, lines and status colours; light mode keeps the
+shared paper set. `font.display` is the sans stack: the theme references no serif. The rail
+(`surface.rail` with `rail.ink`, `rail.muted`, `rail.line`) is the same in both modes, so it stays
+ink on paper. Every other theme carries the rail tokens too, as the warm dark band set, because the
+Swift output needs the same colour names in every theme.
+
 ## Rules the tokens cannot enforce
 
 - Lime `#42c501` is the only accent (lexilink excepted, see above): a flat fill with `action.primary-ink` on it, or text on dark.
@@ -88,6 +98,7 @@ tracking per role) are component styling and stay in the app.
   unknown dashed circle. `status.off` is a shape colour; its label uses `ink.muted`.
 - A destructive action is the flat `action.danger` fill with `action.danger-ink` on it.
 - `line.subtle` is decoration only; a control's boundary uses `line.strong`.
+- `rail.*` is for text and lines on `surface.rail` only; the rail stays ink in both modes.
 - `brand.*` (lime, lime-deep, ink, paper) is for the mark and wordmark only, the same in both
   modes. Usage in [brand/README.md](../../brand/README.md).
 - `terminal.*` (`black` … `white`, `bright-black` … `bright-white`) is the 16-colour ANSI palette of
@@ -100,7 +111,9 @@ tracking per role) are component styling and stay in the app.
 `bun run contrast` resolves every theme in both modes and checks each pair in
 `scripts/contrast.ts` (text 4.5:1, UI 3:1, and a 1.2:1 floor for `skeleton.*` on every surface:
 not a WCAG minimum, since a placeholder carries no information, but it must read as a shape; and
-4.5:1 for all 16 `terminal.*` colours on `surface.page` and `surface.card`). It fails on a pair below AA and on a colour token
+4.5:1 for all 16 `terminal.*` colours on `surface.page` and `surface.card`; a 1.3:1 floor for
+`line.subtle` on `surface.card` and `rail.line` on `surface.rail`, again not a WCAG minimum, so a
+divider still divides; `rail.ink` and `rail.muted` are text on `surface.rail`). It fails on a pair below AA and on a colour token
 that no rule covers and that is not explicitly exempt.
 
 ## Versioning

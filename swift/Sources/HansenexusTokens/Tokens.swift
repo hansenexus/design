@@ -76,6 +76,15 @@ public struct HNColors: Sendable, Equatable {
     public let subtle: HNRGBA
   }
 
+  public struct Rail: Sendable, Equatable {
+    /// Rail labels, active item
+    public let ink: HNRGBA
+    /// Rail dividers, decoration only
+    public let line: HNRGBA
+    /// Rail meta, inactive item
+    public let muted: HNRGBA
+  }
+
   public struct Skeleton: Sendable, Equatable {
     /// The resting placeholder fill
     public let base: HNRGBA
@@ -105,6 +114,8 @@ public struct HNColors: Sendable, Equatable {
     public let card: HNRGBA
     /// Grund
     public let page: HNRGBA
+    /// The rail: ink in both modes
+    public let rail: HNRGBA
     /// Erhöht: chips, active nav
     public let raised: HNRGBA
     /// Tönung: icon ground
@@ -136,6 +147,7 @@ public struct HNColors: Sendable, Equatable {
   public let focus: Focus
   public let ink: Ink
   public let line: Line
+  public let rail: Rail
   public let skeleton: Skeleton
   public let status: Status
   public let surface: Surface
@@ -183,6 +195,11 @@ public struct HNColors: Sendable, Equatable {
       strong: HNRGBA(0x8A8273),
       subtle: HNRGBA(0x3A352C)
     ),
+    rail: Rail(
+      ink: HNRGBA(0xF4F0E6),
+      line: HNRGBA(0x3A352C),
+      muted: HNRGBA(0xA39C8C)
+    ),
     skeleton: Skeleton(
       base: HNRGBA(0x3A352C),
       highlight: HNRGBA(0x4A4439)
@@ -199,6 +216,7 @@ public struct HNColors: Sendable, Equatable {
       band: HNRGBA(0x1C1A15),
       card: HNRGBA(0x201D18),
       page: HNRGBA(0x16140F),
+      rail: HNRGBA(0x1C1A15),
       raised: HNRGBA(0x2A2620),
       tint: HNRGBA(0x253515)
     ),
@@ -250,6 +268,11 @@ public struct HNColors: Sendable, Equatable {
       strong: HNRGBA(0x8A8273),
       subtle: HNRGBA(0xD8CFBD)
     ),
+    rail: Rail(
+      ink: HNRGBA(0xF4F0E6),
+      line: HNRGBA(0x3A352C),
+      muted: HNRGBA(0xA39C8C)
+    ),
     skeleton: Skeleton(
       base: HNRGBA(0xD8CFBD),
       highlight: HNRGBA(0xCDC6B6)
@@ -266,6 +289,7 @@ public struct HNColors: Sendable, Equatable {
       band: HNRGBA(0xEDE8DC),
       card: HNRGBA(0xFBF8F1),
       page: HNRGBA(0xF4F0E6),
+      rail: HNRGBA(0x1C1A15),
       raised: HNRGBA(0xECE7DC),
       tint: HNRGBA(0xE1ECD0)
     ),
@@ -296,7 +320,7 @@ public struct HNColors: Sendable, Equatable {
       primary: HNRGBA(0x42C501),
       primaryHover: HNRGBA(0x8BE45F),
       primaryInk: HNRGBA(0x16140F),
-      text: HNRGBA(0x42C501),
+      text: HNRGBA(0x8BE45F),
       textHover: HNRGBA(0x8BE45F)
     ),
     brand: Brand(
@@ -309,36 +333,42 @@ public struct HNColors: Sendable, Equatable {
       ring: HNRGBA(0x42C501)
     ),
     ink: Ink(
-      body: HNRGBA(0xCDC6B6),
-      muted: HNRGBA(0xA39C8C),
+      body: HNRGBA(0xD8D2C4),
+      muted: HNRGBA(0x9A927F),
       primary: HNRGBA(0xF4F0E6)
     ),
     line: Line(
-      strong: HNRGBA(0x8A8273),
-      subtle: HNRGBA(0x3A352C)
+      strong: HNRGBA(0x746B56),
+      subtle: HNRGBA(0x353125)
+    ),
+    rail: Rail(
+      ink: HNRGBA(0xF4F0E6),
+      line: HNRGBA(0x353125),
+      muted: HNRGBA(0x9A927F)
     ),
     skeleton: Skeleton(
       base: HNRGBA(0x3A352C),
       highlight: HNRGBA(0x4A4439)
     ),
     status: Status(
-      busy: HNRGBA(0x8FB8FF),
-      crit: HNRGBA(0xFF7A66),
+      busy: HNRGBA(0x6EA0FF),
+      crit: HNRGBA(0xFF6B5E),
       off: HNRGBA(0x8A8273),
-      ok: HNRGBA(0x42C501),
+      ok: HNRGBA(0x8BE45F),
       unknown: HNRGBA(0xA39C8C),
-      warn: HNRGBA(0xF0A53A)
+      warn: HNRGBA(0xE0A04A)
     ),
     surface: Surface(
-      band: HNRGBA(0x1C1A15),
-      card: HNRGBA(0x201D18),
-      page: HNRGBA(0x16140F),
-      raised: HNRGBA(0x2A2620),
+      band: HNRGBA(0x1F1C14),
+      card: HNRGBA(0x1B1912),
+      page: HNRGBA(0x121109),
+      rail: HNRGBA(0x1F1C14),
+      raised: HNRGBA(0x262218),
       tint: HNRGBA(0x253515)
     ),
     terminal: Terminal(
       black: HNRGBA(0x8F8778),
-      blue: HNRGBA(0x8FB8FF),
+      blue: HNRGBA(0x6EA0FF),
       brightBlack: HNRGBA(0xA39C8C),
       brightBlue: HNRGBA(0xBED5FD),
       brightCyan: HNRGBA(0xA3DDE0),
@@ -348,11 +378,11 @@ public struct HNColors: Sendable, Equatable {
       brightWhite: HNRGBA(0xF4F0E6),
       brightYellow: HNRGBA(0xFEC98A),
       cyan: HNRGBA(0x7ABFC3),
-      green: HNRGBA(0x42C501),
+      green: HNRGBA(0x8BE45F),
       magenta: HNRGBA(0xD59CC8),
-      red: HNRGBA(0xFF7A66),
+      red: HNRGBA(0xFF6B5E),
       white: HNRGBA(0xCDC6B6),
-      yellow: HNRGBA(0xF0A53A)
+      yellow: HNRGBA(0xE0A04A)
     )
   )
 
@@ -384,6 +414,11 @@ public struct HNColors: Sendable, Equatable {
       strong: HNRGBA(0x8A8273),
       subtle: HNRGBA(0xD8CFBD)
     ),
+    rail: Rail(
+      ink: HNRGBA(0xF4F0E6),
+      line: HNRGBA(0x353125),
+      muted: HNRGBA(0x9A927F)
+    ),
     skeleton: Skeleton(
       base: HNRGBA(0xD8CFBD),
       highlight: HNRGBA(0xCDC6B6)
@@ -400,6 +435,7 @@ public struct HNColors: Sendable, Equatable {
       band: HNRGBA(0xEDE8DC),
       card: HNRGBA(0xFBF8F1),
       page: HNRGBA(0xF4F0E6),
+      rail: HNRGBA(0x1F1C14),
       raised: HNRGBA(0xECE7DC),
       tint: HNRGBA(0xE1ECD0)
     ),
@@ -451,6 +487,11 @@ public struct HNColors: Sendable, Equatable {
       strong: HNRGBA(0x8A8273),
       subtle: HNRGBA(0x3A352C)
     ),
+    rail: Rail(
+      ink: HNRGBA(0xF4F0E6),
+      line: HNRGBA(0x3A352C),
+      muted: HNRGBA(0xA39C8C)
+    ),
     skeleton: Skeleton(
       base: HNRGBA(0x3A352C),
       highlight: HNRGBA(0x4A4439)
@@ -467,6 +508,7 @@ public struct HNColors: Sendable, Equatable {
       band: HNRGBA(0x1C1A15),
       card: HNRGBA(0x201D18),
       page: HNRGBA(0x16140F),
+      rail: HNRGBA(0x1C1A15),
       raised: HNRGBA(0x2A2620),
       tint: HNRGBA(0x253515)
     ),
@@ -518,6 +560,11 @@ public struct HNColors: Sendable, Equatable {
       strong: HNRGBA(0x8A8273),
       subtle: HNRGBA(0xD8CFBD)
     ),
+    rail: Rail(
+      ink: HNRGBA(0xF4F0E6),
+      line: HNRGBA(0x3A352C),
+      muted: HNRGBA(0xA39C8C)
+    ),
     skeleton: Skeleton(
       base: HNRGBA(0xD8CFBD),
       highlight: HNRGBA(0xCDC6B6)
@@ -534,6 +581,7 @@ public struct HNColors: Sendable, Equatable {
       band: HNRGBA(0xEDE8DC),
       card: HNRGBA(0xFBF8F1),
       page: HNRGBA(0xF4F0E6),
+      rail: HNRGBA(0x1C1A15),
       raised: HNRGBA(0xECE7DC),
       tint: HNRGBA(0xE1ECD0)
     ),
@@ -585,6 +633,11 @@ public struct HNColors: Sendable, Equatable {
       strong: HNRGBA(0x8F8C85),
       subtle: HNRGBA(0x47413C)
     ),
+    rail: Rail(
+      ink: HNRGBA(0xF4F0E6),
+      line: HNRGBA(0x3A352C),
+      muted: HNRGBA(0xA39C8C)
+    ),
     skeleton: Skeleton(
       base: HNRGBA(0x3F3A34),
       highlight: HNRGBA(0x47413C)
@@ -601,6 +654,7 @@ public struct HNColors: Sendable, Equatable {
       band: HNRGBA(0x130F0A),
       card: HNRGBA(0x1C1712),
       page: HNRGBA(0x1C1712),
+      rail: HNRGBA(0x1C1A15),
       raised: HNRGBA(0x1C1712),
       tint: HNRGBA(0x1C1712)
     ),
@@ -652,6 +706,11 @@ public struct HNColors: Sendable, Equatable {
       strong: HNRGBA(0x070707),
       subtle: HNRGBA(0x070707)
     ),
+    rail: Rail(
+      ink: HNRGBA(0xF4F0E6),
+      line: HNRGBA(0x3A352C),
+      muted: HNRGBA(0xA39C8C)
+    ),
     skeleton: Skeleton(
       base: HNRGBA(0xDEDEDE),
       highlight: HNRGBA(0xBEBEBE)
@@ -668,6 +727,7 @@ public struct HNColors: Sendable, Equatable {
       band: HNRGBA(0xFFFFFF),
       card: HNRGBA(0xFFFFFF),
       page: HNRGBA(0xFFFFFF),
+      rail: HNRGBA(0x1C1A15),
       raised: HNRGBA(0xFFFFFF),
       tint: HNRGBA(0xFFFFFF)
     ),
@@ -737,7 +797,7 @@ public struct HNFontFamily: Sendable, Equatable {
   public static func of(_ theme: HNTheme) -> HNFontFamily {
     switch theme {
     case .hansenexus: return HNFontFamily(display: ["Fraunces", "Georgia", "serif"], mono: ["JetBrains Mono", "ui-monospace", "monospace"], sans: ["Instrument Sans", "system-ui", "sans-serif"])
-    case .kommandant: return HNFontFamily(display: ["Fraunces", "Georgia", "serif"], mono: ["JetBrains Mono", "ui-monospace", "monospace"], sans: ["Instrument Sans", "system-ui", "sans-serif"])
+    case .kommandant: return HNFontFamily(display: ["Instrument Sans", "system-ui", "sans-serif"], mono: ["JetBrains Mono", "ui-monospace", "monospace"], sans: ["Instrument Sans", "system-ui", "sans-serif"])
     case .portal: return HNFontFamily(display: ["Fraunces", "Georgia", "serif"], mono: ["JetBrains Mono", "ui-monospace", "monospace"], sans: ["Instrument Sans", "system-ui", "sans-serif"])
     case .lexilink: return HNFontFamily(display: ["Archivo", "system-ui", "sans-serif"], mono: ["Geist Mono", "ui-monospace", "monospace"], sans: ["Archivo", "system-ui", "sans-serif"])
     }

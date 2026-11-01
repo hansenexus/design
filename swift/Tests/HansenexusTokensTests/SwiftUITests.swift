@@ -23,7 +23,7 @@ final class SwiftUITests: XCTestCase {
       }
       return hex
     }
-    XCTAssertEqual(try resolved(.darkAqua), "#16140f")
+    XCTAssertEqual(try resolved(.darkAqua), "#121109")
     XCTAssertEqual(try resolved(.aqua), "#f4f0e6")
   }
   #endif

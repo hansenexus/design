@@ -5,7 +5,8 @@
     "band": { "$value": "{palette.warm.100}", "$description": "Band: rail, alternate sections" },
     "card": { "$value": "{palette.warm.25}", "$description": "Fläche" },
     "raised": { "$value": "{palette.warm.125}", "$description": "Erhöht: chips, active nav" },
-    "tint": { "$value": "{palette.lime.100}", "$description": "Tönung: icon ground" }
+    "tint": { "$value": "{palette.lime.100}", "$description": "Tönung: icon ground" },
+    "rail": { "$value": "{palette.warm.850}", "$description": "The rail: ink in both modes" }
   },
   "ink": {
     "$type": "color",
@@ -20,6 +21,13 @@
       "$description": "Linie: dividers, decoration only"
     },
     "strong": { "$value": "{palette.warm.500}", "$description": "Rand stark: secondary borders" }
+  },
+  "rail": {
+    "$type": "color",
+    "$description": "Text and lines on surface.rail. The same in both modes: the rail stays ink.",
+    "ink": { "$value": "{palette.warm.50}", "$description": "Rail labels, active item" },
+    "muted": { "$value": "{palette.warm.400}", "$description": "Rail meta, inactive item" },
+    "line": { "$value": "{palette.warm.700}", "$description": "Rail dividers, decoration only" }
   },
   "action": {
     "$type": "color",
