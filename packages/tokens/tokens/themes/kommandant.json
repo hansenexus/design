@@ -1,6 +1,6 @@
 {
   "size": {
-    "$description": "Theme kommandant: maps semantics to primitives where it differs from the shared set, and picks the compact density.",
+    "$description": "Theme kommandant: maps semantics to primitives where it differs from the shared set, and picks the compact density. The Leitstand dark set is in kommandant.dark.json.",
     "$type": "dimension",
     "row": {
       "$value": "{density.compact.row}"
@@ -8,5 +8,29 @@
     "target": {
       "$value": "{density.compact.target}"
     }
+  },
+  "font": {
+    "$type": "fontFamily",
+    "display": {
+      "$value": "{font.sans}",
+      "$description": "Leitstand is sans only: headlines are Instrument Sans 600, no serif (PRD kommandant#472, R9)"
+    }
+  },
+  "surface": {
+    "$type": "color",
+    "rail": {
+      "$value": "{palette.leitstand.band}",
+      "$description": "The rail stays ink in both modes, the anchor of the control room"
+    }
+  },
+  "rail": {
+    "$type": "color",
+    "ink": { "$value": "{palette.warm.50}" },
+    "muted": { "$value": "{palette.leitstand.muted}" },
+    "line": { "$value": "{palette.leitstand.line}" },
+    "status-ok": { "$value": "{palette.lime.300}" },
+    "status-busy": { "$value": "{palette.leitstand.busy}" },
+    "status-warn": { "$value": "{palette.leitstand.warn}" },
+    "status-crit": { "$value": "{palette.leitstand.crit}" }
   }
 }

@@ -8,8 +8,10 @@ import { MODES, type ResolvedToken, resolveTokens, THEMES } from "./resolve";
  * 1.4.3 text: 4.5:1. 1.4.11 non-text UI (borders, focus, status shapes): 3:1.
  * placeholder is not a WCAG minimum: a loading skeleton carries no information (the container's
  * aria-busy does), but it must still read as a shape on every surface, so it gets a floor.
+ * divider is not a WCAG minimum either: a decorative line is never a control's only boundary, but
+ * it must still divide, so it gets a floor too.
  */
-export const AA = { text: 4.5, ui: 3, placeholder: 1.2 } as const;
+export const AA = { text: 4.5, ui: 3, placeholder: 1.2, divider: 1.3 } as const;
 
 const SURFACES = ["surface.page", "surface.band", "surface.card", "surface.raised"];
 
@@ -53,6 +55,15 @@ export const RULES: Rule[] = [
     bg: SURFACES,
   },
   { kind: "placeholder", fg: ["skeleton.base", "skeleton.highlight"], bg: SURFACES },
+  // Cards divide rows with line.subtle; the rail carries its own ink set in both modes.
+  { kind: "divider", fg: ["line.subtle"], bg: ["surface.card"] },
+  { kind: "text", fg: ["rail.ink", "rail.muted"], bg: ["surface.rail"] },
+  { kind: "divider", fg: ["rail.line"], bg: ["surface.rail"] },
+  {
+    kind: "ui",
+    fg: ["rail.status-ok", "rail.status-busy", "rail.status-warn", "rail.status-crit"],
+    bg: ["surface.rail"],
+  },
   // A terminal draws on surface.page or, inset in a panel, surface.card (kommandant's xterm);
   // every ANSI colour, black and white included, is text on both.
   { kind: "text", fg: TERMINAL, bg: ["surface.page", "surface.card"] },
@@ -67,7 +78,6 @@ export const RULES: Rule[] = [
  * other colour token must appear in RULES.
  */
 export const EXEMPT: Record<string, string> = {
-  "line.subtle": "decoration only; never the sole boundary of a control",
   "action.primary": "a fill; its label carries the contrast (action.primary-ink on it)",
   "action.primary-hover": "a fill; its label carries the contrast (action.primary-ink on it)",
   "action.danger": "a fill; its label carries the contrast (action.danger-ink on it)",

@@ -217,6 +217,65 @@
         "$value": "#efebe2",
         "$description": "oklch(0.94 0.012 85): text on dark"
       }
+    },
+    "leitstand": {
+      "$description": "kommandant Leitstand dark set (PRD hansenexus/kommandant#472, variant A). Ink-based grounds without the warm set's brown cast. Only themes/kommandant*.json reference it.",
+      "page": {
+        "$value": "#121109",
+        "$description": "Grund, dark"
+      },
+      "card": {
+        "$value": "#1b1912",
+        "$description": "Fläche, dark"
+      },
+      "raised": {
+        "$value": "#262218",
+        "$description": "Erhöht, dark"
+      },
+      "band": {
+        "$value": "#1f1c14",
+        "$description": "Band, dark; also the rail in both modes"
+      },
+      "body": {
+        "$value": "#d8d2c4",
+        "$description": "Running text, dark"
+      },
+      "muted": {
+        "$value": "#9a927f",
+        "$description": "Labels and meta, dark; rail labels in both modes"
+      },
+      "line": {
+        "$value": "#353125",
+        "$description": "Divider: 1.35:1 on card, 1.31:1 on the rail. Variant A's #2f2b21 is 1.25:1 on card"
+      },
+      "line-strong": {
+        "$value": "#746b56",
+        "$description": "Control boundary: 3:1 on raised. Variant A's #5a5343 is 2.08:1"
+      },
+      "busy": {
+        "$value": "#6ea0ff",
+        "$description": "Läuft (busy), dark"
+      },
+      "warn": {
+        "$value": "#e0a04a",
+        "$description": "Warnung (warn), dark"
+      },
+      "crit": {
+        "$value": "#ff6b5e",
+        "$description": "Kritisch (crit), dark"
+      },
+      "off": {
+        "$value": "#7a7262",
+        "$description": "Aus (off), dark: 3.33:1 on raised"
+      },
+      "tint": {
+        "$value": "#1f2a12",
+        "$description": "Tönung, dark"
+      },
+      "lime-hover": {
+        "$value": "#b0ed92",
+        "$description": "Text-action hover, dark: lime.300 (#8be45f) one HSL lightness step up (63 to 75 %), 13.85:1 on page"
+      }
     }
   }
 }

@@ -1,0 +1,57 @@
+{
+  "surface": {
+    "$type": "color",
+    "page": {
+      "$value": "{palette.leitstand.page}",
+      "$description": "Grund: ink-based, no brown cast"
+    },
+    "band": { "$value": "{palette.leitstand.band}", "$description": "Band: alternate sections" },
+    "card": { "$value": "{palette.leitstand.card}", "$description": "Fläche" },
+    "raised": {
+      "$value": "{palette.leitstand.raised}",
+      "$description": "Erhöht: chips, active nav"
+    },
+    "tint": { "$value": "{palette.leitstand.tint}", "$description": "Tönung: icon ground" }
+  },
+  "ink": {
+    "$type": "color",
+    "primary": { "$value": "{palette.warm.50}", "$description": "Text: headings" },
+    "body": { "$value": "{palette.leitstand.body}", "$description": "gedämpft: running text" },
+    "muted": { "$value": "{palette.leitstand.muted}", "$description": "leise: labels, meta" }
+  },
+  "line": {
+    "$type": "color",
+    "subtle": {
+      "$value": "{palette.leitstand.line}",
+      "$description": "Linie: dividers, decoration only; at least 1.3:1 on surface.card"
+    },
+    "strong": {
+      "$value": "{palette.leitstand.line-strong}",
+      "$description": "Rand stark: control boundaries, 3:1 on every surface"
+    }
+  },
+  "action": {
+    "$type": "color",
+    "text": { "$value": "{palette.lime.300}", "$description": "Links, text actions" },
+    "text-hover": { "$value": "{palette.leitstand.lime-hover}" }
+  },
+  "status": {
+    "$type": "color",
+    "ok": { "$value": "{palette.lime.300}", "$description": "filled dot" },
+    "busy": { "$value": "{palette.leitstand.busy}", "$description": "open ring" },
+    "warn": { "$value": "{palette.leitstand.warn}", "$description": "triangle" },
+    "crit": { "$value": "{palette.leitstand.crit}", "$description": "diamond" },
+    "off": {
+      "$value": "{palette.leitstand.off}",
+      "$description": "hollow circle. A shape colour only; label text uses ink.muted."
+    }
+  },
+  "terminal": {
+    "$type": "color",
+    "$description": "The four ANSI colours that alias a status follow it.",
+    "red": { "$value": "{status.crit}" },
+    "green": { "$value": "{status.ok}" },
+    "yellow": { "$value": "{status.warn}" },
+    "blue": { "$value": "{status.busy}" }
+  }
+}

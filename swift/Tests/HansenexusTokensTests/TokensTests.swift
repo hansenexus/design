@@ -3,14 +3,29 @@ import XCTest
 @testable import HansenexusTokens
 
 final class TokensTests: XCTestCase {
-  func testKommandantWarmDark() {
+  func testKommandantLeitstandDark() {
     let dark = HNColors.of(.kommandant, .dark)
-    XCTAssertEqual(dark.surface.page.hex, "#16140f")
-    XCTAssertEqual(dark.surface.card.hex, "#201d18")
+    XCTAssertEqual(dark.surface.page.hex, "#121109")
+    XCTAssertEqual(dark.surface.card.hex, "#1b1912")
     XCTAssertEqual(dark.ink.primary.hex, "#f4f0e6")
-    XCTAssertEqual(dark.status.crit.hex, "#ff7a66")
-    XCTAssertEqual(dark.status.busy.hex, "#8fb8ff")
-    XCTAssertEqual(dark.status.off.hex, "#8a8273")
+    XCTAssertEqual(dark.status.crit.hex, "#ff6b5e")
+    XCTAssertEqual(dark.status.busy.hex, "#6ea0ff")
+    XCTAssertEqual(dark.status.off.hex, "#7a7262")
+    // The other themes keep the warm dark set.
+    XCTAssertEqual(HNColors.of(.hansenexus, .dark).surface.page.hex, "#16140f")
+  }
+
+  func testKommandantRailAndSansDisplay() {
+    let dark = HNColors.of(.kommandant, .dark)
+    let light = HNColors.of(.kommandant, .light)
+    // The rail stays ink in both modes.
+    XCTAssertEqual(dark.surface.rail, light.surface.rail)
+    XCTAssertEqual(dark.rail, light.rail)
+    XCTAssertEqual(light.surface.rail.hex, "#1f1c14")
+    XCTAssertEqual(light.rail.statusOk, dark.status.ok)
+    XCTAssertEqual(light.rail.statusCrit.hex, "#ff6b5e")
+    XCTAssertEqual(HNFontFamily.of(.kommandant).display, HNFontFamily.of(.kommandant).sans)
+    XCTAssertEqual(HNFontFamily.display.first, "Fraunces")
   }
 
   func testLimeIsTheOnlyAccent() {

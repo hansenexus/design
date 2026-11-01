@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import { cpSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { build } from "../scripts/build";
 import { checkAll, ratio, TERMINAL } from "../scripts/contrast";
-import { THEMES, TOKENS_DIR } from "../scripts/resolve";
+import { MODES, resolveTokens, THEMES, TOKENS_DIR } from "../scripts/resolve";
 import { generateSwift, SWIFT_OUT } from "../scripts/swift";
 
 const CONTRAST = resolve(import.meta.dir, "../scripts/contrast.ts");
@@ -123,10 +123,10 @@ describe("contrast", () => {
   });
 });
 
-describe("build", () => {
-  const dist = mkdtempSync(join(tmpdir(), "hn-dist-"));
-  const built = build(undefined, dist);
+const dist = mkdtempSync(join(tmpdir(), "hn-dist-"));
+const built = build(undefined, dist);
 
+describe("build", () => {
   test("tokens.css ships both modes and every density, semantics only", async () => {
     await built;
     const css = readFileSync(join(dist, "tokens.css"), "utf8");
@@ -153,7 +153,8 @@ describe("build", () => {
   test("TS constants carry resolved values per theme and mode", async () => {
     await built;
     const mod = await import(join(dist, "index.js"));
-    expect(mod.tokens.kommandant.dark.status.crit).toBe("#ff7a66");
+    expect(mod.tokens.kommandant.dark.status.crit).toBe("#ff6b5e");
+    expect(mod.tokens.hansenexus.dark.status.crit).toBe("#ff7a66");
     expect(mod.tokens.portal.light.action.text).toBe("#2b7300");
     expect(mod.tokens.kommandant.dark.size.row).toBe("36px");
     expect(mod.density.touch.target).toBe("44px");
@@ -228,6 +229,85 @@ describe("build", () => {
   });
 });
 
+describe("kommandant Leitstand", () => {
+  test("line.subtle on surface.card is 1.3:1 and action.text on surface.page 4.5:1, both modes", async () => {
+    for (const mode of MODES) {
+      const v = new Map(
+        (await resolveTokens("kommandant", mode)).map((t) => [t.path, t.value] as const)
+      );
+      const pair = (fg: string, bg: string) => ratio(v.get(fg) ?? "", v.get(bg) ?? "");
+      expect(pair("line.subtle", "surface.card")).toBeGreaterThanOrEqual(1.3);
+      expect(pair("action.text", "surface.page")).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  test("a divider under 1.3:1 on surface.card fails the CLI", () => {
+    // Variant A's starting value #2f2b21 is 1.25:1 on the Leitstand card.
+    const dir = fixture("themes/kommandant.dark.json", (j) => {
+      setToken(j, "line", "subtle", "#2f2b21");
+    });
+    const run = Bun.spawnSync(["bun", CONTRAST, "--tokens", dir]);
+    expect(run.exitCode).toBe(1);
+    expect(run.stderr.toString()).toContain(
+      "FAIL kommandant/dark divider: line.subtle on surface.card"
+    );
+  });
+
+  test("dark surfaces are the ink set, the rail is the same in both modes", async () => {
+    await built;
+    const mod = await import(join(dist, "index.js"));
+    const { dark, light } = mod.tokens.kommandant;
+    expect(dark.surface).toMatchObject({
+      page: "#121109",
+      card: "#1b1912",
+      raised: "#262218",
+      band: "#1f1c14",
+    });
+    expect(light.surface.page).toBe(mod.tokens.hansenexus.light.surface.page);
+    expect(dark.surface.rail).toBe("#1f1c14");
+    expect(light.surface.rail).toBe(dark.surface.rail);
+    expect(light.rail).toEqual(dark.rail);
+    // The rail's status shapes are the dark status set, whatever the mode.
+    for (const s of ["ok", "busy", "warn", "crit"]) {
+      expect(light.rail[`status-${s}`]).toBe(dark.status[s]);
+    }
+    expect(dark.surface.tint).toBe("#1f2a12");
+    expect(dark.status.off).toBe("#7a7262");
+    expect(dark.action["text-hover"]).toBe("#b0ed92");
+    expect(dark.action["text-hover"]).not.toBe(dark.action.text);
+    const css = readFileSync(join(dist, "tokens.css"), "utf8");
+    expect(blocks(css).get('[data-theme="kommandant"]')).toContain("--hn-surface-rail: #1f1c14;");
+  });
+
+  test("font.display is the sans stack and Fraunces is not in any kommandant block", async () => {
+    await built;
+    const mod = await import(join(dist, "index.js"));
+    for (const mode of MODES) {
+      const font = mod.tokens.kommandant[mode].font;
+      expect(font.display).toBe(font.sans);
+    }
+    expect(mod.tokens.hansenexus.dark.font.display).toContain("Fraunces");
+    for (const [selector, body] of blocks(readFileSync(join(dist, "tokens.css"), "utf8"))) {
+      if (selector.includes("kommandant")) expect(body).not.toContain("Fraunces");
+    }
+  });
+
+  test("the kommandant theme files change no block outside the kommandant selectors", async () => {
+    // Without the theme's own files every block outside kommandant must come out the same.
+    const dir = mkdtempSync(join(tmpdir(), "hn-tokens-"));
+    cpSync(TOKENS_DIR, dir, { recursive: true });
+    rmSync(join(dir, "themes/kommandant.dark.json"));
+    writeFileSync(join(dir, "themes/kommandant.json"), "{}");
+    const bare = mkdtempSync(join(tmpdir(), "hn-dist-"));
+    await Promise.all([built, build(dir, bare)]);
+    const outside = (css: string) =>
+      [...blocks(css)].filter(([selector]) => !selector.includes("kommandant"));
+    expect(outside(readFileSync(join(dist, "tokens.css"), "utf8"))).toEqual(
+      outside(readFileSync(join(bare, "tokens.css"), "utf8"))
+    );
+  });
+});
+
 describe("swift", () => {
   test("the committed Tokens.swift matches the generator (snapshot)", async () => {
     // Stale after a token change: run `bun run swift` and commit the result.
@@ -269,6 +349,15 @@ describe("swift", () => {
     await expect(generateSwift(dir)).rejects.toThrow("space.4 (dimension) is not a px dimension");
   });
 });
+
+/** CSS rule blocks of tokens.css, selector to declarations. */
+function blocks(css: string): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const m of css.matchAll(/([^{}]+?)\s*\{([^{}]*)\}/g)) {
+    out.set((m[1] ?? "").replace(/\/\*.*?\*\//gs, "").trim(), m[2] ?? "");
+  }
+  return out;
+}
 
 /** "action.primary-hover" -> "primaryHover", the Swift property name. */
 function camel(path: string): string {
