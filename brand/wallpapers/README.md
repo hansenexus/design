@@ -50,12 +50,29 @@ machine without its sources (CI).
 
 | Brand | Status | Mark source | Grounds |
 | --- | --- | --- | --- |
-| `elbe-akustik` | draft | hn-monorepo `apps/elbe-akustik/public/logo-2025-dark-mark.svg` (the lockup) | `nacht` (Arbeiten), `still` (no Focus) on `--brand-strong` |
-| `bargsten` | draft | `~/data/wallpaper-sources/bargsten/logo-mark.traced.svg`, a potrace tracing of hn-monorepo `apps/bargsten/public/logo-mark.png` | `creme` (no Focus), `teal` (Arbeiten) |
+| `elbe-akustik` | approved | hn-monorepo `apps/elbe-akustik/public/logo-2025-dark-mark.svg` (the lockup) | `nacht` (Arbeiten), `still` (no Focus) on `--brand-strong` |
+| `bargsten` | approved | `~/data/wallpaper-sources/bargsten/logo-mark.traced.svg`, a potrace tracing of hn-monorepo `apps/bargsten/public/logo-mark.png` | `creme` (no Focus), `teal` (Arbeiten) |
 
 elbe-akustik has no light ground: its gold emblem falls below 3:1 on every light surface of the
 theme. bargsten has raster logos only; the traced mark is a stand-in until a vector original
-exists. Both stay `draft` (files `*-draft.png`) until the owner approves the motif per client.
+exists. The owner approved both motifs, and the traced bargsten mark, on 2026-11-05 (design#128).
+
+Final client files live outside the repository, because a lane's `brand/wallpapers/<client>/` goes
+with the lane:
+
+```
+~/data/wallpapers/elbe-akustik/{nacht,still}-{iphone,ipad,mac-6k,mac-5k}.png
+~/data/wallpapers/bargsten/{creme,teal}-{iphone,ipad,mac-6k,mac-5k}.png
+```
+
+To refresh them, render in a lane and copy:
+
+```sh
+bun run wallpaper elbe-akustik && cp brand/wallpapers/elbe-akustik/*.png ~/data/wallpapers/elbe-akustik/
+bun run wallpaper bargsten && cp brand/wallpapers/bargsten/*.png ~/data/wallpapers/bargsten/
+```
+
+Handing them to a client is a separate step that needs the owner's go-ahead.
 
 ## Config schema
 
@@ -97,7 +114,7 @@ type BrandConfig = {
 - hansenexus marks come only from the generated `brand/assets/mark/hansenexus-mark-<variant>.svg`
   in their own `brand.<variant>` colour; lime only on dark grounds, lime-deep or ink on light ones;
 - a mark file whose fills differ from its config is refused;
-- client configs stay `draft` and uncommitted.
+- client configs are never committed (`commit: false`); the `-draft` suffix follows their status.
 
 Not yet: the dynamic light/dark HEIC for the Mac (Arbeiten/Buchhaltung pair). The PNGs are its
 input.
