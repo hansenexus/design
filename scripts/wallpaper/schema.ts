@@ -106,8 +106,12 @@ export const ELBE: Contours = {
   majorEvery: 5,
 };
 
-/** Mark centred on a phone at 0.75: above the Home Screen search pill (~0.81) and Dock (~0.86), clear of the lock screen buttons; bottom right elsewhere. */
+/**
+ * Mark centred on a phone at 0.75 height: above the Home Screen search pill (~0.81) and Dock
+ * (~0.86), clear of the lock screen buttons. Right side elsewhere at 0.76: the iPad Dock reaches
+ * x ~0.96 and its top sits at ~0.875 in landscape (design#125).
+ */
 export const PLACEMENT: PerLayout<Placement> = {
   portrait: { width: 0.093, cx: 0.5, cy: 0.75 },
-  landscape: { width: 0.042, cx: 0.92, cy: 0.86 },
+  landscape: { width: 0.042, cx: 0.92, cy: 0.76 },
 };
