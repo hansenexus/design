@@ -1,4 +1,4 @@
-// bargsten: DRAFT until the owner approves the motif and the traced mark (design#122).
+// bargsten: motif and traced mark approved by the owner on 2026-11-05 (design#128).
 // The client has raster logos only. The mark here is a potrace tracing of
 // hn-monorepo apps/bargsten/public/logo-mark.png kept outside the repository
 // (~/data/wallpaper-sources/bargsten/), repainted in the brand colours; it is a stand-in until
@@ -14,7 +14,7 @@ const traced = { root: "sources", path: "bargsten/logo-mark.traced.svg" } as con
 
 export const config: BrandConfig = {
   brand: "bargsten",
-  status: "draft",
+  status: "approved",
   commit: false,
   motif: ELBE,
   mark: {
