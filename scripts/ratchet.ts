@@ -17,7 +17,7 @@ export const EXEMPT: Record<string, string> = {
   "bun.lock": "integrity hashes, not colours",
   "brand/assets/":
     "logo files carry literal fills; generated from brand.* tokens, checked by scripts/brand.test.ts",
-  "swift/Sources/HansenexusBrand/Resources/": "copies of brand/assets for the Swift package",
+  "swift/Sources/HansenexusBrand/BrandAssets/": "copies of brand/assets for the Swift package",
   "scripts/wallpaper/brands/elbe-akustik.ts":
     "a client's own brand colours, not the hansenexus palette",
   "scripts/wallpaper/brands/bargsten.ts":
