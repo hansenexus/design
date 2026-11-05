@@ -78,6 +78,6 @@ public enum HNBrandAsset {
   public static func url(_ file: String) -> URL? {
     let name = (file as NSString).deletingPathExtension
     let ext = (file as NSString).pathExtension
-    return Bundle.module.url(forResource: name, withExtension: ext, subdirectory: "Resources")
+    return Bundle.module.url(forResource: name, withExtension: ext, subdirectory: "BrandAssets")
   }
 }

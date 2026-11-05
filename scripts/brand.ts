@@ -139,7 +139,7 @@ export async function render(): Promise<Map<string, Buffer | string>> {
   // The Swift package carries the same files as resources.
   for (const [path, body] of [...out]) {
     if (/\/(mark|wordmark)\/|app-icon-1024|tray\//.test(path)) {
-      out.set(`${SWIFT}/Resources/${path.split("/").pop()}`, body);
+      out.set(`${SWIFT}/BrandAssets/${path.split("/").pop()}`, body);
     }
   }
   out.set(`${SWIFT}/BrandGeometry.swift`, swiftGeometry());
