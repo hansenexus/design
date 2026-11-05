@@ -60,7 +60,7 @@
     },
     "packages/tokens": {
       "name": "@hansenexus/tokens",
-      "version": "0.7.0",
+      "version": "0.7.1",
       "devDependencies": {
         "style-dictionary": "5.5.5",
       },
