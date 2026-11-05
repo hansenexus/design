@@ -26,8 +26,15 @@ export function points(attr: string): Point[] {
 
 const SUB = 16;
 
-/** Coverage (0..1) of `polygons` (non-zero) on a width x height grid. */
-export function coverage(width: number, height: number, polygons: Point[][]): Float64Array {
+export type FillRule = "nonzero" | "evenodd";
+
+/** Coverage (0..1) of `polygons` (non-zero by default) on a width x height grid. */
+export function coverage(
+  width: number,
+  height: number,
+  polygons: Point[][],
+  rule: FillRule = "nonzero"
+): Float64Array {
   const cov = new Float64Array(width * height);
   const edges = polygons.flatMap((p) =>
     p.map((a, i) => [a, p[(i + 1) % p.length] ?? a] as const).filter(([a, b]) => a[1] !== b[1])
@@ -48,7 +55,7 @@ export function coverage(width: number, height: number, polygons: Point[][]): Fl
     let winding = 0;
     for (let i = 0; i < xs.length - 1; i++) {
       winding += xs[i]?.w ?? 0;
-      if (winding === 0) continue;
+      if (rule === "evenodd" ? winding % 2 === 0 : winding === 0) continue;
       span(cov, row * width, width, xs[i]?.x ?? 0, xs[i + 1]?.x ?? 0);
     }
   }
