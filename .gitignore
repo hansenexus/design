@@ -5,3 +5,6 @@ test-results/
 playwright-report/
 .build/
 .swiftpm/
+# Client wallpapers are rendered locally, never committed (public repository, design#122).
+brand/wallpapers/*/
+!brand/wallpapers/hansenexus/

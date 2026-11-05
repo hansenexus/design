@@ -14,7 +14,8 @@
     "test": "bun test scripts && bun run --filter '*' test",
     "screenshots": "bun run --filter @hansenexus/ui screenshots",
     "swift": "bun run --filter @hansenexus/tokens swift",
-    "brand": "bun scripts/brand.ts"
+    "brand": "bun scripts/brand.ts",
+    "wallpaper": "bun scripts/wallpaper.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
