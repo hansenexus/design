@@ -18,7 +18,8 @@ config is a draft.
 
 Sea-chart contour lines, the same field on every ground, one ground per Focus mode (owner,
 2026-11-05, design#122). The mark is flat, in one of the [brand variants](../README.md#variants),
-at the bottom centre on the phone (clear of the lock screen buttons) and bottom right elsewhere.
+centred at 75 % height on the phone (above the Home Screen search pill and Dock, clear of the
+lock screen buttons; design#125) and bottom right elsewhere.
 The lines are derived geometry, never an enlarged or outlined mark.
 
 | File | Focus | Ground | Lines | Mark |

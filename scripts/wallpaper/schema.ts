@@ -106,8 +106,8 @@ export const ELBE: Contours = {
   majorEvery: 5,
 };
 
-/** Mark bottom centre on a phone (clear of the lock screen buttons), bottom right elsewhere. */
+/** Mark centred on a phone at 0.75: above the Home Screen search pill (~0.81) and Dock (~0.86), clear of the lock screen buttons; bottom right elsewhere. */
 export const PLACEMENT: PerLayout<Placement> = {
-  portrait: { width: 0.093, cx: 0.5, cy: 0.86 },
+  portrait: { width: 0.093, cx: 0.5, cy: 0.75 },
   landscape: { width: 0.042, cx: 0.92, cy: 0.86 },
 };
