@@ -468,7 +468,7 @@ bun run outdated -- ~/repos/some-app --json                  # every block with 
 ## Screenshot baselines
 
 `screenshots/baselines/` holds the kit gallery (`gallery/`, every primitive in its states), the
-loading scene (Skeleton and Spinner), the states, illustrations, forms, layout, data, overlays, navigation and controls scenes (plus the controls scene with its context menu open) and each overlay at 390 and 1280 px, dark and light. Pixels depend on the OS and browser build, so
+loading scene (Skeleton and Spinner), the states, illustrations, school (the school family of `@hansenexus/illustrations`, design#132), forms, layout, data, overlays, navigation and controls scenes (plus the controls scene with its context menu open) and each overlay at 390 and 1280 px, dark and light. Pixels depend on the OS and browser build, so
 `scripts/screenshots.sh` runs Playwright inside the pinned `mcr.microsoft.com/playwright` image,
 the same one CI uses. It needs Docker. `screenshots/interaction.spec.ts` drives the live palette, sheet,
 popover, pager, context menu, toggles and sliders in the same run (keyboard, focus return, `aria-current` after load).
