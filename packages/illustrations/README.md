@@ -1,9 +1,10 @@
 # @hansenexus/illustrations
 
-The hansenexus state illustrations: eight SVG motifs as React components, in the geometric style
-the owner chose (`packages/ui/decisions/illustration-style.json`). Flat filled shapes in tones of
+The hansenexus illustrations: SVG motifs as React components, in the geometric style the owner
+chose (`packages/ui/decisions/illustration-style.json`). Flat filled shapes in tones of
 `currentColor`, one token accent each, cut-outs as holes instead of a surface colour, so a motif
-sits on any background and follows dark, light and every theme on its own.
+sits on any background and follows dark, light and every theme on its own. Two families: the
+eight state motifs for the estate tools at the root, and the `school` family for fachwerk.
 
 | Import path | Component | Accent |
 | --- | --- | --- |
@@ -15,6 +16,33 @@ sits on any background and follows dark, light and every theme on its own.
 | `@hansenexus/illustrations/no-permission` | `NoPermissionIllustration` | `status.warn` |
 | `@hansenexus/illustrations/success` | `SuccessIllustration` | `status.ok` |
 | `@hansenexus/illustrations/maintenance` | `MaintenanceIllustration` | `status.busy` |
+
+### The school family (design#132)
+
+For fachwerk: the same eight states, drawn with school subject matter, and eight domain spots for
+landing sections, empty modules and onboarding. One accent each from the semantic tier, so the set
+follows the `fachwerk` theme in every mode. This is the first pass in the neutral geometric style;
+fachwerk is voting between four directions (hansenexus/fachwerk#218), and the set gets a restyle
+pass once the winner is known.
+
+| Import path | Component | Accent |
+| --- | --- | --- |
+| `@hansenexus/illustrations/school/empty` | `SchoolEmptyIllustration` | `action.primary` |
+| `@hansenexus/illustrations/school/no-results` | `SchoolNoResultsIllustration` | `action.primary` |
+| `@hansenexus/illustrations/school/error` | `SchoolErrorIllustration` | `status.crit` |
+| `@hansenexus/illustrations/school/404` | `SchoolNotFoundIllustration` | `action.primary` |
+| `@hansenexus/illustrations/school/offline` | `SchoolOfflineIllustration` | `status.warn` |
+| `@hansenexus/illustrations/school/no-permission` | `SchoolNoPermissionIllustration` | `status.warn` |
+| `@hansenexus/illustrations/school/success` | `SchoolSuccessIllustration` | `status.ok` |
+| `@hansenexus/illustrations/school/maintenance` | `SchoolMaintenanceIllustration` | `status.busy` |
+| `@hansenexus/illustrations/school/class` | `ClassIllustration` | `action.primary` |
+| `@hansenexus/illustrations/school/seating-plan` | `SeatingPlanIllustration` | `action.primary` |
+| `@hansenexus/illustrations/school/quiz` | `QuizIllustration` | `action.primary` |
+| `@hansenexus/illustrations/school/timetable` | `TimetableIllustration` | `action.primary` |
+| `@hansenexus/illustrations/school/vocabulary` | `VocabularyIllustration` | `action.primary` |
+| `@hansenexus/illustrations/school/test` | `TestIllustration` | `action.primary` |
+| `@hansenexus/illustrations/school/study-group` | `StudyGroupIllustration` | `action.primary` |
+| `@hansenexus/illustrations/school/school` | `SchoolIllustration` | `action.primary` |
 
 ```sh
 bun add @hansenexus/illustrations @hansenexus/tokens react
@@ -46,12 +74,15 @@ import { ErrorIllustration } from "@hansenexus/illustrations/error";
 
 - Colour only as `none`, `currentColor` or `var(--hn-*)`: no raw values, no gradients, filters,
   `<style>`, `<text>` or raster. The repo ratchet also stays at zero.
+- Accents only from the semantic `action.*` and `status.*` tier; a school motif has exactly one.
 - At most 3 KB gzip each: the rendered SVG, the source and the built `dist/<motif>.js`.
-- One file and one `exports` path per motif; no barrel.
+- One file and one `exports` path per motif (`src/<id>.tsx`, `src/school/<id>.tsx`); no barrel.
+  The registry is `scripts/motifs.ts`.
 
 Look at them in the kit gallery (`packages/ui`): `bun run gallery -- --serve`, then
-`http://127.0.0.1:4410/gallery/?scene=illustrations`. The `illustrations` and `states` scenes have
-screenshot baselines at 390 and 1280 px, dark and light.
+`http://127.0.0.1:4410/gallery/?scene=illustrations`, the school family at `?scene=school`. The
+`illustrations`, `school` and `states` scenes have screenshot baselines at 390 and 1280 px, dark
+and light.
 
 ## Release
 

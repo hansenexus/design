@@ -16,6 +16,7 @@ export const SCENES = [
   "loading",
   "states",
   "illustrations",
+  "school",
   "forms",
   "layout",
   "data",

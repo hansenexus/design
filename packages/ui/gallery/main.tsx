@@ -12,6 +12,22 @@ import { MaintenanceIllustration } from "@hansenexus/illustrations/maintenance";
 import { NoPermissionIllustration } from "@hansenexus/illustrations/no-permission";
 import { NoResultsIllustration } from "@hansenexus/illustrations/no-results";
 import { OfflineIllustration } from "@hansenexus/illustrations/offline";
+import { SchoolNotFoundIllustration } from "@hansenexus/illustrations/school/404";
+import { ClassIllustration } from "@hansenexus/illustrations/school/class";
+import { SchoolEmptyIllustration } from "@hansenexus/illustrations/school/empty";
+import { SchoolErrorIllustration } from "@hansenexus/illustrations/school/error";
+import { SchoolMaintenanceIllustration } from "@hansenexus/illustrations/school/maintenance";
+import { SchoolNoPermissionIllustration } from "@hansenexus/illustrations/school/no-permission";
+import { SchoolNoResultsIllustration } from "@hansenexus/illustrations/school/no-results";
+import { SchoolOfflineIllustration } from "@hansenexus/illustrations/school/offline";
+import { QuizIllustration } from "@hansenexus/illustrations/school/quiz";
+import { SchoolIllustration } from "@hansenexus/illustrations/school/school";
+import { SeatingPlanIllustration } from "@hansenexus/illustrations/school/seating-plan";
+import { StudyGroupIllustration } from "@hansenexus/illustrations/school/study-group";
+import { SchoolSuccessIllustration } from "@hansenexus/illustrations/school/success";
+import { TestIllustration } from "@hansenexus/illustrations/school/test";
+import { TimetableIllustration } from "@hansenexus/illustrations/school/timetable";
+import { VocabularyIllustration } from "@hansenexus/illustrations/school/vocabulary";
 import { SuccessIllustration } from "@hansenexus/illustrations/success";
 import { type ComponentType, Fragment, type ReactNode, StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
@@ -663,8 +679,10 @@ function States() {
   );
 }
 
+type MotifList = [string, ComponentType<{ width?: number; height?: number }>][];
+
 /** The eight @hansenexus/illustrations motifs, by import path. */
-const MOTIFS: [string, ComponentType<{ width?: number; height?: number }>][] = [
+const MOTIFS: MotifList = [
   ["empty", EmptyIllustration],
   ["no-results", NoResultsIllustration],
   ["error", ErrorIllustration],
@@ -674,6 +692,47 @@ const MOTIFS: [string, ComponentType<{ width?: number; height?: number }>][] = [
   ["success", SuccessIllustration],
   ["maintenance", MaintenanceIllustration],
 ];
+
+/** The school family (design#132): the eight states drawn for school, then the domain spots. */
+const SCHOOL_STATES: MotifList = [
+  ["school/empty", SchoolEmptyIllustration],
+  ["school/no-results", SchoolNoResultsIllustration],
+  ["school/error", SchoolErrorIllustration],
+  ["school/404", SchoolNotFoundIllustration],
+  ["school/offline", SchoolOfflineIllustration],
+  ["school/no-permission", SchoolNoPermissionIllustration],
+  ["school/success", SchoolSuccessIllustration],
+  ["school/maintenance", SchoolMaintenanceIllustration],
+];
+const SCHOOL_SPOTS: MotifList = [
+  ["school/class", ClassIllustration],
+  ["school/seating-plan", SeatingPlanIllustration],
+  ["school/quiz", QuizIllustration],
+  ["school/timetable", TimetableIllustration],
+  ["school/vocabulary", VocabularyIllustration],
+  ["school/test", TestIllustration],
+  ["school/study-group", StudyGroupIllustration],
+  ["school/school", SchoolIllustration],
+];
+
+/** A grid of motifs, each at 128 px and at 48 px, in ink.muted as the EmptyState/ErrorState slot draws it. */
+function MotifGrid({ motifs }: { motifs: MotifList }) {
+  return (
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      {motifs.map(([id, Motif]) => (
+        <figure
+          key={id}
+          data-motif={id}
+          className="m-0 flex flex-col items-center gap-3 rounded-hn-lg border border-hn-line-subtle bg-hn-surface-card p-4 text-hn-ink-muted"
+        >
+          <Motif width={128} height={96} />
+          <Motif width={48} height={36} />
+          <figcaption className="font-hn-mono text-[13px] text-hn-ink-body">{id}</figcaption>
+        </figure>
+      ))}
+    </div>
+  );
+}
 
 /**
  * The illustrations scene: every motif at its 160 px default and at 48 px, in ink.muted as the
@@ -688,19 +747,34 @@ function Illustrations() {
           State illustrations
         </h1>
       </header>
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {MOTIFS.map(([id, Motif]) => (
-          <figure
-            key={id}
-            data-motif={id}
-            className="m-0 flex flex-col items-center gap-3 rounded-hn-lg border border-hn-line-subtle bg-hn-surface-card p-4 text-hn-ink-muted"
-          >
-            <Motif width={128} height={96} />
-            <Motif width={48} height={36} />
-            <figcaption className="font-hn-mono text-[13px] text-hn-ink-body">{id}</figcaption>
-          </figure>
-        ))}
-      </div>
+      <MotifGrid motifs={MOTIFS} />
+    </main>
+  );
+}
+
+/**
+ * The school scene (design#132): the school family of @hansenexus/illustrations for fachwerk, the
+ * eight states drawn for school and the eight domain spots, same grid as the illustrations scene.
+ */
+function School() {
+  return (
+    <main className="mx-auto flex max-w-[1280px] flex-col gap-10 px-4 py-10 sm:px-10">
+      <header className="flex flex-col gap-2">
+        <span className="text-sm font-semibold text-hn-ink-muted">
+          @hansenexus/illustrations/school
+        </span>
+        <h1 className="m-0 font-hn-display text-[32px] leading-tight font-semibold tracking-[-0.02em] sm:text-[44px]">
+          School illustrations
+        </h1>
+      </header>
+      <section className="flex flex-col gap-4">
+        <h2 className="m-0 text-base font-semibold text-hn-ink-body">States</h2>
+        <MotifGrid motifs={SCHOOL_STATES} />
+      </section>
+      <section className="flex flex-col gap-4">
+        <h2 className="m-0 text-base font-semibold text-hn-ink-body">Domain spots</h2>
+        <MotifGrid motifs={SCHOOL_SPOTS} />
+      </section>
     </main>
   );
 }
@@ -1078,6 +1152,8 @@ function Scenes({ scene }: { scene: Scene }) {
       return <States />;
     case "illustrations":
       return <Illustrations />;
+    case "school":
+      return <School />;
     case "forms":
       return <Forms />;
     case "layout":
