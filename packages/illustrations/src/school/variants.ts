@@ -42,11 +42,11 @@ export type SchoolVariant = keyof typeof SCHOOL_RECIPES;
 export const SCHOOL_VARIANTS = Object.keys(SCHOOL_RECIPES) as SchoolVariant[];
 
 /**
- * What a motif draws when `variant` is not given. The kit's vote decides it
- * (packages/ui/decisions/school-illustration.json); until then, the closed cell at the middle
- * weight with a lit Gefach, the recipe closest to fachwerk's direction B.
+ * What a motif draws when `variant` is not given. The kit's vote decided it on 2026-11-07
+ * (packages/ui/decisions/school-illustration.json, design#136): the closed cell at the middle
+ * weight with the accent on the brace, the lit Gefach a darker plaster.
  */
-export const DEFAULT_SCHOOL_VARIANT: SchoolVariant = "gefach";
+export const DEFAULT_SCHOOL_VARIANT: SchoolVariant = "gefach-strebe";
 
 export function isSchoolVariant(value: unknown): value is SchoolVariant {
   return typeof value === "string" && value in SCHOOL_RECIPES;
