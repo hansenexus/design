@@ -1,7 +1,7 @@
 {
   "name": "@hansenexus/illustrations",
-  "version": "0.1.0",
-  "description": "hansenexus illustrations: geometric SVG motifs as React components, one import path each, coloured only through currentColor and the --hn-* tokens. Eight state motifs, plus the school family for fachwerk: the eight states redrawn for school and eight domain spots.",
+  "version": "0.2.0",
+  "description": "hansenexus illustrations: geometric SVG motifs as React components, one import path each, coloured only through currentColor and the --hn-* tokens. Eight state motifs, plus the school family for fachwerk in its Fachwerk direction: the eight states redrawn for school and eight domain spots, built of straight beams, 45° braces and plaster Gefache.",
   "license": "MIT",
   "keywords": [
     "react",
@@ -115,6 +115,10 @@
     "./school/school": {
       "types": "./dist/school/school.d.ts",
       "import": "./dist/school/school.js"
+    },
+    "./school/variants": {
+      "types": "./dist/school/variants.d.ts",
+      "import": "./dist/school/variants.js"
     }
   },
   "files": [

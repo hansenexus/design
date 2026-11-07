@@ -1,29 +1,39 @@
-// school/study-group: learning together. Three figures around a table, a speech bubble in the
-// action accent.
-import { Frame, type IllustrationProps } from "../frame";
+// school/study-group: learning together. Three tall Gefache for three at the bench, the middle
+// one lit as the one speaking, the bench a rail over a braced bay.
+import {
+  Beam,
+  CellBrace,
+  cells,
+  Gefach,
+  keyOf,
+  Lattice,
+  Lit,
+  part,
+  SchoolFrame,
+  type SchoolIllustrationProps,
+} from "./frame";
 
-export type { IllustrationProps };
+export type { SchoolIllustrationProps };
 
-function Figure({ x, y, opacity }: { x: number; y: number; opacity: string }) {
+export function StudyGroupIllustration(props: SchoolIllustrationProps) {
   return (
-    <g fill="currentColor" opacity={opacity}>
-      <circle cx={x} cy={y} r="9" />
-      <path d={`M${x - 15} ${y + 32}a15 15 0 0 1 30 0z`} />
-    </g>
-  );
-}
-
-export function StudyGroupIllustration(props: IllustrationProps) {
-  return (
-    <Frame {...props}>
-      <Figure x={46} y={46} opacity=".32" />
-      <Figure x={114} y={46} opacity=".32" />
-      <Figure x={80} y={38} opacity=".5" />
-      <ellipse cx="80" cy="84" rx="44" ry="10" fill="currentColor" fillOpacity=".16" />
-      <path
-        d="M96 10h30a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4h-18l-8 6v-6h-4a4 4 0 0 1-4-4V14a4 4 0 0 1 4-4z"
-        fill="var(--hn-action-primary)"
-      />
-    </Frame>
+    <SchoolFrame token="action-primary" {...props}>
+      {({ bay, w }) => {
+        const heads = part(bay, 0.1, 0, 0.8, 0.56);
+        const bench = { x: bay.x, y: heads.y + heads.h, w: bay.w, h: w };
+        const under = { x: bay.x, y: bench.y + w, w: bay.w, h: bay.y + bay.h - bench.y - w };
+        const c = cells(heads, 3, 1, w);
+        return (
+          <>
+            {c.map((cell, i) =>
+              i === 1 ? <Lit key={keyOf(cell)} {...cell} /> : <Gefach key={keyOf(cell)} {...cell} />
+            )}
+            <Lattice box={heads} cols={3} rows={1} />
+            <Beam {...bench} />
+            <CellBrace box={under} accent />
+          </>
+        );
+      }}
+    </SchoolFrame>
   );
 }

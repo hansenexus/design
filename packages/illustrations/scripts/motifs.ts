@@ -1,6 +1,7 @@
 // The motif registry: every motif is `src/<path>.tsx`, built to `dist/<path>.js` and exported as
 // `./<path>`. Two families: the hansenexus state motifs at the root (design#17) and the `school`
-// family for fachwerk (design#132), eight states redrawn for school plus eight domain spots.
+// family for fachwerk (design#132; design#134 rebuilt it on the variant engine of
+// src/school/frame.tsx), eight states redrawn for school plus eight domain spots.
 
 /** The eight hansenexus state motifs at the package root. */
 export const MOTIFS = {
@@ -57,6 +58,12 @@ export type Entry = {
   /** The exported component name. */
   component: string;
 };
+
+/**
+ * Modules that are not motifs but ship as import paths of their own: the school family's
+ * variant recipes, so an app can list and type the variants without importing a motif.
+ */
+export const MODULES = ["school/variants"] as const;
 
 /** Every motif of every family, as one flat list. */
 export const ENTRIES: Entry[] = Object.entries(FAMILIES).flatMap(([family, motifs]) =>

@@ -1,7 +1,8 @@
 // The shared frame of every motif: a 160×120 box, the ground shadow, and the accessibility
 // default. Geometric style (decisions/illustration-style.json in @hansenexus/ui): flat filled
 // shapes in tones of currentColor, one token accent, cut-outs as even-odd holes rather than a
-// surface colour, so a motif sits on any background.
+// surface colour, so a motif sits on any background. The school family (src/school/frame.tsx)
+// uses the bare `Svg` box with its own sill beam instead of the ground shadow.
 import type { ComponentProps, ReactNode } from "react";
 
 /**
@@ -10,7 +11,8 @@ import type { ComponentProps, ReactNode } from "react";
  */
 export type IllustrationProps = Omit<ComponentProps<"svg">, "children" | "viewBox">;
 
-export function Frame({ children, ...props }: IllustrationProps & { children: ReactNode }) {
+/** The bare box: 160 × 120, `fill="none"`, decorative unless named. No ground. */
+export function Svg({ children, ...props }: IllustrationProps & { children: ReactNode }) {
   const named = props["aria-label"] != null || props["aria-labelledby"] != null;
   return (
     // biome-ignore lint/a11y/noSvgWithoutTitle: aria-hidden, or role="img" with the caller's label
@@ -24,8 +26,17 @@ export function Frame({ children, ...props }: IllustrationProps & { children: Re
       role={named ? "img" : undefined}
       {...props}
     >
-      <ellipse cx="80" cy="106" rx="50" ry="6" fill="currentColor" fillOpacity=".12" />
       {children}
     </svg>
+  );
+}
+
+/** The box with the geometric family's ground shadow under the motif. */
+export function Frame({ children, ...props }: IllustrationProps & { children: ReactNode }) {
+  return (
+    <Svg {...props}>
+      <ellipse cx="80" cy="106" rx="50" ry="6" fill="currentColor" fillOpacity=".12" />
+      {children}
+    </Svg>
   );
 }

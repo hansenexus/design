@@ -24,7 +24,9 @@ export default defineConfig({
     { name: "1280", use: { viewport: { width: 1280, height: 800 } } },
   ],
   webServer: {
-    command: `bun scripts/gallery.ts --serve --port ${PORT}`,
+    // scripts/screenshots.sh builds the gallery on the host and sets HN_GALLERY_PREBUILT: the
+    // container has no native tailwind binary for this platform.
+    command: `bun scripts/gallery.ts --serve --port ${PORT}${process.env.HN_GALLERY_PREBUILT ? " --prebuilt" : ""}`,
     url: `http://127.0.0.1:${PORT}/gallery/`,
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,

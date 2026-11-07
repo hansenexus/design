@@ -1,35 +1,52 @@
-// school/no-results: the search found nothing. An open book with lines under a lens; the action
-// accent is the lens handle.
-import { Frame, type IllustrationProps } from "../frame";
+// school/no-results: looked, found nothing. A lens: one square Gefach, lit, with its 45° handle
+// braced down to the sill, beside two shelves that are still open hatching.
+import {
+  Brace,
+  Cell,
+  cells,
+  Hatch,
+  Lattice,
+  Lit,
+  part,
+  SchoolFrame,
+  type SchoolIllustrationProps,
+  SILL,
+  snap,
+} from "./frame";
 
-export type { IllustrationProps };
+export type { SchoolIllustrationProps };
 
-export function SchoolNoResultsIllustration(props: IllustrationProps) {
+export function SchoolNoResultsIllustration(props: SchoolIllustrationProps) {
   return (
-    <Frame {...props}>
-      <path d="M26 42 76 50v46L26 88z" fill="currentColor" fillOpacity=".16" />
-      <path d="M126 42 76 50v46l50-8z" fill="currentColor" fillOpacity=".16" />
-      <rect x="74" y="48" width="4" height="48" fill="currentColor" fillOpacity=".4" />
-      <g fill="currentColor" opacity=".32">
-        <path d="M34 54l32 5v5l-32-5z" />
-        <path d="M34 66l24 4v5l-24-4z" />
-        <path d="M86 59l32-5v5l-32 5z" />
-      </g>
-      <path
-        d="M108 56a22 22 0 1 1 0 44 22 22 0 0 1 0-44zm0 8a14 14 0 1 0 0 28 14 14 0 0 0 0-28z"
-        fillRule="evenodd"
-        fill="currentColor"
-        fillOpacity=".5"
-      />
-      <rect
-        x="124"
-        y="90"
-        width="9"
-        height="22"
-        rx="4.5"
-        transform="rotate(-45 128.5 101)"
-        fill="var(--hn-action-primary)"
-      />
-    </Frame>
+    <SchoolFrame token="action-primary" {...props}>
+      {({ bay, w }) => {
+        const side = snap(bay.h * 0.5);
+        const lens = {
+          x: snap(bay.x + bay.w * 0.1),
+          y: snap(bay.y + bay.h * 0.12),
+          w: side,
+          h: side,
+        };
+        const grip = SILL - (lens.y + side);
+        const shelves = part(bay, 0.68, 0, 0.32, 1);
+        return (
+          <>
+            <Lit {...lens} />
+            <Cell {...lens} />
+            <Brace
+              x1={lens.x + side}
+              y1={lens.y + side}
+              x2={lens.x + side + grip}
+              y2={SILL}
+              accent
+            />
+            {cells(shelves, 1, 2, w).map((cell) => (
+              <Hatch key={cell.y} {...cell} />
+            ))}
+            <Lattice box={shelves} cols={1} rows={2} />
+          </>
+        );
+      }}
+    </SchoolFrame>
   );
 }

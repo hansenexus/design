@@ -4,7 +4,7 @@
 // Run: bun scripts/build.ts
 import { readFileSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
-import { ENTRIES } from "./motifs";
+import { ENTRIES, MODULES } from "./motifs";
 
 const ROOT = resolve(import.meta.dir, "..");
 const DIST = resolve(ROOT, "dist");
@@ -13,7 +13,10 @@ rmSync(DIST, { recursive: true, force: true });
 
 const paths = ENTRIES.map((e) => e.path);
 const js = await Bun.build({
-  entrypoints: paths.map((p) => resolve(ROOT, `src/${p}.tsx`)),
+  entrypoints: [
+    ...paths.map((p) => resolve(ROOT, `src/${p}.tsx`)),
+    ...MODULES.map((m) => resolve(ROOT, `src/${m}.ts`)),
+  ],
   outdir: DIST,
   root: resolve(ROOT, "src"),
   target: "browser",
@@ -39,4 +42,4 @@ const tsc = Bun.spawnSync(["bunx", "tsc", "-p", "tsconfig.build.json"], {
   stderr: "inherit",
 });
 if (tsc.exitCode !== 0) throw new Error(`build: tsc exited ${tsc.exitCode}`);
-console.log(`build: ${paths.length} motifs in dist/ (${paths.join(", ")})`);
+console.log(`build: ${paths.length} motifs and ${MODULES.join(", ")} in dist/`);

@@ -1,32 +1,39 @@
-// school/class: a class. The board at the front with a chalk line in the action accent, three
-// desks before it.
-import { Frame, type IllustrationProps } from "../frame";
+// school/class: a class. The board as a wide lit Gefach in its own frame over a row of three
+// desks, a brace under the last one.
+import {
+  Cell,
+  CellBrace,
+  cells,
+  Gefach,
+  Lattice,
+  Lit,
+  part,
+  pick,
+  SchoolFrame,
+  type SchoolIllustrationProps,
+} from "./frame";
 
-export type { IllustrationProps };
+export type { SchoolIllustrationProps };
 
-export function ClassIllustration(props: IllustrationProps) {
+export function ClassIllustration(props: SchoolIllustrationProps) {
   return (
-    <Frame {...props}>
-      <path
-        d="M34 14h92a4 4 0 0 1 4 4v46a4 4 0 0 1-4 4H34a4 4 0 0 1-4-4V18a4 4 0 0 1 4-4zm4 6v42h84V20z"
-        fillRule="evenodd"
-        fill="currentColor"
-        fillOpacity=".4"
-      />
-      <rect x="38" y="20" width="84" height="42" fill="currentColor" fillOpacity=".16" />
-      <rect x="48" y="30" width="40" height="5" rx="2.5" fill="var(--hn-action-primary)" />
-      <rect x="48" y="42" width="26" height="5" rx="2.5" fill="currentColor" fillOpacity=".32" />
-      <g fill="currentColor">
-        <rect x="30" y="80" width="28" height="7" rx="2" opacity=".5" />
-        <rect x="66" y="80" width="28" height="7" rx="2" opacity=".5" />
-        <rect x="102" y="80" width="28" height="7" rx="2" opacity=".5" />
-        <rect x="34" y="87" width="4" height="14" opacity=".32" />
-        <rect x="70" y="87" width="4" height="14" opacity=".32" />
-        <rect x="106" y="87" width="4" height="14" opacity=".32" />
-        <rect x="52" y="87" width="4" height="14" opacity=".32" />
-        <rect x="88" y="87" width="4" height="14" opacity=".32" />
-        <rect x="124" y="87" width="4" height="14" opacity=".32" />
-      </g>
-    </Frame>
+    <SchoolFrame token="action-primary" {...props}>
+      {({ bay, w }) => {
+        const board = part(bay, 0.14, 0.1, 0.72, 0.36);
+        const desks = part(bay, 0, 0.66, 1, 0.34);
+        const c = cells(desks, 3, 1, w);
+        return (
+          <>
+            <Lit {...board} />
+            <Cell {...board} />
+            {c.map((cell) => (
+              <Gefach key={cell.x} {...cell} />
+            ))}
+            <Lattice box={desks} cols={3} rows={1} />
+            <CellBrace box={pick(c, 2)} accent />
+          </>
+        );
+      }}
+    </SchoolFrame>
   );
 }
