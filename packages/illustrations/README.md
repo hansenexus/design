@@ -40,23 +40,23 @@ decides how the bay is built around it (`src/school/variants.ts`). Three axes:
 | `framing` | `frei`, `gefach`, `haus` | Nothing but the sill; one closed cell to the box edge; walls under a 45° gable |
 | `accent` | `gefach`, `strebe`, `none` | Whether the lit Gefach or the accent brace carries the one token colour, or neither |
 
-Named recipes (`SCHOOL_RECIPES`): `gefach` (the default), `gefach-leicht`, `gefach-schwer`,
-`gefach-strebe`, `gefach-mono`, `frei`, `haus`, `haus-strebe`. Every school motif takes
+Named recipes (`SCHOOL_RECIPES`): `gefach-strebe` (the default), `gefach`, `gefach-leicht`,
+`gefach-schwer`, `gefach-mono`, `frei`, `haus`, `haus-strebe`. Every school motif takes
 `variant`:
 
 ```tsx
 import { SchoolEmptyIllustration } from "@hansenexus/illustrations/school/empty";
 import { SCHOOL_VARIANTS, isSchoolVariant } from "@hansenexus/illustrations/school/variants";
 
-<SchoolEmptyIllustration />                    // DEFAULT_SCHOOL_VARIANT, "gefach"
+<SchoolEmptyIllustration />                    // DEFAULT_SCHOOL_VARIANT, "gefach-strebe"
 <SchoolEmptyIllustration variant="haus" />     // the same composition in a gabled house
 ```
 
-The rendered `<svg>` carries `data-variant`. Which recipe becomes the default is a kit decision:
-the vote board `packages/ui` → `?scene=vote&category=school-illustration` shows every recipe in
-an empty state, an error state, a 24 px list row, a 240 px hero and the whole family at 96 px.
-Until `packages/ui/decisions/school-illustration.json` exists the default is `gefach`; a kit test
-holds `DEFAULT_SCHOOL_VARIANT` to the decided winner once it does. A new design direction adds a
+The rendered `<svg>` carries `data-variant`. Which recipe is the default is a kit decision: the
+vote board `packages/ui` → `?scene=vote&category=school-illustration` showed every recipe in an
+empty state, an error state, a 24 px list row, a 240 px hero and the whole family at 96 px, and
+`packages/ui/decisions/school-illustration.json` records the winner, `gefach-strebe` (design#136);
+a kit test holds `DEFAULT_SCHOOL_VARIANT` to it. A new design direction adds a
 recipe, not sixteen drawings; a new axis (a second diagonal, a roof pitch) is a change to
 `SchoolFrame` in `src/school/frame.tsx` that every motif picks up.
 

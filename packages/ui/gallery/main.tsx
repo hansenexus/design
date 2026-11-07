@@ -759,8 +759,8 @@ function Illustrations() {
 /**
  * The school scene (design#132, rebuilt on the variant engine in design#134): the school family
  * of @hansenexus/illustrations in its default recipe, the eight states drawn for school and the
- * eight domain spots, at the two sizes the family has to read at, 96 and 24 px. The recipes are
- * compared on the vote board (?scene=vote&category=school-illustration).
+ * eight domain spots, at the two sizes the family has to read at, 96 and 24 px. The recipe was
+ * decided on the vote board (?scene=vote&category=school-illustration, design#136).
  */
 function School() {
   return (
@@ -773,7 +773,7 @@ function School() {
           School illustrations
         </h1>
         <p className="m-0 max-w-[64ch] text-sm text-hn-ink-body">
-          The default recipe. The eight recipes of the family are compared on the{" "}
+          The default recipe, gefach-strebe, decided on the{" "}
           <a className="underline" href="?scene=vote&category=school-illustration">
             school-illustration vote
           </a>
