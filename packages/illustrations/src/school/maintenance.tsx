@@ -1,35 +1,45 @@
-// school/maintenance: being worked on. A gear over a ruler, busy hub.
-import { Frame, type IllustrationProps } from "../frame";
+// school/maintenance: work in progress. A bare frame of four bays, one still hatched, one lit in
+// the busy colour, and a band of three braces being fitted in the top-right bay.
+import {
+  Brace,
+  cells,
+  Hatch,
+  Lattice,
+  Lit,
+  pick,
+  SchoolFrame,
+  type SchoolIllustrationProps,
+  snap,
+} from "./frame";
 
-export type { IllustrationProps };
+export type { SchoolIllustrationProps };
 
-export function SchoolMaintenanceIllustration(props: IllustrationProps) {
-  const r = 22;
-  const t = r * 0.36;
+export function SchoolMaintenanceIllustration(props: SchoolIllustrationProps) {
   return (
-    <Frame {...props}>
-      <g fill="currentColor" opacity=".5">
-        <circle cx="74" cy="48" r={r} />
-        {[0, 45, 90, 135].map((a) => (
-          <rect
-            key={a}
-            x={74 - t / 2}
-            y={48 - r - t}
-            width={t}
-            height={2 * (r + t)}
-            rx={t / 4}
-            transform={`rotate(${a} 74 48)`}
-          />
-        ))}
-      </g>
-      <circle cx="74" cy="48" r="8" fill="var(--hn-status-busy)" />
-      <rect x="28" y="82" width="104" height="14" rx="2" fill="currentColor" fillOpacity=".32" />
-      <g fill="currentColor" opacity=".5">
-        {[36, 46, 56, 66, 76, 86, 96, 106, 116, 126].map((x, i) => (
-          <rect key={x} x={x - 1} y="82" width="2" height={i % 2 === 0 ? 7 : 4} />
-        ))}
-      </g>
-      <path d="M112 36h12v4h-6l6 8-4 2-6-8z" fill="currentColor" fillOpacity=".32" />
-    </Frame>
+    <SchoolFrame token="status-busy" {...props}>
+      {({ bay, w }) => {
+        const c = cells(bay, 2, 2, w);
+        const band = pick(c, 1);
+        const s = snap(Math.min(band.w, band.h) * 0.5);
+        const gap = snap(band.w * 0.25);
+        const y = snap(band.y + band.h / 2 + s / 2);
+        return (
+          <>
+            <Hatch {...pick(c, 0)} />
+            <Lit {...pick(c, 2)} />
+            <Lattice box={bay} cols={2} rows={2} />
+            <Brace x1={band.x + gap - s / 2} y1={y} x2={band.x + gap + s / 2} y2={y - s} />
+            <Brace
+              x1={band.x + 2 * gap - s / 2}
+              y1={y}
+              x2={band.x + 2 * gap + s / 2}
+              y2={y - s}
+              accent
+            />
+            <Brace x1={band.x + 3 * gap - s / 2} y1={y} x2={band.x + 3 * gap + s / 2} y2={y - s} />
+          </>
+        );
+      }}
+    </SchoolFrame>
   );
 }

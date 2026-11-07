@@ -13,7 +13,13 @@ if [ -n "${CI:-}" ] || [ -n "${HN_IN_PLAYWRIGHT_IMAGE:-}" ]; then
 fi
 
 repo=$(git rev-parse --show-toplevel)
-exec docker run --rm --userns=host --shm-size=1g --init \
-  --user "$(id -u):$(id -g)" -e HOME=/tmp -e HN_IN_PLAYWRIGHT_IMAGE=1 \
-  -v "$repo:$repo" -v "$(readlink -f "$(command -v bun)"):/usr/local/bin/bun:ro" \
-  -w "$PWD" "$image" bash -c 'ln -sf /usr/local/bin/bun /tmp/bunx 2>/dev/null; PATH="/tmp:$PATH" exec bunx playwright test "$@"' _ "$@"
+# node_modules holds this Mac's native binaries (tailwind's oxide, lightningcss), so the gallery
+# is built here and only served in the container, which installs its own Linux bun of the host's
+# version through the image's npm (into /tmp, since the image's /usr/local is root-owned). The
+# platform is pinned to amd64, the one CI's ubuntu runner renders the baselines on.
+bun scripts/gallery.ts
+exec docker run --rm --platform linux/amd64 --userns=host --shm-size=1g --init \
+  --user "$(id -u):$(id -g)" -e HOME=/tmp -e HN_IN_PLAYWRIGHT_IMAGE=1 -e HN_GALLERY_PREBUILT=1 \
+  -e npm_config_cache=/tmp/npm-cache -e npm_config_prefix=/tmp/npm -e BUN_VERSION="$(bun --version)" \
+  -v "$repo:$repo" -w "$PWD" "$image" \
+  bash -c 'npm install -g --silent "bun@$BUN_VERSION" >/dev/null && PATH="/tmp/npm/bin:$PATH" exec bunx playwright test "$@"' _ "$@"

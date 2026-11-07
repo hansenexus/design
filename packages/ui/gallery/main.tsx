@@ -693,7 +693,7 @@ const MOTIFS: MotifList = [
   ["maintenance", MaintenanceIllustration],
 ];
 
-/** The school family (design#132): the eight states drawn for school, then the domain spots. */
+/** The school family (design#132, design#134): the eight states drawn for school, then the domain spots. */
 const SCHOOL_STATES: MotifList = [
   ["school/empty", SchoolEmptyIllustration],
   ["school/no-results", SchoolNoResultsIllustration],
@@ -715,8 +715,12 @@ const SCHOOL_SPOTS: MotifList = [
   ["school/school", SchoolIllustration],
 ];
 
-/** A grid of motifs, each at 128 px and at 48 px, in ink.muted as the EmptyState/ErrorState slot draws it. */
-function MotifGrid({ motifs }: { motifs: MotifList }) {
+/**
+ * A grid of motifs, each at two sizes (128 and 48 px by default), in ink.muted as the
+ * EmptyState/ErrorState slot draws it.
+ */
+function MotifGrid({ motifs, sizes = [128, 48] }: { motifs: MotifList; sizes?: [number, number] }) {
+  const [large, small] = sizes;
   return (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
       {motifs.map(([id, Motif]) => (
@@ -725,8 +729,8 @@ function MotifGrid({ motifs }: { motifs: MotifList }) {
           data-motif={id}
           className="m-0 flex flex-col items-center gap-3 rounded-hn-lg border border-hn-line-subtle bg-hn-surface-card p-4 text-hn-ink-muted"
         >
-          <Motif width={128} height={96} />
-          <Motif width={48} height={36} />
+          <Motif width={large} height={(large * 3) / 4} />
+          <Motif width={small} height={(small * 3) / 4} />
           <figcaption className="font-hn-mono text-[13px] text-hn-ink-body">{id}</figcaption>
         </figure>
       ))}
@@ -753,8 +757,10 @@ function Illustrations() {
 }
 
 /**
- * The school scene (design#132): the school family of @hansenexus/illustrations for fachwerk, the
- * eight states drawn for school and the eight domain spots, same grid as the illustrations scene.
+ * The school scene (design#132, rebuilt on the variant engine in design#134): the school family
+ * of @hansenexus/illustrations in its default recipe, the eight states drawn for school and the
+ * eight domain spots, at the two sizes the family has to read at, 96 and 24 px. The recipes are
+ * compared on the vote board (?scene=vote&category=school-illustration).
  */
 function School() {
   return (
@@ -766,14 +772,21 @@ function School() {
         <h1 className="m-0 font-hn-display text-[32px] leading-tight font-semibold tracking-[-0.02em] sm:text-[44px]">
           School illustrations
         </h1>
+        <p className="m-0 max-w-[64ch] text-sm text-hn-ink-body">
+          The default recipe. The eight recipes of the family are compared on the{" "}
+          <a className="underline" href="?scene=vote&category=school-illustration">
+            school-illustration vote
+          </a>
+          .
+        </p>
       </header>
       <section className="flex flex-col gap-4">
         <h2 className="m-0 text-base font-semibold text-hn-ink-body">States</h2>
-        <MotifGrid motifs={SCHOOL_STATES} />
+        <MotifGrid motifs={SCHOOL_STATES} sizes={[96, 24]} />
       </section>
       <section className="flex flex-col gap-4">
         <h2 className="m-0 text-base font-semibold text-hn-ink-body">Domain spots</h2>
-        <MotifGrid motifs={SCHOOL_SPOTS} />
+        <MotifGrid motifs={SCHOOL_SPOTS} sizes={[96, 24]} />
       </section>
     </main>
   );

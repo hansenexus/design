@@ -1,37 +1,49 @@
-// school/test: a test. An answer sheet with its boxes, one ticked, and the pencil in the action
-// accent.
-import { Frame, type IllustrationProps } from "../frame";
+// school/test: a test. Three rows of answer box and line, the first box lit, and the pencil as a
+// brace leaning on the sill at the right.
+import {
+  Beam,
+  Brace,
+  cells,
+  Gefach,
+  Lit,
+  SchoolFrame,
+  type SchoolIllustrationProps,
+  SILL,
+  snap,
+} from "./frame";
 
-export type { IllustrationProps };
+export type { SchoolIllustrationProps };
 
-export function TestIllustration(props: IllustrationProps) {
+export function TestIllustration(props: SchoolIllustrationProps) {
   return (
-    <Frame {...props}>
-      <rect x="36" y="14" width="78" height="88" rx="6" fill="currentColor" fillOpacity=".16" />
-      <rect x="62" y="10" width="26" height="10" rx="3" fill="currentColor" fillOpacity=".5" />
-      <g fill="currentColor" opacity=".32">
-        <rect x="46" y="32" width="10" height="10" rx="2" />
-        <rect x="62" y="34" width="40" height="6" rx="3" />
-        <rect x="62" y="52" width="32" height="6" rx="3" />
-        <rect x="46" y="68" width="10" height="10" rx="2" />
-        <rect x="62" y="70" width="36" height="6" rx="3" />
-      </g>
-      <path
-        d="M46 50h10v10H46zm2 4.6 1.6-1.6 1.8 1.8 3.4-3.4L56.4 53l-5 5z"
-        fillRule="evenodd"
-        fill="currentColor"
-        fillOpacity=".5"
-      />
-      <rect
-        x="116"
-        y="46"
-        width="8"
-        height="44"
-        rx="2"
-        transform="rotate(30 120 68)"
-        fill="var(--hn-action-primary)"
-      />
-      <path d="m99 92 11 3-6-8z" fill="currentColor" fillOpacity=".5" />
-    </Frame>
+    <SchoolFrame token="action-primary" {...props}>
+      {({ bay, w }) => {
+        const sheet = { x: bay.x, y: bay.y, w: snap(bay.w * 0.68), h: bay.h };
+        const rows = cells(sheet, 1, 3, w);
+        const pencil = snap(bay.h * 0.42);
+        return (
+          <>
+            {rows.map((row, i) => {
+              const s = snap(row.h * 0.7);
+              const y = snap(row.y + (row.h - s) / 2);
+              const box = { x: row.x, y, w: s, h: s };
+              return (
+                <g key={row.y}>
+                  {i === 0 ? <Lit {...box} /> : <Gefach {...box} />}
+                  <Beam x={row.x + s + w} y={snap(y + s / 2 - w / 2)} w={row.w - s - w} h={w} />
+                </g>
+              );
+            })}
+            <Brace
+              x1={bay.x + bay.w - pencil}
+              y1={SILL}
+              x2={bay.x + bay.w}
+              y2={SILL - pencil}
+              accent
+            />
+          </>
+        );
+      }}
+    </SchoolFrame>
   );
 }

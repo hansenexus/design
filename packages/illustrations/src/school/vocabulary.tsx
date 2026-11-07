@@ -1,27 +1,37 @@
-// school/vocabulary: words to learn. Two flash cards, the front one with its word and meaning
-// bars, the lexilink bracket mark in the action accent as the engine badge.
-import { Frame, type IllustrationProps } from "../frame";
+// school/vocabulary: a word and its pair. Two card Gefache in their frames, the left one lit,
+// joined by a rail, with a brace in the right card where the second word goes.
+import {
+  Beam,
+  Cell,
+  CellBrace,
+  Gefach,
+  Lit,
+  part,
+  SchoolFrame,
+  type SchoolIllustrationProps,
+  snap,
+} from "./frame";
 
-export type { IllustrationProps };
+export type { SchoolIllustrationProps };
 
-export function VocabularyIllustration(props: IllustrationProps) {
+export function VocabularyIllustration(props: SchoolIllustrationProps) {
   return (
-    <Frame {...props}>
-      <rect
-        x="48"
-        y="22"
-        width="84"
-        height="56"
-        rx="6"
-        transform="rotate(-8 90 50)"
-        fill="currentColor"
-        fillOpacity=".16"
-      />
-      <rect x="30" y="36" width="84" height="56" rx="6" fill="currentColor" fillOpacity=".32" />
-      <rect x="42" y="50" width="36" height="8" rx="4" fill="currentColor" fillOpacity=".5" />
-      <rect x="42" y="66" width="56" height="5" rx="2.5" fill="currentColor" fillOpacity=".5" />
-      <rect x="42" y="76" width="40" height="5" rx="2.5" fill="currentColor" fillOpacity=".5" />
-      <path d="M96 46h8v4h-4v12h4v4h-8zm16 0h-8v4h4v12h-4v4h8z" fill="var(--hn-action-primary)" />
-    </Frame>
+    <SchoolFrame token="action-primary" {...props}>
+      {({ bay, w }) => {
+        const left = part(bay, 0.06, 0.14, 0.36, 0.72);
+        const right = part(bay, 0.58, 0.14, 0.36, 0.72);
+        const y = snap(bay.y + bay.h / 2 - w / 2);
+        return (
+          <>
+            <Lit {...left} />
+            <Cell {...left} />
+            <Gefach {...right} />
+            <Cell {...right} />
+            <Beam x={left.x + left.w + w} y={y} w={right.x - w - (left.x + left.w + w)} h={w} />
+            <CellBrace box={right} size={0.6} accent />
+          </>
+        );
+      }}
+    </SchoolFrame>
   );
 }

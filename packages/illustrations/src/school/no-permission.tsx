@@ -1,28 +1,34 @@
-// school/no-permission: not allowed here. A closed classroom door with a hanging sign, the warn
-// no-entry badge on it.
-import { Frame, type IllustrationProps } from "../frame";
+// school/no-permission: not for you. A door Gefach in the middle bay, lit in the warn colour and
+// barred with an Andreaskreuz, between two plastered bays.
+import {
+  Cross,
+  cells,
+  Gefach,
+  Lattice,
+  Lit,
+  pick,
+  SchoolFrame,
+  type SchoolIllustrationProps,
+} from "./frame";
 
-export type { IllustrationProps };
+export type { SchoolIllustrationProps };
 
-export function SchoolNoPermissionIllustration(props: IllustrationProps) {
+export function SchoolNoPermissionIllustration(props: SchoolIllustrationProps) {
   return (
-    <Frame {...props}>
-      <path
-        d="M46 14h68a6 6 0 0 1 6 6v86H40V20a6 6 0 0 1 6-6zm2 8v76h64V22z"
-        fillRule="evenodd"
-        fill="currentColor"
-        fillOpacity=".4"
-      />
-      <rect x="48" y="22" width="64" height="76" fill="currentColor" fillOpacity=".16" />
-      <rect x="56" y="30" width="48" height="26" rx="2" fill="currentColor" fillOpacity=".16" />
-      <circle cx="102" cy="72" r="4" fill="currentColor" fillOpacity=".5" />
-      <rect x="78" y="56" width="4" height="10" fill="currentColor" fillOpacity=".5" />
-      <rect x="62" y="64" width="36" height="24" rx="3" fill="currentColor" fillOpacity=".5" />
-      <path
-        d="M80 67a9 9 0 1 1 0 18 9 9 0 0 1 0-18zm-5 7.5h10v3H75z"
-        fillRule="evenodd"
-        fill="var(--hn-status-warn)"
-      />
-    </Frame>
+    <SchoolFrame token="status-warn" {...props}>
+      {({ bay, w }) => {
+        const c = cells(bay, 3, 1, w);
+        const door = pick(c, 1);
+        return (
+          <>
+            <Gefach {...pick(c, 0)} />
+            <Lit {...door} />
+            <Gefach {...pick(c, 2)} />
+            <Lattice box={bay} cols={3} rows={1} />
+            <Cross {...door} />
+          </>
+        );
+      }}
+    </SchoolFrame>
   );
 }

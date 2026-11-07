@@ -1,44 +1,43 @@
-// school/error: something failed. A board on its easel with the crit diamond, the "!" cut out.
-import { Frame, type IllustrationProps } from "../frame";
+// school/error: something broke. Four Gefache; the top-right one is lit in the crit colour and
+// holds a diamond, the sawn mark a carpenter cuts over a bad joint.
+import {
+  CellBrace,
+  cells,
+  Gefach,
+  keyOf,
+  Lattice,
+  Lit,
+  pick,
+  SchoolFrame,
+  type SchoolIllustrationProps,
+  snap,
+} from "./frame";
 
-export type { IllustrationProps };
+export type { SchoolIllustrationProps };
 
-export function SchoolErrorIllustration(props: IllustrationProps) {
+export function SchoolErrorIllustration(props: SchoolIllustrationProps) {
   return (
-    <Frame {...props}>
-      <path
-        d="M32 18h96a4 4 0 0 1 4 4v58a4 4 0 0 1-4 4H32a4 4 0 0 1-4-4V22a4 4 0 0 1 4-4zm6 8v50h84V26z"
-        fillRule="evenodd"
-        fill="currentColor"
-        fillOpacity=".4"
-      />
-      <rect x="38" y="26" width="84" height="50" fill="currentColor" fillOpacity=".16" />
-      <rect
-        x="44"
-        y="84"
-        width="6"
-        height="22"
-        rx="2"
-        transform="rotate(8 47 95)"
-        fill="currentColor"
-        fillOpacity=".32"
-      />
-      <rect
-        x="110"
-        y="84"
-        width="6"
-        height="22"
-        rx="2"
-        transform="rotate(-8 113 95)"
-        fill="currentColor"
-        fillOpacity=".32"
-      />
-      <rect x="100" y="70" width="14" height="4" rx="1" fill="currentColor" fillOpacity=".5" />
-      <path
-        d="m80 32 19 19-19 19-19-19zm-2 10.5v9a2 2 0 0 0 4 0v-9a2 2 0 0 0-4 0zm2 14a2.4 2.4 0 1 0 0 4.8 2.4 2.4 0 0 0 0-4.8z"
-        fillRule="evenodd"
-        fill="var(--hn-status-crit)"
-      />
-    </Frame>
+    <SchoolFrame token="status-crit" {...props}>
+      {({ bay, w }) => {
+        const c = cells(bay, 2, 2, w);
+        const hot = pick(c, 1);
+        const r = snap(Math.min(hot.w, hot.h) * 0.28);
+        const cx = snap(hot.x + hot.w / 2);
+        const cy = snap(hot.y + hot.h / 2);
+        return (
+          <>
+            {c.map((cell, i) =>
+              i === 1 ? <Lit key={keyOf(cell)} {...cell} /> : <Gefach key={keyOf(cell)} {...cell} />
+            )}
+            <path
+              d={`M${cx} ${cy - r} L${cx + r} ${cy} L${cx} ${cy + r} L${cx - r} ${cy} Z`}
+              fill="currentColor"
+            />
+            <Lattice box={bay} cols={2} rows={2} />
+            <CellBrace box={pick(c, 2)} accent />
+          </>
+        );
+      }}
+    </SchoolFrame>
   );
 }

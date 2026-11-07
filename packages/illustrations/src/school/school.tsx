@@ -1,23 +1,44 @@
-// school/school: the school. A building with its windows cut out as holes, a roof and a door,
-// the flag in the action accent.
-import { Frame, type IllustrationProps } from "../frame";
+// school/school: the school itself. A 45° gable with its collar beam over the bay, the door as
+// the lit Gefach between two windows, and a brace in each outer bay.
+import {
+  Beam,
+  Brace,
+  CellBrace,
+  Gefach,
+  Lit,
+  part,
+  SchoolFrame,
+  type SchoolIllustrationProps,
+  snap,
+} from "./frame";
 
-export type { IllustrationProps };
+export type { SchoolIllustrationProps };
 
-export function SchoolIllustration(props: IllustrationProps) {
+export function SchoolIllustration(props: SchoolIllustrationProps) {
   return (
-    <Frame {...props}>
-      <path
-        d="M32 52h96v52H32zm10 10v12h12V62zm22 0v12h12V62zm22 0v12h12V62zm22 0v12h12V62zM42 82v12h12V82zm62 0v12h12V82z"
-        fillRule="evenodd"
-        fill="currentColor"
-        fillOpacity=".32"
-      />
-      <path d="M28 52 80 26l52 26z" fill="currentColor" fillOpacity=".5" />
-      <path d="M68 84h24v20H68z" fill="currentColor" fillOpacity=".16" />
-      <path d="M72 88h16v16H72z" fill="currentColor" fillOpacity=".5" />
-      <rect x="78" y="8" width="4" height="22" fill="currentColor" fillOpacity=".5" />
-      <path d="M82 8h22l-6 6 6 6H82z" fill="var(--hn-action-primary)" />
-    </Frame>
+    <SchoolFrame token="action-primary" {...props}>
+      {({ bay, w }) => {
+        const cx = snap(bay.x + bay.w / 2);
+        const rise = snap(Math.min(bay.h * 0.4, bay.w * 0.3));
+        const apex = bay.y + w;
+        const eaves = apex + rise;
+        const wall = { x: bay.x, y: eaves + w, w: bay.w, h: bay.y + bay.h - eaves - w };
+        const door = part(wall, 0.38, 0.1, 0.24, 0.9);
+        return (
+          <>
+            <Brace x1={cx - rise} y1={eaves} x2={cx} y2={apex} />
+            <Brace x1={cx} y1={apex} x2={cx + rise} y2={eaves} />
+            <Beam x={cx - rise} y={eaves} w={2 * rise} h={w} />
+            <Gefach {...part(wall, 0.06, 0.2, 0.2, 0.4)} />
+            <Gefach {...part(wall, 0.74, 0.2, 0.2, 0.4)} />
+            <Lit {...door} />
+            <Beam x={door.x - w} y={door.y} w={w} h={door.h} />
+            <Beam x={door.x + door.w} y={door.y} w={w} h={door.h} />
+            <CellBrace box={part(wall, 0, 0.6, 0.3, 0.4)} accent />
+            <CellBrace box={part(wall, 0.7, 0.6, 0.3, 0.4)} falling />
+          </>
+        );
+      }}
+    </SchoolFrame>
   );
 }
