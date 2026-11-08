@@ -1,14 +1,15 @@
 {
   "name": "@hansenexus/illustrations",
-  "version": "0.1.0",
-  "description": "hansenexus state illustrations: eight geometric SVG motifs as React components, one import path each, coloured only through currentColor and the --hn-* tokens.",
+  "version": "0.2.0",
+  "description": "hansenexus illustrations: geometric SVG motifs as React components, one import path each, coloured only through currentColor and the --hn-* tokens. Eight state motifs, plus the school family for fachwerk in its Fachwerk direction: the eight states redrawn for school and eight domain spots, built of straight beams, 45° braces and plaster Gefache.",
   "license": "MIT",
   "keywords": [
     "react",
     "svg",
     "illustrations",
     "empty-state",
-    "design-system"
+    "design-system",
+    "school"
   ],
   "repository": {
     "type": "git",
@@ -50,6 +51,74 @@
     "./maintenance": {
       "types": "./dist/maintenance.d.ts",
       "import": "./dist/maintenance.js"
+    },
+    "./school/empty": {
+      "types": "./dist/school/empty.d.ts",
+      "import": "./dist/school/empty.js"
+    },
+    "./school/no-results": {
+      "types": "./dist/school/no-results.d.ts",
+      "import": "./dist/school/no-results.js"
+    },
+    "./school/error": {
+      "types": "./dist/school/error.d.ts",
+      "import": "./dist/school/error.js"
+    },
+    "./school/404": {
+      "types": "./dist/school/404.d.ts",
+      "import": "./dist/school/404.js"
+    },
+    "./school/offline": {
+      "types": "./dist/school/offline.d.ts",
+      "import": "./dist/school/offline.js"
+    },
+    "./school/no-permission": {
+      "types": "./dist/school/no-permission.d.ts",
+      "import": "./dist/school/no-permission.js"
+    },
+    "./school/success": {
+      "types": "./dist/school/success.d.ts",
+      "import": "./dist/school/success.js"
+    },
+    "./school/maintenance": {
+      "types": "./dist/school/maintenance.d.ts",
+      "import": "./dist/school/maintenance.js"
+    },
+    "./school/class": {
+      "types": "./dist/school/class.d.ts",
+      "import": "./dist/school/class.js"
+    },
+    "./school/seating-plan": {
+      "types": "./dist/school/seating-plan.d.ts",
+      "import": "./dist/school/seating-plan.js"
+    },
+    "./school/quiz": {
+      "types": "./dist/school/quiz.d.ts",
+      "import": "./dist/school/quiz.js"
+    },
+    "./school/timetable": {
+      "types": "./dist/school/timetable.d.ts",
+      "import": "./dist/school/timetable.js"
+    },
+    "./school/vocabulary": {
+      "types": "./dist/school/vocabulary.d.ts",
+      "import": "./dist/school/vocabulary.js"
+    },
+    "./school/test": {
+      "types": "./dist/school/test.d.ts",
+      "import": "./dist/school/test.js"
+    },
+    "./school/study-group": {
+      "types": "./dist/school/study-group.d.ts",
+      "import": "./dist/school/study-group.js"
+    },
+    "./school/school": {
+      "types": "./dist/school/school.d.ts",
+      "import": "./dist/school/school.js"
+    },
+    "./school/variants": {
+      "types": "./dist/school/variants.d.ts",
+      "import": "./dist/school/variants.js"
     }
   },
   "files": [

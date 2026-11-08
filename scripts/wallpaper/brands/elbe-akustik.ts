@@ -1,4 +1,4 @@
-// elbe-akustik: DRAFT until the owner approves the motif for this client (design#122).
+// elbe-akustik: approved by the owner on 2026-11-05 (design#128). Never committed (commit: false).
 // The mark is the client's own logo, read from hansenexus/hn-monorepo (this repository is
 // public, so client files are not copied here). Colours: the site's theme
 // (apps/elbe-akustik/src/app/globals.css), as hex because they are not hansenexus tokens.
@@ -9,7 +9,7 @@ const GOLD = "#c19f25"; // --brand-accent-deep
 
 export const config: BrandConfig = {
   brand: "elbe-akustik",
-  status: "draft",
+  status: "approved",
   commit: false,
   motif: ELBE,
   mark: {

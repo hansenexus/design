@@ -32,13 +32,16 @@ describe("wallpaper configs", () => {
     }
   });
 
-  test("clients stay drafts and out of git until the owner approves them", () => {
+  test("clients are never committed: their logos stay out of this public repository", () => {
     for (const c of configs.filter((x) => x.brand !== "hansenexus")) {
-      expect(c.status).toBe("draft");
       expect(c.commit).toBe(false);
+      // Approved or not, the -draft suffix follows the status.
       const [ground] = c.grounds;
       const [size] = c.sizes;
-      if (ground && size) expect(fileName(c, ground, size)).toEndWith("-draft.png");
+      if (!ground || !size) continue;
+      const name = fileName(c, ground, size);
+      if (c.status === "draft") expect(name).toEndWith("-draft.png");
+      else expect(name).not.toContain("-draft");
     }
   });
 

@@ -49,6 +49,16 @@ for (const mode of MODES) {
     });
   });
 
+  test(`school ${mode}`, async ({ page }, info) => {
+    await page.goto(`/gallery/?scene=school&mode=${mode}&bare=1`);
+    await page.evaluate(() => document.fonts.ready);
+    // Sixteen motifs, each at 96 and at 24 px (design#134).
+    await expect(page.locator("[data-motif] svg")).toHaveCount(32);
+    await expect(page).toHaveScreenshot(`school-${info.project.name}-${mode}.png`, {
+      fullPage: true,
+    });
+  });
+
   test(`forms ${mode}`, async ({ page }, info) => {
     await page.goto(`/gallery/?scene=forms&mode=${mode}&bare=1`);
     await page.evaluate(() => document.fonts.ready);

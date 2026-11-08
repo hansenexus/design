@@ -10,7 +10,9 @@
 // The local server also takes the vote board's Decide control: POST /api/decide runs decide()
 // from scripts/variants.ts in this checkout and rebuilds the bundle (#76); the static site has
 // no such route, there the control opens a prefilled issue (gallery/decide.ts).
-// Run: bun scripts/gallery.ts [--serve] [--port 4410] [--out <dir>]
+// Run: bun scripts/gallery.ts [--serve] [--port 4410] [--out <dir>] [--prebuilt]
+// --prebuilt serves the gallery/dist a previous run built, for a container without this
+// platform's native tailwind binaries (scripts/screenshots.sh).
 import { createHash } from "node:crypto";
 import {
   copyFileSync,
@@ -279,8 +281,8 @@ export function serve(port: number, { root = ROOT, rebuild = buildGallery }: Ser
 }
 
 if (import.meta.main) {
-  await buildGallery();
   const args = process.argv.slice(2);
+  if (!args.includes("--prebuilt")) await buildGallery();
   const o = args.indexOf("--out");
   if (o >= 0) {
     const dir = args[o + 1];

@@ -145,7 +145,7 @@ card rows need macOS 15 / iOS 18; on macOS 13 and 14 the rows stack without them
 ## Regenerate
 
 `Sources/HansenexusTokens/Tokens.swift`, `Sources/HansenexusBrand/BrandGeometry.swift` and
-`Sources/HansenexusBrand/Resources/` are generated. After a token or geometry change:
+`Sources/HansenexusBrand/BrandAssets/` are generated. After a token or geometry change:
 
 ```sh
 bun run swift    # rewrites Tokens.swift; commit it

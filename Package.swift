@@ -17,7 +17,7 @@ let package = Package(
       name: "HansenexusBrand",
       dependencies: ["HansenexusTokens"],
       path: "swift/Sources/HansenexusBrand",
-      resources: [.copy("Resources")]
+      resources: [.copy("BrandAssets")]
     ),
     .target(
       name: "HansenexusPopover",

@@ -46,4 +46,13 @@ final class BrandTests: XCTestCase {
       XCTAssertGreaterThan(try Data(contentsOf: url).count, 100, file)
     }
   }
+
+  /// iOS resource bundles are flat: a top-level `Resources` folder makes codesign read the
+  /// bundle as a macOS layout and fail with "bundle format unrecognized" (design#130).
+  func testResourceBundleHasNoTopLevelResourcesFolder() throws {
+    let root = try XCTUnwrap(HNBrandAsset.url(HNBrandAsset.appIcon))
+      .deletingLastPathComponent().deletingLastPathComponent()
+    let entries = try FileManager.default.contentsOfDirectory(atPath: root.path)
+    XCTAssertFalse(entries.contains("Resources"), "top-level Resources/ breaks iOS codesign")
+  }
 }
