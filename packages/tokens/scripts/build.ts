@@ -33,9 +33,33 @@ export async function resolveAll(tokensDir?: string): Promise<Resolved> {
 
 const isModal = (t: ResolvedToken) => t.type === "color";
 
+type TypeParts = { fontSize: string; lineHeight: string; fontWeight: number };
+
+/** The parts of a typography token, which the CSS, Tailwind and TS outputs spread out. */
+export function typeParts(t: ResolvedToken): TypeParts {
+  const v = t.raw as Partial<TypeParts> | undefined;
+  if (typeof v?.fontSize !== "string" || typeof v.lineHeight !== "string") {
+    throw new Error(`build: ${t.path} needs fontSize and lineHeight`);
+  }
+  if (typeof v.fontWeight !== "number")
+    throw new Error(`build: ${t.path} needs a numeric fontWeight`);
+  return { fontSize: v.fontSize, lineHeight: v.lineHeight, fontWeight: v.fontWeight };
+}
+
+// A typography token becomes three properties, named the way Tailwind v4 names a --text-*
+// size's companions: --hn-text-body, --hn-text-body--line-height, --hn-text-body--font-weight.
+const TYPE_SUFFIXES = ["", "--line-height", "--font-weight"] as const;
+
+function declarations(t: ResolvedToken): string[] {
+  if (t.type !== "typography") return [`${t.cssVar}: ${t.value};`];
+  const p = typeParts(t);
+  const values = [p.fontSize, p.lineHeight, String(p.fontWeight)];
+  return TYPE_SUFFIXES.map((suffix, i) => `${t.cssVar}${suffix}: ${values[i]};`);
+}
+
 function block(selector: string, tokens: ResolvedToken[], extra: string[] = []): string {
   if (tokens.length === 0 && extra.length === 0) return "";
-  const lines = [...extra, ...tokens.map((t) => `${t.cssVar}: ${t.value};`)];
+  const lines = [...extra, ...tokens.flatMap(declarations)];
   return `${selector} {\n${lines.map((l) => `  ${l}`).join("\n")}\n}\n`;
 }
 
@@ -88,7 +112,8 @@ export function renderCss(all: Resolved, densities: Record<string, ResolvedToken
 
 // Tailwind v4 namespace per token group. Utilities read e.g. bg-hn-surface-page,
 // text-hn-ink-muted, rounded-hn-md, font-hn-mono, h-hn-row, p-hn-4, shadow-hn-lift,
-// ease-hn-pulse (every cubicBezier token, named after its group).
+// ease-hn-pulse (every cubicBezier token, named after its group), text-hn-body (size, line
+// height and weight of a type role).
 const TAILWIND_NAMESPACE: Record<string, (rest: string) => string> = {
   color: (rest) => `--color-hn-${rest}`,
   radius: (rest) => `--radius-hn-${rest}`,
@@ -97,7 +122,13 @@ const TAILWIND_NAMESPACE: Record<string, (rest: string) => string> = {
   size: (rest) => `--spacing-hn-${rest}`,
   shadow: (rest) => `--shadow-hn-${rest}`,
   ease: (group) => `--ease-hn-${group}`,
+  text: (rest) => `--text-hn-${rest}`,
 };
+
+// Tailwind's own rounded-sm/md/lg/xl read the token of the same name, so web and Swift say the
+// same step for the same value (HNRadius.lg is rounded-lg, design#140). This replaces Tailwind's
+// default radii for those four steps; rounded-full and the rest stay Tailwind's.
+const RADIUS_ALIASES = new Set(["sm", "md", "lg", "xl"]);
 
 // The loading animations from the motion tokens: animate-hn-pulse (skeleton base to highlight)
 // and animate-hn-spin. Keyframes move between token values only; motion-reduce:animate-none
@@ -148,7 +179,19 @@ export function renderTailwind(all: Resolved): string {
     const name = TAILWIND_NAMESPACE[ns]?.(
       isModal(t) ? t.path.replaceAll(".", "-") : ns === "ease" ? group : rest.join("-")
     );
-    if (name) lines.push(`  ${name}: var(${t.cssVar});`);
+    if (!name) continue;
+    if (t.type === "typography") {
+      for (const suffix of TYPE_SUFFIXES)
+        lines.push(`  ${name}${suffix}: var(${t.cssVar}${suffix});`);
+    } else {
+      lines.push(`  ${name}: var(${t.cssVar});`);
+    }
+  }
+  for (const t of all[DEFAULT_THEME][DEFAULT_MODE]) {
+    const [group, key = ""] = t.path.split(".");
+    if (group === "radius" && RADIUS_ALIASES.has(key)) {
+      lines.push(`  --radius-${key}: var(${t.cssVar});`);
+    }
   }
   lines.push("", ...ANIMATIONS);
   return [
@@ -182,7 +225,7 @@ function numbers(tree: Tree): NumberTree {
   );
 }
 
-function toTree(tokens: ResolvedToken[], pick: (t: ResolvedToken) => string): Tree {
+function toTree(tokens: ResolvedToken[], pick: (t: ResolvedToken) => string | Tree): Tree {
   const root: Tree = {};
   for (const t of tokens) {
     const parts = t.path.split(".");
@@ -208,13 +251,26 @@ function toType(value: unknown, indent = ""): string {
   return `{\n${entries.join("\n")}\n${indent}}`;
 }
 
+/** A typography token as { size, lineHeight, weight }; other tokens as their CSS value. */
+function tsValue(t: ResolvedToken): string | Tree {
+  if (t.type !== "typography") return t.value;
+  const p = typeParts(t);
+  return { size: p.fontSize, lineHeight: p.lineHeight, weight: String(p.fontWeight) };
+}
+
+function tsVar(t: ResolvedToken): string | Tree {
+  if (t.type !== "typography") return `var(${t.cssVar})`;
+  const [size, lineHeight, weight] = TYPE_SUFFIXES.map((s) => `var(${t.cssVar}${s})`);
+  return { size: size ?? "", lineHeight: lineHeight ?? "", weight: weight ?? "" };
+}
+
 export function renderTs(all: Resolved, densities: Record<string, ResolvedToken[]>) {
   const values: Record<string, Record<string, Tree>> = {};
   for (const theme of THEMES) {
     values[theme] = {};
-    for (const mode of MODES) values[theme][mode] = toTree(all[theme][mode], (t) => t.value);
+    for (const mode of MODES) values[theme][mode] = toTree(all[theme][mode], tsValue);
   }
-  const vars = toTree(all[DEFAULT_THEME][DEFAULT_MODE], (t) => `var(${t.cssVar})`);
+  const vars = toTree(all[DEFAULT_THEME][DEFAULT_MODE], tsVar);
   const density: Record<string, Tree> = {};
   for (const d of DENSITIES) {
     density[d] = Object.fromEntries(

@@ -37,7 +37,14 @@ HNColors.of(.kommandant, .light).terminal.brightMagenta  // ANSI palette on surf
 ```swift
 Text("Estate").font(.hnDisplay(size: 34))
 Text("web-01").font(.hnMono(size: 13))
+Text("Estate").font(.hn(.title, theme: .kommandant))               // 15 pt semibold
+Text("vor 3 min").font(.hn(.meta, theme: .kommandant, family: HNFontFamily.mono))
 ```
+
+`Font.hn(_ role:)` reads `HNTypeScale.of(theme)`, the twin of `text-hn-<role>` on the web: size and
+weight from the role (`weight:` overrides it), Dynamic Type relative to `role.textStyle`. A `Font`
+carries no line height; running text adds `.lineSpacing(HNTypeScale.of(theme)[.body].lineSpacing)`.
+Roles: `caption`, `meta`, `bodySm`, `body`, `title`, `heading`, `display`.
 
 `Font.hn` picks the first installed family of the stack and scales with Dynamic Type. The package
 bundles no font files: register Fraunces, Instrument Sans and JetBrains Mono in the app. Without

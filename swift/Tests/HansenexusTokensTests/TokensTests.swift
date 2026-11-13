@@ -28,6 +28,35 @@ final class TokensTests: XCTestCase {
     XCTAssertEqual(HNFontFamily.display.first, "Fraunces")
   }
 
+  func testTypeScaleIsDenseForKommandant() {
+    let dense = HNTypeScale.of(.kommandant)
+    XCTAssertEqual(dense[.meta], HNTextStyle(size: 11, lineHeight: 16, weight: 400))
+    XCTAssertEqual(dense[.bodySm].size, 12)
+    XCTAssertEqual(dense[.body].size, 13)
+    XCTAssertEqual(dense[.caption].weight, 500)
+    // The default theme's scale reads like constants and is the comfortable one.
+    XCTAssertEqual(HNTypeScale.body, HNTypeScale.of(.hansenexus).body)
+    XCTAssertEqual(HNTypeScale.body.size, 16)
+    XCTAssertEqual(HNTextRole(rawValue: "body-sm"), .bodySm)
+    XCTAssertEqual(HNTextRole.allCases.count, 7)
+    // Sizes grow with the role, in every theme.
+    for theme in HNTheme.allCases {
+      let scale = HNTypeScale.of(theme)
+      let order: [HNTextRole] = [.caption, .meta, .bodySm, .body, .title, .heading, .display]
+      let sizes = order.map { scale[$0].size }
+      XCTAssertEqual(sizes, sizes.sorted(), "\(theme)")
+      for role in order { XCTAssertGreaterThanOrEqual(scale[role].lineHeight, scale[role].size) }
+    }
+  }
+
+  func testRadiusNamesMatchTheWeb() {
+    // rounded-lg on the web is --hn-radius-lg, the same step as HNRadius.lg (design#140).
+    XCTAssertEqual(HNRadius.sm, 6)
+    XCTAssertEqual(HNRadius.md, 10)
+    XCTAssertEqual(HNRadius.lg, 14)
+    XCTAssertEqual(HNRadius.xl, 18)
+  }
+
   func testLimeIsTheOnlyAccent() {
     // lexilink keeps its own brand (B2 Ledger, orange blocks): see testLexilinkLedger.
     for theme in HNTheme.allCases where theme != .lexilink {

@@ -36,6 +36,14 @@ Utilities carry an `hn-` prefix so they never shadow Tailwind's own: `bg-hn-surf
 `text-hn-ink-body`, `border-hn-line-strong`, `rounded-hn-md`, `font-hn-mono`, `h-hn-row`,
 `min-h-hn-target`, `p-hn-4`, `shadow-hn-lift`, `ease-hn-pulse`.
 
+Type roles are `text-hn-<role>`: each sets size, line height and weight, e.g. `text-hn-body`,
+`text-hn-meta font-hn-mono`. The family stays separate (`font-hn-*`).
+
+`rounded-sm`, `rounded-md`, `rounded-lg` and `rounded-xl` read the radius token of the same name
+(`--hn-radius-lg` is 14 px, like Swift's `HNRadius.lg`), replacing Tailwind's defaults for those
+four steps; `rounded-hn-*` stays. An app that remapped them (kommandant's shadcn layer pointed
+`rounded-lg` at `--hn-radius-md`) drops its aliases and writes the step it means.
+
 Two loading animations come with their keyframes: `animate-hn-pulse` (a skeleton fill from
 `skeleton.base` to `skeleton.highlight` and back) and `animate-hn-spin`. Pair each with
 `motion-reduce:animate-none`.
@@ -54,14 +62,36 @@ tokens.kommandant.dark.status.crit; // "#ff6b5e", for charts and canvas
 vars.surface.page; // "var(--hn-surface-page)", follows the active mode
 density.touch.target; // "44px"
 ms.delay.pending; // 200, every duration in milliseconds for timers
+tokens.kommandant.dark.text.meta; // { size: "11px", lineHeight: "16px", weight: "400" }
+vars.text.body.size; // "var(--hn-text-body)"
 ```
+
+## Type scale
+
+`semantic/type.json` names seven roles, each a size, line height and weight, no family:
+
+| Role | Default (sites) | kommandant (dense) | Weight | For |
+| --- | --- | --- | --- | --- |
+| `caption` | 12 / 16 | 10 / 14 | 500 | chips, badges, tiny labels |
+| `meta` | 13 / 18 | 11 / 16 | 400 | secondary lines, timestamps, section headers |
+| `body-sm` | 14 / 20 | 12 / 16 | 400 | dense rows, small buttons |
+| `body` | 16 / 24 | 13 / 20 | 400 | running text, row titles |
+| `title` | 20 / 28 | 15 / 20 | 600 | card and panel titles |
+| `heading` | 24 / 32 | 18 / 24 | 600 | page headings |
+| `display` | 36 / 44 | 28 / 34 | 600 | hero titles, big numbers |
+
+CSS: `--hn-text-<role>` (size), `--hn-text-<role>--line-height`, `--hn-text-<role>--font-weight`,
+following the theme. Tailwind: `text-hn-<role>`. Swift: `Font.hn(.body)`, `HNTypeScale.of(theme)`.
+Weight variants of a role (a semibold `meta` header) add `font-semibold`; a size outside the scale
+is a gap to raise here, not an arbitrary `text-[Npx]`.
 
 ## Tiers
 
 - `tokens/primitives/`: the raw palette and the density scales. Never emitted: components only
   see semantics.
 - `tokens/semantic/`: what a value means. `color.dark.json` and `color.light.json` carry the
-  same names; `scale.json` holds space, radius, fonts, durations, focus and the one lift shadow;
+  same names; `scale.json` holds space, radius, fonts, durations, focus and the one lift shadow; `type.json`
+  the type scale;
   `motion.json` holds the loading timings: `delay.pending` (200 ms before a spinner or pending
   indicator shows), `min-visible.pending` (400 ms it then stays), and duration plus easing for
   `pulse`, `shimmer` and `spin`.
@@ -85,7 +115,8 @@ tracking per role) are component styling and stay in the app.
 `data-theme="kommandant"` is the Leitstand (PRD hansenexus/kommandant#472, variant A). Dark mode
 swaps the warm grounds for an ink set (`palette.leitstand`: page `#121109`, card `#1b1912`,
 raised `#262218`, band `#1f1c14`) with its own ink, lines and status colours; light mode keeps the
-shared paper set. `font.display` is the sans stack: the theme references no serif. The rail
+shared paper set. `font.display` is the sans stack: the theme references no serif. `text.*` is the
+dense type scale (body 13 px; 11, 12 and 13 carry most of the UI). The rail
 (`surface.rail` with `rail.ink`, `rail.muted`, `rail.line` and `rail.status-*`) is the same in
 both modes, so it stays ink on paper; its status shapes are the dark status set. Every other theme
 carries the rail tokens too, as the warm dark band and status set, because the Swift output needs

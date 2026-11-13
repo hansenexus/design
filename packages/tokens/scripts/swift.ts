@@ -45,6 +45,7 @@ const TYPE_NAME: Record<string, string> = {
   focus: "HNFocus",
   shadow: "HNShadow",
   size: "HNSize",
+  text: "HNTypeScale",
 };
 
 const GROUP_DOC: Record<string, string> = {
@@ -59,6 +60,7 @@ const GROUP_DOC: Record<string, string> = {
   spin: "One spinner turn. Off under Reduce Motion.",
   focus: "Focus ring geometry in points. The ring colour is `HNColors.focus.ring`.",
   size: "Row height and minimum target in points, per theme or per density.",
+  text: "Type scale per theme: size, line height (points) and weight per role. `Font.hn(.body)` in SwiftUI reads it.",
 };
 
 const SWIFT_KEYWORDS = new Set(["default", "case", "func", "let", "var", "in", "is", "self"]);
@@ -129,6 +131,18 @@ function swiftValue(t: ResolvedToken): [string, string] {
         `spread: ${points(t, s.spread)}`,
       ];
       return ["HNShadowValue", `HNShadowValue(${args.join(", ")})`];
+    }
+    case "typography": {
+      const p = v as Record<string, unknown> | undefined;
+      if (!p || typeof p !== "object" || typeof p.fontWeight !== "number") {
+        fail(t, "is not a size, line height and numeric weight");
+      }
+      const args = [
+        `size: ${points(t, p.fontSize)}`,
+        `lineHeight: ${points(t, p.lineHeight)}`,
+        `weight: ${p.fontWeight}`,
+      ];
+      return ["HNTextStyle", `HNTextStyle(${args.join(", ")})`];
     }
     default:
       fail(t, "has a $type the Swift output does not know");
@@ -277,6 +291,30 @@ function renderPerTheme(
   return out;
 }
 
+/** The roles of the type scale as an enum, so `Font.hn(.body)` can name one. */
+function renderTextRoles(tokens: ResolvedToken[]): string[] {
+  const keys = tokens.map((t) => split(t)[1]);
+  const kase = (k: string) => {
+    const id = ident(k);
+    return id === k ? `  case ${id}` : `  case ${id} = ${JSON.stringify(k)}`;
+  };
+  return [
+    "/// The roles of `HNTypeScale`, the names of `--hn-text-*` on the web.",
+    "public enum HNTextRole: String, CaseIterable, Sendable {",
+    ...keys.map(kase),
+    "}",
+    "",
+    "extension HNTypeScale {",
+    "  /// The style of `role` in this scale.",
+    "  public subscript(_ role: HNTextRole) -> HNTextStyle {",
+    "    switch role {",
+    ...keys.map((k) => `    case .${ident(k)}: ${ident(k)}`),
+    "    }",
+    "  }",
+    "}",
+  ];
+}
+
 function renderEnum(name: string, docText: string, cases: readonly string[], def: string) {
   return [
     `/// ${docText}`,
@@ -313,7 +351,10 @@ export function renderSwift(all: Resolved, densities: Record<string, ResolvedTok
     const perMode = THEMES.some((th) => values(th, "dark") !== values(th, "light"));
     if (perMode) throw new Error(`swift: ${group} differs between modes; only colours may`);
     const shared = THEMES.every((th) => values(th, DEFAULT_MODE) === base);
+    if (group === "text" && shared)
+      throw new Error("swift: text must differ per theme (HNTypeScale.of)");
     sections.push(shared ? renderShared(group, tokens) : renderPerTheme(group, all, densities));
+    if (group === "text") sections.push(renderTextRoles(tokens));
   }
   return `${[HEADER, ...sections].map((s) => s.join("\n")).join("\n\n")}\n`;
 }
