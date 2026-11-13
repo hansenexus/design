@@ -36,5 +36,19 @@ final class SwiftUITests: XCTestCase {
     _ = Font.hnSans(size: 14)
     _ = Font.hnMono(size: 13)
   }
+
+  func testTypeRoles() {
+    for role in HNTextRole.allCases {
+      _ = Font.hn(role)
+      _ = Font.hn(role, theme: .kommandant, family: HNFontFamily.mono, weight: .semibold)
+    }
+    XCTAssertEqual(HNTextRole.body.textStyle, .body)
+    XCTAssertEqual(HNTextRole.display.textStyle, .largeTitle)
+    XCTAssertEqual(Font.Weight(hnCSS: 400), .regular)
+    XCTAssertEqual(Font.Weight(hnCSS: 500), .medium)
+    XCTAssertEqual(Font.Weight(hnCSS: 600), .semibold)
+    XCTAssertEqual(Font.Weight(hnCSS: 700), .bold)
+    XCTAssertEqual(HNTextStyle(size: 13, lineHeight: 20, weight: 400).lineSpacing, 20 - 13 * 1.2, accuracy: 0.0001)
+  }
 }
 #endif

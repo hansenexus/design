@@ -20,6 +20,7 @@ export type ResolvedToken = {
   /** CSS custom property name, e.g. "--hn-surface-page". */
   cssVar: string;
   type: string;
+  /** CSS value; for a typography token the JSON of its parts, so theme diffs still compare. */
   value: string;
   /** Resolved DTCG value before CSS transforms: arrays and objects stay structured. */
   raw: unknown;
@@ -41,6 +42,7 @@ export async function resolveTokens(
     join(tokensDir, "primitives/*.json"),
     join(tokensDir, "semantic/scale.json"),
     join(tokensDir, "semantic/motion.json"),
+    join(tokensDir, "semantic/type.json"),
     join(tokensDir, `semantic/color.${mode}.json`),
   ];
   const source = [join(tokensDir, `themes/${theme}.json`)];
@@ -78,7 +80,7 @@ export async function resolveTokens(
       path: t.path.join("."),
       cssVar: `--${t.name}`,
       type: String(t.$type),
-      value: String(t.$value),
+      value: t.$type === "typography" ? JSON.stringify(t.$value) : String(t.$value),
       raw: raw.get(t.path.join(".")),
       ...(t.$description ? { description: String(t.$description) } : {}),
     }))

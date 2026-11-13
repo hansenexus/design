@@ -6,6 +6,16 @@ import HansenexusBrand
 import HansenexusTokens
 import SwiftUI
 
+// MARK: - Type
+
+extension Font {
+  /// The popover's type: a role of the dense (kommandant) scale in the system face, which a
+  /// menu bar popover keeps (design#140). Sizes follow `HNTypeScale.of(.kommandant)`.
+  static func popover(_ role: HNTextRole, weight: Font.Weight? = nil) -> Font {
+    .hn(role, theme: .kommandant, family: ["system-ui"], weight: weight)
+  }
+}
+
 // MARK: - Emblem
 
 /// The hansenexus emblem as a `Shape`: the mark of `HansenexusBrand`, centred in its rect.
@@ -39,9 +49,9 @@ public struct BrandHeader<Trailing: View>: View {
         .frame(width: 26, height: 20)
         .accessibilityHidden(true)
       VStack(alignment: .leading, spacing: 0) {
-        Text(title).font(.system(size: 13, weight: .semibold))
+        Text(title).font(.popover(.body, weight: .semibold))
         Text("hansenexus")
-          .font(.system(size: 10, weight: .medium))
+          .font(.popover(.caption))
           .tracking(0.3)
           .foregroundStyle(.secondary)
       }
@@ -70,7 +80,7 @@ public struct SectionHeader: View {
 
   public var body: some View {
     Text(title.uppercased())
-      .font(.system(size: 11, weight: .semibold))
+      .font(.popover(.meta, weight: .semibold))
       .tracking(0.7)
       .foregroundStyle(.secondary)
       .frame(maxWidth: .infinity, alignment: .leading)
@@ -139,16 +149,16 @@ public struct SettingRow<Trailing: View>: View {
     HStack(alignment: .center, spacing: 12) {
       if let systemImage {
         Image(systemName: systemImage)
-          .font(.system(size: 14))
+          .font(.popover(.title, weight: .regular))
           .foregroundStyle(.secondary)
           .frame(width: 20)
           .accessibilityHidden(true)
       }
       VStack(alignment: .leading, spacing: 2) {
-        Text(title).font(.system(size: 13))
+        Text(title).font(.popover(.body))
         if let detail {
           Text(detail)
-            .font(.system(size: 11))
+            .font(.popover(.meta))
             .foregroundStyle(.secondary)
             .fixedSize(horizontal: false, vertical: true)
         }
@@ -182,7 +192,7 @@ public struct Chip: View {
 
   public var body: some View {
     Text(text)
-      .font(.system(size: 10, weight: .medium))
+      .font(.popover(.caption))
       .padding(.horizontal, 7)
       .padding(.vertical, 2)
       .foregroundStyle(foreground)
@@ -237,9 +247,9 @@ public struct IconTabBar<Tab: Hashable & Identifiable>: View {
           withAnimation(.spring(response: 0.22, dampingFraction: 0.85)) { selection = tab }
         } label: {
           HStack(spacing: 6) {
-            Image(systemName: symbol(tab)).font(.system(size: 15, weight: .medium))
+            Image(systemName: symbol(tab)).font(.popover(.title, weight: .medium))
             if tab == selection {
-              Text(label(tab)).font(.system(size: 12, weight: .medium))
+              Text(label(tab)).font(.popover(.bodySm, weight: .medium))
             }
           }
           .foregroundStyle(tab == selection ? accent.text.color(scheme) : .secondary)
@@ -299,7 +309,7 @@ public struct PillButtonStyle: ButtonStyle {
       }
       configuration.label
     }
-    .font(.system(size: small ? 12 : 14, weight: .semibold))
+    .font(.popover(small ? .bodySm : .title, weight: .semibold))
     .frame(maxWidth: small ? nil : .infinity)
     .padding(.vertical, small ? 4 : 9)
     .padding(.horizontal, small ? 11 : 16)
@@ -343,7 +353,7 @@ public struct TileButtonStyle: ButtonStyle {
     var body: some View {
       let shape = RoundedRectangle(cornerRadius: 12, style: .continuous)
       configuration.label
-        .font(.system(size: 13, weight: .medium))
+        .font(.popover(.body, weight: .medium))
         .frame(maxWidth: .infinity)
         .padding(.vertical, 9)
         .background(shape.fill(hovering || configuration.isPressed ? PopoverPalette.well(scheme) : PopoverPalette.card(scheme)))

@@ -99,6 +99,52 @@ extension Font {
     }
     return .system(size: size, design: HNFontStack.design(for: stack))
   }
+
+  /// A role of the type scale, the twin of `text-hn-<role>` on the web: `Font.hn(.body)`,
+  /// `Font.hn(.meta, theme: .kommandant, family: HNFontFamily.mono)`. Size and weight come from
+  /// `HNTypeScale.of(theme)`; `weight` overrides the role's. The size scales with Dynamic Type
+  /// relative to the role's `textStyle`. Line height is not part of a SwiftUI `Font`: apply
+  /// `.lineSpacing(style.lineSpacing)` where running text needs it.
+  public static func hn(
+    _ role: HNTextRole, theme: HNTheme = .default, family: [String] = HNFontFamily.sans,
+    weight: Font.Weight? = nil
+  ) -> Font {
+    let style = HNTypeScale.of(theme)[role]
+    return hn(family, size: style.size, relativeTo: role.textStyle)
+      .weight(weight ?? Font.Weight(hnCSS: style.weight))
+  }
+}
+
+extension HNTextRole {
+  /// The system text style a role scales with under Dynamic Type.
+  public var textStyle: Font.TextStyle {
+    switch self {
+    case .caption: .caption2
+    case .meta: .caption
+    case .bodySm: .footnote
+    case .body: .body
+    case .title: .headline
+    case .heading: .title3
+    case .display: .largeTitle
+    }
+  }
+}
+
+extension Font.Weight {
+  /// The SwiftUI weight of a CSS font-weight number, rounded to the nearest hundred.
+  public init(hnCSS weight: Int) {
+    switch (weight + 50) / 100 {
+    case ...1: self = .ultraLight
+    case 2: self = .thin
+    case 3: self = .light
+    case 4: self = .regular
+    case 5: self = .medium
+    case 6: self = .semibold
+    case 7: self = .bold
+    case 8: self = .heavy
+    default: self = .black
+    }
+  }
 }
 
 enum HNFontStack {

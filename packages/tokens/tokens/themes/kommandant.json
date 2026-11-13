@@ -32,5 +32,16 @@
     "status-busy": { "$value": "{palette.leitstand.busy}" },
     "status-warn": { "$value": "{palette.leitstand.warn}" },
     "status-crit": { "$value": "{palette.leitstand.crit}" }
+  },
+  "text": {
+    "$type": "typography",
+    "$description": "Leitstand is dense: the type scale of kommandant web and the Apple client, where 11, 12 and 13 px carry most of the UI (kommandant#801)",
+    "caption": { "$value": { "fontSize": "10px", "lineHeight": "14px", "fontWeight": 500 } },
+    "meta": { "$value": { "fontSize": "11px", "lineHeight": "16px", "fontWeight": 400 } },
+    "body-sm": { "$value": { "fontSize": "12px", "lineHeight": "16px", "fontWeight": 400 } },
+    "body": { "$value": { "fontSize": "13px", "lineHeight": "20px", "fontWeight": 400 } },
+    "title": { "$value": { "fontSize": "15px", "lineHeight": "20px", "fontWeight": 600 } },
+    "heading": { "$value": { "fontSize": "18px", "lineHeight": "24px", "fontWeight": 600 } },
+    "display": { "$value": { "fontSize": "28px", "lineHeight": "34px", "fontWeight": 600 } }
   }
 }

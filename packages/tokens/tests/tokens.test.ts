@@ -229,6 +229,95 @@ describe("build", () => {
   });
 });
 
+describe("type scale and radius names (design#140)", () => {
+  const ROLES = ["body", "body-sm", "caption", "display", "heading", "meta", "title"];
+
+  test("tokens.css carries size, line height and weight per role; kommandant is dense", async () => {
+    await built;
+    const css = readFileSync(join(dist, "tokens.css"), "utf8");
+    const root = blocks(css).get(':root,\n[data-theme="hansenexus"]') ?? "";
+    for (const role of ROLES) {
+      expect(root).toContain(`--hn-text-${role}: `);
+      expect(root).toContain(`--hn-text-${role}--line-height: `);
+      expect(root).toContain(`--hn-text-${role}--font-weight: `);
+    }
+    expect(root).toContain("--hn-text-body: 16px;");
+    expect(root).toContain("--hn-text-body--line-height: 24px;");
+    const kommandant = blocks(css).get('[data-theme="kommandant"]') ?? "";
+    // The sizes kommandant uses most on web and Swift: 11, 12, 13 (kommandant#801).
+    expect(kommandant).toContain("--hn-text-meta: 11px;");
+    expect(kommandant).toContain("--hn-text-body-sm: 12px;");
+    expect(kommandant).toContain("--hn-text-body: 13px;");
+    expect(kommandant).toContain("--hn-text-caption--font-weight: 500;");
+    expect(css).not.toContain("[object Object]");
+  });
+
+  test("tailwind.css: text-hn-<role> with its line height and weight", async () => {
+    await built;
+    const tw = readFileSync(join(dist, "tailwind.css"), "utf8");
+    for (const role of ROLES) {
+      expect(tw).toContain(`--text-hn-${role}: var(--hn-text-${role});`);
+      expect(tw).toContain(`--text-hn-${role}--line-height: var(--hn-text-${role}--line-height);`);
+      expect(tw).toContain(`--text-hn-${role}--font-weight: var(--hn-text-${role}--font-weight);`);
+    }
+  });
+
+  test("rounded-sm/md/lg/xl read the token of the same name, as HNRadius does", async () => {
+    await built;
+    const tw = readFileSync(join(dist, "tailwind.css"), "utf8");
+    for (const step of ["sm", "md", "lg", "xl"]) {
+      expect(tw).toContain(`--radius-${step}: var(--hn-radius-${step});`);
+    }
+    expect(tw).not.toContain("--radius-pill:");
+    const swift = await generateSwift();
+    expect(swift).toContain("public static let lg: Double = 14");
+    const mod = await import(join(dist, "index.js"));
+    expect(mod.tokens.hansenexus.dark.radius.lg).toBe("14px");
+  });
+
+  test("TS constants carry each role as size, line height and weight", async () => {
+    await built;
+    const mod = await import(join(dist, "index.js"));
+    expect(mod.tokens.kommandant.dark.text.meta).toEqual({
+      size: "11px",
+      lineHeight: "16px",
+      weight: "400",
+    });
+    expect(mod.tokens.hansenexus.light.text.body.size).toBe("16px");
+    expect(mod.vars.text["body-sm"]).toEqual({
+      size: "var(--hn-text-body-sm)",
+      lineHeight: "var(--hn-text-body-sm--line-height)",
+      weight: "var(--hn-text-body-sm--font-weight)",
+    });
+  });
+
+  test("Swift gets HNTypeScale per theme and HNTextRole", async () => {
+    const swift = await generateSwift();
+    expect(swift).toContain("public struct HNTypeScale: Sendable, Equatable {");
+    expect(swift).toContain(
+      "public static let body: HNTextStyle = HNTextStyle(size: 16, lineHeight: 24, weight: 400)"
+    );
+    expect(swift).toContain(
+      "case .kommandant: return HNTypeScale(body: HNTextStyle(size: 13, lineHeight: 20, weight: 400)"
+    );
+    expect(swift).toContain("public enum HNTextRole: String, CaseIterable, Sendable {");
+    expect(swift).toContain('case bodySm = "body-sm"');
+    expect(swift).toContain("case .bodySm: bodySm");
+  });
+
+  test("a role without a numeric weight fails the build", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "hn-tokens-"));
+    cpSync(TOKENS_DIR, dir, { recursive: true });
+    const path = join(dir, "semantic/type.json");
+    const json = JSON.parse(readFileSync(path, "utf8"));
+    json.text.body.$value.fontWeight = "bold";
+    writeFileSync(path, JSON.stringify(json));
+    await expect(build(dir, mkdtempSync(join(tmpdir(), "hn-dist-")))).rejects.toThrow(
+      "text.body needs a numeric fontWeight"
+    );
+  });
+});
+
 describe("kommandant Leitstand", () => {
   test("line.subtle on surface.card is 1.3:1 and action.text on surface.page 4.5:1, both modes", async () => {
     for (const mode of MODES) {

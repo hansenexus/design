@@ -57,3 +57,21 @@ public struct HNCubicBezier: Sendable, Equatable {
     self.y2 = y2
   }
 }
+
+/// One role of the type scale: size and line height in points (1 CSS px is 1 pt), weight as
+/// the CSS number (400 regular, 500 medium, 600 semibold). No family: `HNFontFamily` picks it.
+public struct HNTextStyle: Sendable, Equatable {
+  public let size: Double
+  public let lineHeight: Double
+  public let weight: Int
+
+  public init(size: Double, lineHeight: Double, weight: Int) {
+    self.size = size
+    self.lineHeight = lineHeight
+    self.weight = weight
+  }
+
+  /// Extra space SwiftUI's `.lineSpacing(_:)` adds between lines to reach `lineHeight`, taking
+  /// the font's own line as 1.2 times its size (the CSS `normal` of most UI faces).
+  public var lineSpacing: Double { max(0, lineHeight - size * 1.2) }
+}
