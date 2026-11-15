@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { build } from "../scripts/build";
 import { checkAll, ratio, TERMINAL } from "../scripts/contrast";
-import { MODES, resolveTokens, THEMES, TOKENS_DIR } from "../scripts/resolve";
+import { allThemes, MODES, resolveTokens, TOKENS_DIR } from "../scripts/resolve";
 import { generateSwift, SWIFT_OUT } from "../scripts/swift";
 
 const CONTRAST = resolve(import.meta.dir, "../scripts/contrast.ts");
@@ -87,7 +87,7 @@ describe("contrast", () => {
     expect(TERMINAL).toHaveLength(16);
     expect(new Set(terminal.map((r) => r.bg))).toEqual(new Set(["surface.page", "surface.card"]));
     expect(new Set(terminal.map((r) => r.kind))).toEqual(new Set(["text"]));
-    expect(terminal).toHaveLength(16 * 2 * THEMES.length * 2);
+    expect(terminal).toHaveLength(16 * 2 * allThemes().length * 2);
     expect(terminal.every((r) => r.ratio >= 4.5)).toBe(true);
   });
 

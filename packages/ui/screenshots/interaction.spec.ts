@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { GALLERY_THEMES } from "../gallery/themes";
 import { SCENES } from "../gallery/view";
 
 // Keyboard and ARIA behaviour of the overlay and navigation set, driven through the live
@@ -150,8 +151,10 @@ test("compare: every card renders once per theme, side by side", async ({ page }
   await expect(page).toHaveURL(/compare=on/);
   const card = page.locator('[data-preview="spinner"]');
   const panels = card.locator("[data-compare]");
-  await expect(panels).toHaveCount(4);
-  for (const theme of ["hansenexus", "kommandant", "portal", "lexilink"])
+  // Every theme of the picker, the theme packs' directions included (design 143).
+  expect(GALLERY_THEMES).toEqual(["hansenexus", "kommandant", "portal", "lexilink", "fachwerk"]);
+  await expect(panels).toHaveCount(GALLERY_THEMES.length);
+  for (const theme of GALLERY_THEMES)
     await expect(card.locator(`[data-compare="${theme}"]`)).toHaveAttribute("data-theme", theme);
   // Side by side where they fit (260 px each); at phone width they stack.
   const [a, b] = [await panels.nth(0).boundingBox(), await panels.nth(1).boundingBox()];

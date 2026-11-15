@@ -1,0 +1,123 @@
+name: release-theme
+
+# Publishes one app's theme pack, @hansenexus/theme-<app> from themes/<app>/ (design#143), to
+# npm with provenance over Trusted Publishing (OIDC, no NPM_TOKEN). One workflow for every
+# pack: the tag names the app. @hansenexus/tokens and @hansenexus/ui are peer dependencies and
+# ship on their own `tokens-v*` and `ui-v*` tags.
+#
+# npm side, once per package (npmjs.com > @hansenexus/theme-<app> > Settings > Trusted
+# Publisher): Organization hansenexus, Repository design, Workflow release-theme.yml,
+# Allowed actions: npm publish. A package's very first publish needs the owner (npm creates
+# the package and its Trusted Publisher setting only after it exists).
+#
+# Trigger: push a `theme-<app>-v<version>` tag, e.g. theme-fachwerk-v0.1.0. The workflow
+# refuses a tag whose app has no themes/<app>/package.json or whose version disagrees with
+# it. workflow_dispatch with an app and dry_run packs and validates without publishing.
+
+on:
+  push:
+    tags: ["theme-*-v*"]
+  workflow_dispatch:
+    inputs:
+      app:
+        description: "The pack's app: themes/<app>/ (fachwerk, lexilink, ...)"
+        type: string
+        required: true
+      dry_run:
+        description: "Pack and validate, but do not publish"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-theme-${{ github.ref_name }}-${{ inputs.app }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write # GitHub release
+      id-token: write # provenance attestation
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - name: npm supporting OIDC
+        run: npm install -g npm@latest
+      - run: bun install --frozen-lockfile
+
+      # The app from the tag (theme-<app>-v<version>) or the dispatch input; the tag's version
+      # must be themes/<app>/package.json's.
+      - name: Resolve the pack
+        id: pack
+        env:
+          INPUT_APP: ${{ inputs.app }}
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF" == refs/tags/theme-* ]]; then
+            if [[ ! "$GITHUB_REF_NAME" =~ ^theme-([a-z0-9-]+)-v([0-9].*)$ ]]; then
+              echo "::error::tag $GITHUB_REF_NAME is not theme-<app>-v<version>"
+              exit 1
+            fi
+            app="${BASH_REMATCH[1]}"
+            tag="${BASH_REMATCH[2]}"
+          else
+            app="$INPUT_APP"
+            tag=""
+          fi
+          if [[ ! "$app" =~ ^[a-z0-9-]+$ ]] || [ ! -f "themes/$app/package.json" ]; then
+            echo "::error::no theme pack themes/$app/package.json"
+            exit 1
+          fi
+          name=$(node -p "require('./themes/$app/package.json').name")
+          pkg=$(node -p "require('./themes/$app/package.json').version")
+          if [ "$name" != "@hansenexus/theme-$app" ]; then
+            echo "::error::themes/$app/package.json is $name, not @hansenexus/theme-$app"
+            exit 1
+          fi
+          if [ -n "$tag" ] && [ "$tag" != "$pkg" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match themes/$app/package.json $pkg"
+            exit 1
+          fi
+          echo "dir=themes/$app" >> "$GITHUB_OUTPUT"
+
+      # Root build: tokens and ui build before the packs (the skins and declarations import
+      # them); contrast covers every pack direction; the tests hold the pack contract.
+      - name: Gate
+        run: bun run build && bun run contrast && bun run test
+
+      - name: Pack
+        working-directory: ${{ steps.pack.outputs.dir }}
+        run: npm pack --dry-run
+
+      # Already on npm with the same contents (a re-run): skip. Different contents: fail.
+      - name: Publish
+        if: ${{ github.event_name == 'push' || !inputs.dry_run }}
+        working-directory: ${{ steps.pack.outputs.dir }}
+        run: '"$GITHUB_WORKSPACE/scripts/npm-publish.sh"'
+
+      # A collision with the published version counts as success here only; see the script.
+      - name: Publish (dry run)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        working-directory: ${{ steps.pack.outputs.dir }}
+        run: '"$GITHUB_WORKSPACE/scripts/npm-publish.sh" --dry-run'
+
+      - name: GitHub release
+        if: startsWith(github.ref, 'refs/tags/theme-')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "::notice::GitHub release $GITHUB_REF_NAME already exists. Skipping."
+          else
+            gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
+          fi

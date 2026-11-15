@@ -25,6 +25,8 @@ import {
 } from "node:fs";
 import { dirname, extname, resolve, sep } from "node:path";
 import type { BunPlugin } from "bun";
+import { renderPackCss } from "../../tokens/scripts/build";
+import { BUNDLED_PACKS, packThemes } from "../../tokens/scripts/resolve";
 import { DECIDE_PATH, type DecideBody, type DecideReply } from "../gallery/decide";
 import { graphSource, loadGraph } from "./graph";
 import { decide, readDecision, registrySource } from "./variants";
@@ -48,20 +50,26 @@ const BRAND_FILES = [
 // families without "Variable", so the fontsource faces are re-registered under those names.
 // The woff2 files are copied into dist/fonts/ so the built gallery is self-contained. Every theme's
 // stacks are here: Fraunces, Instrument Sans and JetBrains Mono for the shared tier, Archivo and
-// Geist Mono for lexilink (#62). Archivo comes from wdth.css, the faces with the width axis, since
-// lexilink's hierarchy is font-stretch; the other packages ship the weight axis in index.css.
+// Geist Mono for lexilink (#62), Bricolage Grotesque and IBM Plex Mono for fachwerk (design#143).
+// Archivo comes from wdth.css, the faces with the width axis, since lexilink's hierarchy is
+// font-stretch; the other variable packages ship the weight axis in index.css. IBM Plex Mono has
+// no variable build: its three static weights, as fachwerk loads them.
 const FONTS = [
-  ["fraunces", "Fraunces", "index.css"],
-  ["instrument-sans", "Instrument Sans", "index.css"],
-  ["jetbrains-mono", "JetBrains Mono", "index.css"],
-  ["archivo", "Archivo", "wdth.css"],
-  ["geist-mono", "Geist Mono", "index.css"],
+  ["@fontsource-variable/fraunces", "Fraunces", "index.css"],
+  ["@fontsource-variable/instrument-sans", "Instrument Sans", "index.css"],
+  ["@fontsource-variable/jetbrains-mono", "JetBrains Mono", "index.css"],
+  ["@fontsource-variable/archivo", "Archivo", "wdth.css"],
+  ["@fontsource-variable/geist-mono", "Geist Mono", "index.css"],
+  ["@fontsource-variable/bricolage-grotesque", "Bricolage Grotesque", "index.css"],
+  ["@fontsource/ibm-plex-mono", "IBM Plex Mono", "400.css"],
+  ["@fontsource/ibm-plex-mono", "IBM Plex Mono", "500.css"],
+  ["@fontsource/ibm-plex-mono", "IBM Plex Mono", "600.css"],
 ] as const;
 
 function fontsCss(): string {
   mkdirSync(resolve(OUT, "fonts"), { recursive: true });
   return FONTS.map(([pkg, family, file]) => {
-    const dir = dirname(Bun.resolveSync(`@fontsource-variable/${pkg}/${file}`, ROOT));
+    const dir = dirname(Bun.resolveSync(`${pkg}/${file}`, ROOT));
     const css = readFileSync(resolve(dir, file), "utf8");
     for (const [, file] of css.matchAll(/url\(\.\/files\/([^)]+)\)/g)) {
       if (file) copyFileSync(resolve(dir, "files", file), resolve(OUT, "fonts", file));
@@ -70,6 +78,16 @@ function fontsCss(): string {
       .replaceAll(`'${family} Variable'`, `'${family}'`)
       .replaceAll("url(./files/", "url(./fonts/");
   }).join("\n");
+}
+
+/**
+ * The theme packs @hansenexus/tokens does not bundle (design#143), as their packages ship them:
+ * each app's theme.css, concatenated. gallery.css imports it, so Tailwind inlines it.
+ */
+async function packsCss(): Promise<string> {
+  const bundled = new Set<string>(BUNDLED_PACKS);
+  const apps = [...new Set(packThemes().map((p) => p.app))].filter((a) => !bundled.has(a));
+  return (await Promise.all(apps.map((app) => renderPackCss(app)))).join("\n");
 }
 
 /** `virtual:variants`: every vote category, its variants and decision (scripts/variants.ts). */
@@ -123,6 +141,7 @@ export async function buildGallery() {
   const graph = loadGraph(ROOT);
   writeFileSync(resolve(OUT, "graph.json"), `${JSON.stringify(graph, null, 2)}\n`);
   writeFileSync(resolve(OUT, "fonts.css"), fontsCss());
+  writeFileSync(resolve(OUT, "packs.css"), await packsCss());
   mkdirSync(resolve(OUT, "brand"), { recursive: true });
   for (const file of BRAND_FILES) {
     copyFileSync(resolve(BRAND, file), resolve(OUT, "brand", file.split("/").pop() ?? file));

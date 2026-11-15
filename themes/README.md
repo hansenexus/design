@@ -5,8 +5,10 @@ components (design#143, ruling `dec_2026-11-15_global-design-theme-packs-gallery
 The core stays in `packages/`: `@hansenexus/tokens`, `@hansenexus/ui`, `@hansenexus/shell`.
 
 ```
-themes/<app>/
+themes/<app>/                @hansenexus/theme-<app>
   pack.json                 { "app": "<app>", "default": "<direction>" }
+  package.json              the npm package, built by scripts/theme-build.ts
+  index.ts                  one ThemePackDefinition per direction, and `directions`
   <direction>/
     palette.json            the direction's primitives: never emitted, only referenced
     tokens.json             any core token it overrides, recipes included
@@ -36,8 +38,44 @@ themes/<app>/
 - **Theme ids.** The default direction's `data-theme` is the app's name; another direction's is
   `<app>-<direction>`, so a candidate can render beside the live one in the gallery.
 - **Checks.** `bun run contrast` resolves every direction in both modes against the same WCAG
-  rules as the core themes.
+  rules as the core themes. `packages/ui/tests/packs.test.tsx` renders every atom's demo under
+  each pack, holds its skins to registered slots above the atoms, and checks that a demo
+  reaching none of its skins renders byte for byte the default. The gallery offers every
+  direction in its theme picker (`packages/ui/gallery/packs.ts`), and
+  `packages/ui/screenshots/kit.spec.ts` keeps baselines of the fachwerk pack.
+
+## The package
+
+Each app's pack is one npm package, `@hansenexus/theme-<app>`, versioned on its own and
+released by `.github/workflows/release-theme.yml` on a `theme-<app>-v<version>` tag. `bun run
+build` writes its `dist/`: `theme.css` (every direction as `[data-theme]` blocks over the core
+variables), `index.js` with the `ThemePackDefinition`s and their skins, and the declarations.
+`@hansenexus/tokens`, `@hansenexus/ui` and `react` are peer dependencies.
+
+```css
+@import "tailwindcss";
+@import "@hansenexus/tokens/tailwind.css";
+@import "@hansenexus/theme-fachwerk/theme.css";
+@source "../node_modules/@hansenexus/ui/dist";
+@source "../node_modules/@hansenexus/theme-fachwerk/dist";
+```
+
+```tsx
+import { fachwerk } from "@hansenexus/theme-fachwerk";
+import { ThemePack } from "@hansenexus/ui";
+
+// <html data-theme="fachwerk" data-mode="light">
+<ThemePack pack={fachwerk}>
+  <App />
+</ThemePack>;
+```
+
+A new pack: copy `themes/fachwerk/`'s `package.json`, `tsconfig.build.json` and `LICENSE`, name
+the package `@hansenexus/theme-<app>` (the build refuses any other name), add the app to
+`packages/ui/gallery/packs.ts`, and run `bun install`. Its first npm publish and its Trusted
+Publisher setting are the owner's.
 
 | Pack | Directions | Ships in |
 | --- | --- | --- |
-| `lexilink` | `ledger` (B2 Ledger, default) | `@hansenexus/tokens` (`data-theme="lexilink"`), until lexilink adopts its pack |
+| `lexilink` | `ledger` (B2 Ledger, default) | `@hansenexus/tokens` (`data-theme="lexilink"`), until lexilink adopts `@hansenexus/theme-lexilink` |
+| `fachwerk` | `fachwerk` (direction B "Fachwerk", default): 2 px beams, square controls, no shadows, brace and hatch motifs, Bricolage Grotesque and IBM Plex Mono; skins `card.header`, `empty-state` | `@hansenexus/theme-fachwerk` |

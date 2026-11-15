@@ -9,6 +9,7 @@ import {
   DENSITIES,
   MODES,
   type Mode,
+  packThemes,
   type ResolvedToken,
   resolveDensities,
   resolveTokens,
@@ -63,10 +64,35 @@ function block(selector: string, tokens: ResolvedToken[], extra: string[] = []):
   return `${selector} {\n${lines.map((l) => `  ${l}`).join("\n")}\n}\n`;
 }
 
-/** Tokens of `theme` in `mode` whose value differs from the default theme. */
-function themeDiff(all: Resolved, theme: Theme, mode: Mode): ResolvedToken[] {
-  const base = new Map(all[DEFAULT_THEME][mode].map((t) => [t.path, t.value]));
-  return all[theme][mode].filter((t) => base.get(t.path) !== t.value);
+type Modes = Record<Mode, ResolvedToken[]>;
+
+/** Tokens of `own` in `mode` whose value differs from `base` (the default theme). */
+function themeDiff(base: Modes, own: Modes, mode: Mode): ResolvedToken[] {
+  const values = new Map(base[mode].map((t) => [t.path, t.value]));
+  return own[mode].filter((t) => values.get(t.path) !== t.value);
+}
+
+/**
+ * The blocks of one non-default theme: what it changes from the default theme, shared by both
+ * modes under [data-theme], the rest per mode.
+ */
+function themeBlocks(base: Modes, own: Modes, theme: string): string[] {
+  const dark = themeDiff(base, own, "dark");
+  const light = themeDiff(base, own, "light");
+  const lightByPath = new Map(light.map((t) => [t.path, t.value]));
+  const shared = dark.filter((t) => lightByPath.get(t.path) === t.value);
+  const sharedPaths = new Set(shared.map((t) => t.path));
+  return [
+    block(`[data-theme="${theme}"]`, shared),
+    block(
+      `[data-theme="${theme}"]:not([data-mode="light"])`,
+      dark.filter((t) => !sharedPaths.has(t.path))
+    ),
+    block(
+      `[data-theme="${theme}"][data-mode="light"]`,
+      light.filter((t) => !sharedPaths.has(t.path))
+    ),
+  ];
 }
 
 export function renderCss(all: Resolved, densities: Record<string, ResolvedToken[]>): string {
@@ -86,24 +112,7 @@ export function renderCss(all: Resolved, densities: Record<string, ResolvedToken
   }
   for (const theme of THEMES) {
     if (theme === DEFAULT_THEME) continue;
-    const dark = themeDiff(all, theme, "dark");
-    const light = themeDiff(all, theme, "light");
-    const lightByPath = new Map(light.map((t) => [t.path, t.value]));
-    const shared = dark.filter((t) => lightByPath.get(t.path) === t.value);
-    const sharedPaths = new Set(shared.map((t) => t.path));
-    out.push(block(`[data-theme="${theme}"]`, shared));
-    out.push(
-      block(
-        `[data-theme="${theme}"]:not([data-mode="light"])`,
-        dark.filter((t) => !sharedPaths.has(t.path))
-      )
-    );
-    out.push(
-      block(
-        `[data-theme="${theme}"][data-mode="light"]`,
-        light.filter((t) => !sharedPaths.has(t.path))
-      )
-    );
+    out.push(...themeBlocks(def, all[theme], theme));
   }
   out.push("/* Density overrides the theme's choice. */");
   for (const d of DENSITIES) out.push(block(`[data-density="${d}"]`, densities[d] ?? []));
@@ -352,8 +361,47 @@ export async function build(tokensDir?: string, dist = DIST) {
   return all;
 }
 
+async function resolveModes(theme: string, tokensDir?: string, packsDir?: string): Promise<Modes> {
+  const out = {} as Modes;
+  for (const mode of MODES) out[mode] = await resolveTokens(theme, mode, tokensDir, packsDir);
+  return out;
+}
+
+/**
+ * The theme.css of @hansenexus/theme-<app> (design#143): every direction of the pack as
+ * [data-theme] blocks over the default theme, in the shape tokens.css gives a bundled theme.
+ * Load it after @hansenexus/tokens' tokens.css (tailwind.css imports that).
+ */
+export async function renderPackCss(app: string, tokensDir?: string, packsDir?: string) {
+  const directions = packThemes(packsDir).filter((p) => p.app === app);
+  if (directions.length === 0) throw new Error(`build: no pack named ${app}`);
+  const base = await resolveModes(DEFAULT_THEME, tokensDir, packsDir);
+  const out = [
+    `/* @hansenexus/theme-${app}: generated from themes/${app} by @hansenexus/tokens scripts/build.ts. Do not edit. */`,
+    "/* Load after @hansenexus/tokens/tokens.css; set data-theme to a direction's id. */",
+    "",
+  ];
+  for (const p of directions) {
+    out.push(`/* ${p.direction}${p.isDefault ? " (default)" : ""} */`);
+    out.push(...themeBlocks(base, await resolveModes(p.id, tokensDir, packsDir), p.id));
+  }
+  return `${out.filter(Boolean).join("\n").trimEnd()}\n`;
+}
+
 if (import.meta.main) {
   try {
+    const args = process.argv.slice(2);
+    const pack = args.indexOf("--pack");
+    if (pack >= 0) {
+      // bun scripts/build.ts --pack <app> --out <dir>: a theme package's theme.css.
+      const app = args[pack + 1] ?? "";
+      const outArg = args.indexOf("--out");
+      const out = resolve(outArg >= 0 ? (args[outArg + 1] ?? ".") : ".");
+      mkdirSync(out, { recursive: true });
+      writeFileSync(resolve(out, "theme.css"), await renderPackCss(app));
+      console.log(`built ${resolve(out, "theme.css")}`);
+      process.exit(0);
+    }
     await build();
     console.log(`built ${DIST}`);
   } catch (err) {

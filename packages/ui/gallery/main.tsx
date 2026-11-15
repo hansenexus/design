@@ -106,6 +106,7 @@ import {
   TabsList,
   TabsTrigger,
   Textarea,
+  ThemePack,
   Toast,
   ToastAction,
   ToastDescription,
@@ -126,6 +127,7 @@ import { itemsByLevel, type Level } from "./levels";
 import { Motion } from "./motion-scene";
 import { Navigation } from "./navigation";
 import { Overlays } from "./overlays";
+import { packFor } from "./packs";
 import { BareContext, PreviewCard, ViewProvider, ViewToolbar } from "./preview";
 import { ShellScene } from "./shell";
 import {
@@ -1434,6 +1436,15 @@ function Page() {
   return itemParam ? <ItemPage name={itemParam} /> : <Scenes scene={scene} />;
 }
 
+/** The scene under the current theme's pack, so its skins render (design#143). */
+function PackedPage({ theme }: { theme: string }) {
+  return (
+    <ThemePack pack={packFor(theme)}>
+      <Page />
+    </ThemePack>
+  );
+}
+
 function Gallery() {
   const [view, setView] = useState(() => readView(query));
   const change = (next: View) => {
@@ -1448,7 +1459,7 @@ function Gallery() {
       <LevelNav view={view} />
       <ViewToolbar view={view} onChange={change} />
       {view.viewport === "auto" ? (
-        <Page />
+        <PackedPage theme={view.theme} />
       ) : (
         <div className="overflow-x-auto bg-hn-surface-band p-4 sm:p-6">
           <iframe
@@ -1470,7 +1481,7 @@ if (root) {
       <BareContext.Provider value={bare}>
         {framed ? (
           <ViewProvider view={readView(query)}>
-            <Page />
+            <PackedPage theme={readView(query).theme} />
           </ViewProvider>
         ) : (
           <Gallery />

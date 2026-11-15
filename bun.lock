@@ -73,10 +73,12 @@
       },
       "devDependencies": {
         "@fontsource-variable/archivo": "5.3.0",
+        "@fontsource-variable/bricolage-grotesque": "5.3.0",
         "@fontsource-variable/fraunces": "5.3.0",
         "@fontsource-variable/geist-mono": "5.3.0",
         "@fontsource-variable/instrument-sans": "5.3.0",
         "@fontsource-variable/jetbrains-mono": "5.3.0",
+        "@fontsource/ibm-plex-mono": "5.3.0",
         "@hansenexus/illustrations": "workspace:*",
         "@hansenexus/tokens": "workspace:*",
         "@happy-dom/global-registrator": "20.14.5",
@@ -93,6 +95,36 @@
         "@hansenexus/tokens": "^0.9.0",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
+      },
+    },
+    "themes/fachwerk": {
+      "name": "@hansenexus/theme-fachwerk",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@hansenexus/tokens": "workspace:*",
+        "@hansenexus/ui": "workspace:*",
+        "@types/react": "19.3.0",
+        "react": "19.3.0",
+      },
+      "peerDependencies": {
+        "@hansenexus/tokens": "^0.9.0",
+        "@hansenexus/ui": "^0.5.0",
+        "react": "^19.0.0",
+      },
+    },
+    "themes/lexilink": {
+      "name": "@hansenexus/theme-lexilink",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@hansenexus/tokens": "workspace:*",
+        "@hansenexus/ui": "workspace:*",
+        "@types/react": "19.3.0",
+        "react": "19.3.0",
+      },
+      "peerDependencies": {
+        "@hansenexus/tokens": "^0.9.0",
+        "@hansenexus/ui": "^0.5.0",
+        "react": "^19.0.0",
       },
     },
   },
@@ -191,6 +223,8 @@
 
     "@fontsource-variable/archivo": ["@fontsource-variable/archivo@5.3.0", "", {}, "sha512-HogK8FJelrD1o7TlZlkIVtHgc20bO5PZRWE7mUeUTdMN055alznQV6/00J00IBeu8FQAH4s3zW9UJNvKExXf+g=="],
 
+    "@fontsource-variable/bricolage-grotesque": ["@fontsource-variable/bricolage-grotesque@5.3.0", "", {}, "sha512-TLi9Q4hJjS2UvoTMRSS2nHu6c4R56lAw60NR9QYtVRCHn0XtsFpiEhNffZ8Glsoxu6wEEwLKBP8lb94J52PNBA=="],
+
     "@fontsource-variable/fraunces": ["@fontsource-variable/fraunces@5.3.0", "", {}, "sha512-9BYGySn4AHEJdgp9Z28tQ3X+laJMEOITXkQarZXeloWQZDq5oOvXJ3kDA8c7MGIfpogIaZfjrQBqmda8POOCKA=="],
 
     "@fontsource-variable/geist-mono": ["@fontsource-variable/geist-mono@5.3.0", "", {}, "sha512-vBbuwDEo9AkrqADMXOrlAR3DFcJi4/JxeuU43FoiQERnNwsfXNnvxvReZG02cQKmyk4DZkZdBZX3oTDvy2zBAw=="],
@@ -199,11 +233,17 @@
 
     "@fontsource-variable/jetbrains-mono": ["@fontsource-variable/jetbrains-mono@5.3.0", "", {}, "sha512-F32xpS2NsGYoQi2ADSkKTgpJj7ozajsGgDJ8woTnqjmIB+dxDIqImjl4pXZVEExu8UFZ2ndhmX18EBS/hdz3Lw=="],
 
+    "@fontsource/ibm-plex-mono": ["@fontsource/ibm-plex-mono@5.3.0", "", {}, "sha512-eTgnZjZEGk1QtD3ZstF+Vclo2HLAni8YMy34/DxllwZvyz1lR/1RF/xTiAquOBO7MvqBx8D2Ig2WCPMVfdZu7Q=="],
+
     "@hansenexus/illustrations": ["@hansenexus/illustrations@workspace:packages/illustrations"],
 
     "@hansenexus/shell": ["@hansenexus/shell@workspace:packages/shell"],
 
     "@hansenexus/state-check": ["@hansenexus/state-check@workspace:packages/state-check"],
+
+    "@hansenexus/theme-fachwerk": ["@hansenexus/theme-fachwerk@workspace:themes/fachwerk"],
+
+    "@hansenexus/theme-lexilink": ["@hansenexus/theme-lexilink@workspace:themes/lexilink"],
 
     "@hansenexus/tokens": ["@hansenexus/tokens@workspace:packages/tokens"],
 

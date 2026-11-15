@@ -1,8 +1,9 @@
 // The gallery view: theme, density, mode and viewport, plus the review tools of #60 (compare,
 // speed, motion), read from and written to the query so a view can be linked. Pure functions, so
 // tests/gallery-view.test.ts covers them without a DOM.
-import { type Density, densities, type Mode, modes, type Theme, themes } from "@hansenexus/tokens";
+import { type Density, densities, type Mode, modes } from "@hansenexus/tokens";
 import { motionMs } from "../src/motion";
+import { GALLERY_THEMES } from "./themes";
 
 /** The gallery scenes, one page each: kit is ./, the rest ?scene=<name>. */
 export const SCENES = [
@@ -49,7 +50,8 @@ export type Compare = (typeof COMPARES)[number];
 export type DensityChoice = Density | "auto";
 
 export interface View {
-  theme: Theme;
+  /** A data-theme: a tokens theme or a theme-pack direction (gallery/packs.ts). */
+  theme: string;
   density: DensityChoice;
   mode: Mode;
   viewport: Viewport;
@@ -70,7 +72,7 @@ export const DEFAULT_VIEW: View = {
 };
 
 export const VIEW_OPTIONS = {
-  theme: themes,
+  theme: GALLERY_THEMES,
   density: ["auto", ...densities] as readonly DensityChoice[],
   mode: modes,
   viewport: VIEWPORTS,

@@ -1,0 +1,44 @@
+# @hansenexus/theme-fachwerk
+
+fachwerk's theme pack for the hansenexus design system (design#143): direction B "Fachwerk", the
+winner of fachwerk's design vote, on the core token names of `@hansenexus/tokens` and the
+components of `@hansenexus/ui`. Changing the pack changes the app's design; no component is
+forked.
+
+- **Tokens** (`fachwerk/`): limewash paper, ink beams, terracotta action, ochre warnings; night
+  variants for dark mode. Contrast CI holds both modes to WCAG 2.2 AA.
+- **Recipes**: 2 px borders, 2 px radii, square controls (bars flat), no shadows, comfortable
+  density, hatch, brace and cross motifs from `--hn-line-subtle`.
+- **Skins** (`fachwerk/skins/`): `card.header` sets a braced beam bay before the title,
+  `empty-state` stands in a hatched frame.
+- **Fonts**: Bricolage Grotesque (display, sans) and IBM Plex Mono. The app loads them, e.g.
+  `@fontsource-variable/bricolage-grotesque` and `@fontsource/ibm-plex-mono`.
+
+```sh
+bun add @hansenexus/tokens @hansenexus/ui @hansenexus/theme-fachwerk
+```
+
+```css
+@import "tailwindcss";
+@import "@hansenexus/tokens/tailwind.css";
+@import "@hansenexus/theme-fachwerk/theme.css";
+@source "../node_modules/@hansenexus/ui/dist";
+@source "../node_modules/@hansenexus/theme-fachwerk/dist";
+```
+
+```tsx
+import { fachwerk } from "@hansenexus/theme-fachwerk";
+import { ThemePack } from "@hansenexus/ui";
+
+// <html data-theme="fachwerk" data-mode="light">
+<ThemePack pack={fachwerk}>
+  <App />
+</ThemePack>;
+```
+
+`data-theme="fachwerk"` switches the tokens, `<ThemePack>` the skins; use both. The pack's
+layout, rules and release are in
+[themes/README.md](https://github.com/hansenexus/design/blob/main/themes/README.md). Released
+on a `theme-fachwerk-v<version>` tag by `.github/workflows/release-theme.yml`.
+
+MIT.

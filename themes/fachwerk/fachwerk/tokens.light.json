@@ -1,0 +1,144 @@
+{
+  "surface": {
+    "$type": "color",
+    "page": {
+      "$value": "{palette.fachwerk.paper}",
+      "$description": "Plaster, the wall"
+    },
+    "band": {
+      "$value": "{palette.fachwerk.ground}",
+      "$description": "The yard beside the column"
+    },
+    "card": {
+      "$value": "{palette.fachwerk.limewash}",
+      "$description": "A Gefach: the lime-washed infill panel"
+    },
+    "raised": {
+      "$value": "{palette.fachwerk.plaster-deep}",
+      "$description": "A shaded Gefach: deeper plaster inside the frame"
+    },
+    "tint": {
+      "$value": "{palette.fachwerk.ochre-wash}",
+      "$description": "Hover and the active row"
+    },
+    "rail": {
+      "$value": "{palette.fachwerk.limewash}",
+      "$description": "The rail is a column of cells on lime wash"
+    }
+  },
+  "ink": {
+    "$type": "color",
+    "primary": {
+      "$value": "{palette.fachwerk.ink}",
+      "$description": "Oak"
+    },
+    "body": {
+      "$value": "{palette.fachwerk.ink}"
+    },
+    "muted": {
+      "$value": "{palette.fachwerk.grey}",
+      "$description": "Oak grey, secondary text"
+    }
+  },
+  "line": {
+    "$type": "color",
+    "subtle": {
+      "$value": "{palette.fachwerk.ink}",
+      "$description": "Every line is a beam"
+    },
+    "strong": {
+      "$value": "{palette.fachwerk.ink}",
+      "$description": "The beam a control is framed by; on dark the lifted grey, so a control stays 3:1"
+    }
+  },
+  "rail": {
+    "$type": "color",
+    "ink": {
+      "$value": "{palette.fachwerk.ink}"
+    },
+    "muted": {
+      "$value": "{palette.fachwerk.grey}"
+    },
+    "line": {
+      "$value": "{palette.fachwerk.ink}"
+    },
+    "status-ok": {
+      "$value": "{palette.fachwerk.ink}"
+    },
+    "status-busy": {
+      "$value": "{palette.fachwerk.grey}"
+    },
+    "status-warn": {
+      "$value": "{palette.fachwerk.ochre-deep}"
+    },
+    "status-crit": {
+      "$value": "{palette.fachwerk.red}"
+    }
+  },
+  "action": {
+    "$type": "color",
+    "primary": {
+      "$value": "{palette.fachwerk.terracotta}",
+      "$description": "Brick: the one primary action and the active cell"
+    },
+    "primary-hover": {
+      "$value": "{palette.fachwerk.terracotta}",
+      "$description": "No hover tint: brick stays brick"
+    },
+    "primary-ink": {
+      "$value": "{palette.fachwerk.limewash}"
+    },
+    "text": {
+      "$value": "{palette.fachwerk.terracotta-deep}",
+      "$description": "Brick as text, deepened to hold 4.5:1 on shaded plaster"
+    },
+    "text-hover": {
+      "$value": "{palette.fachwerk.ink}"
+    },
+    "danger": {
+      "$value": "{palette.fachwerk.red}"
+    },
+    "danger-ink": {
+      "$value": "{palette.fachwerk.paper}"
+    }
+  },
+  "status": {
+    "$type": "color",
+    "ok": {
+      "$value": "{palette.fachwerk.ink}",
+      "$description": "No green in direction B: done and mastered are the oak ink, the glyph carries it"
+    },
+    "busy": {
+      "$value": "{palette.fachwerk.grey}"
+    },
+    "warn": {
+      "$value": "{palette.fachwerk.ochre-deep}",
+      "$description": "Ochre marks what is due"
+    },
+    "crit": {
+      "$value": "{palette.fachwerk.red}"
+    },
+    "off": {
+      "$value": "{palette.fachwerk.grey}"
+    },
+    "unknown": {
+      "$value": "{palette.fachwerk.grey}"
+    }
+  },
+  "skeleton": {
+    "$type": "color",
+    "base": {
+      "$value": "{palette.fachwerk.plaster-shade}"
+    },
+    "highlight": {
+      "$value": "{palette.fachwerk.plaster-shade-light}"
+    }
+  },
+  "focus": {
+    "$type": "color",
+    "ring": {
+      "$value": "{palette.fachwerk.terracotta}",
+      "$description": "The ring is brick (fachwerk --ring)"
+    }
+  }
+}
