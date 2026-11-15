@@ -108,6 +108,8 @@ import {
   TabsList,
   TabsTrigger,
   Textarea,
+  ThemePack,
+  type ThemePackDefinition,
   Toast,
   ToastDescription,
   ToastProvider,
@@ -187,6 +189,16 @@ function LivePager() {
   return <Pagination page={page} pageCount={8} onPageChange={setPage} />;
 }
 
+/** A one-slot pack: its card.header skin rules the header off and keeps Base for the rest. */
+const RULED_HEADER: ThemePackDefinition = {
+  id: "demo-ruled",
+  skins: {
+    "card.header": ({ Base, className, ...props }) => (
+      <Base {...props} className={cx("border-b border-hn-line-strong pb-3", className)} />
+    ),
+  },
+};
+
 function hosts(rows: string[]) {
   return (
     <ul className="m-0 flex list-none flex-col gap-1 p-0 font-hn-mono text-sm text-hn-ink-primary">
@@ -210,6 +222,24 @@ export const DEMOS: Record<string, () => ReactNode> = {
           />
         )
       )}
+    </div>
+  ),
+  skin: () => (
+    <div className="grid gap-3 sm:grid-cols-2">
+      <Card>
+        <CardHeader>
+          <CardTitle>No pack</CardTitle>
+        </CardHeader>
+        <CardBody>The base card.</CardBody>
+      </Card>
+      <ThemePack pack={RULED_HEADER}>
+        <Card>
+          <CardHeader>
+            <CardTitle>Skinned header</CardTitle>
+          </CardHeader>
+          <CardBody>The pack's card.header skin wraps Base.</CardBody>
+        </Card>
+      </ThemePack>
     </div>
   ),
   cx: () => (

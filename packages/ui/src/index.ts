@@ -41,6 +41,7 @@ export * from "./select";
 export * from "./separator";
 export * from "./sheet";
 export * from "./skeleton";
+export * from "./skin";
 export * from "./slider";
 export * from "./sparkline";
 export * from "./spinner";

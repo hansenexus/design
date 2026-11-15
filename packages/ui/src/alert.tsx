@@ -2,6 +2,7 @@ import { type ComponentProps, type ReactNode, useState } from "react";
 import { cx, focusRing } from "./cx";
 import { InfoIcon, XIcon } from "./icons";
 import { type AlertTone, LAYOUT_COPY } from "./layout-copy";
+import { skinnable } from "./skin";
 import type { StateLocale } from "./state-copy";
 import { StatusGlyph } from "./status-glyph";
 
@@ -47,7 +48,7 @@ export type AlertProps = Omit<ComponentProps<"div">, "title"> & {
  * Critical is role=alert (announced at once), the rest role=status (polite). A visually hidden
  * tone word ("Warning:") leads the text, so the tone never rests on colour or shape alone.
  */
-export function Alert({
+function AlertBase({
   tone = "info",
   layout = "inline",
   title,
@@ -108,6 +109,15 @@ export function Alert({
     </div>
   );
 }
+
+declare module "./skin" {
+  interface SkinSlots {
+    alert: AlertProps;
+  }
+}
+
+/** A persistent message about the state of something: info, success, warning or critical. */
+export const Alert = skinnable("alert", AlertBase);
 
 export type BannerProps = Omit<AlertProps, "layout">;
 

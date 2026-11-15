@@ -1,6 +1,16 @@
 import { describe, expect, test } from "bun:test";
 import { resolve } from "node:path";
-import { checkLevels, type Input, load, previewCardItems, siblingImports } from "./levels";
+import {
+  checkLevels,
+  checkSkins,
+  exportedNames,
+  type Input,
+  type Item,
+  load,
+  namedImports,
+  previewCardItems,
+  siblingImports,
+} from "./levels";
 
 const ROOT = resolve(import.meta.dir, "..");
 
@@ -126,5 +136,98 @@ describe("levels (#58)", () => {
     expect(
       previewCardItems('<PreviewCard title="x" item="skeleton" wide>\n<PreviewCard item="spinner">')
     ).toEqual(["skeleton", "spinner"]);
+  });
+});
+
+describe("theme-pack skins (design#143)", () => {
+  const items: Item[] = [
+    { name: "cx", meta: { level: "atom" }, files: [{ path: "src/cx.ts" }] },
+    { name: "button", meta: { level: "atom" }, files: [{ path: "src/button.tsx" }] },
+    { name: "card", meta: { level: "molecule" }, files: [{ path: "src/card.tsx" }] },
+    { name: "command", meta: { level: "organism" }, files: [{ path: "src/command.tsx" }] },
+    { name: "shell", meta: { level: "template" } },
+  ];
+  const sources = {
+    "src/cx.ts": "export const cx = () => '';",
+    "src/button.tsx": "export function Button() {}",
+    "src/card.tsx":
+      "export const Card = 1;\nexport type CardProps = {};\nexport { CardHeaderBase as CardHeader };",
+    "src/command.tsx": "export function Command() {}",
+  };
+  const dir = "themes/acme/bold/skins";
+  const check = (skins: Record<string, string>) => checkSkins(items, sources, skins);
+
+  test("a skin imports its own level and lower", () => {
+    expect(
+      check({
+        [`${dir}/card.header.tsx`]:
+          'import { Button, type CardProps, CardHeader, cx } from "@hansenexus/ui";\nimport { Hatch } from "./_motif";',
+        [`${dir}/_motif.tsx`]: 'import { cx } from "@hansenexus/ui";',
+        [`${dir}/index.ts`]:
+          'import { Command } from "@hansenexus/ui";\nimport { Shell } from "@hansenexus/shell";\nimport card from "./card.header";',
+      })
+    ).toEqual([]);
+  });
+
+  test("a molecule skin importing an organism fails and names both", () => {
+    expect(check({ [`${dir}/card.tsx`]: 'import { Command } from "@hansenexus/ui";' })).toEqual([
+      `${dir}/card.tsx (molecule) imports Command (command) (organism): a skin at level molecule imports only atom|molecule`,
+    ]);
+  });
+
+  test("a molecule skin importing the shell fails", () => {
+    expect(check({ [`${dir}/card.tsx`]: 'import { Shell } from "@hansenexus/shell";' })).toEqual([
+      `${dir}/card.tsx (molecule) imports @hansenexus/shell (template): a skin at level molecule imports only atom|molecule`,
+    ]);
+  });
+
+  test("an atom takes no skin", () => {
+    expect(check({ [`${dir}/button.tsx`]: "" })).toEqual([
+      `${dir}/button.tsx skins button, an atom: atoms take no skin, change them through recipe tokens`,
+    ]);
+  });
+
+  test("a skin for an unknown item fails", () => {
+    expect(check({ [`${dir}/hero.tsx`]: "" })).toEqual([
+      `${dir}/hero.tsx is named for hero, which is not a registry item`,
+    ]);
+  });
+
+  test("a sibling at a higher level, an outside path and an unknown name fail", () => {
+    expect(
+      check({
+        [`${dir}/_motif.tsx`]:
+          'import x from "./card";\nimport y from "../../tokens";\nimport { Nope } from "@hansenexus/ui";',
+        [`${dir}/card.tsx`]: "",
+      })
+    ).toEqual([
+      `${dir}/_motif.tsx: @hansenexus/ui exports no Nope from a registry item`,
+      `${dir}/_motif.tsx: imports ../../tokens; a skin imports only sibling skins (./<file>)`,
+      `${dir}/_motif.tsx (atom) imports ./card (molecule): a skin at level atom imports only atom`,
+    ]);
+  });
+
+  test("a namespace import of @hansenexus/ui fails", () => {
+    expect(check({ [`${dir}/card.tsx`]: 'import * as ui from "@hansenexus/ui";' })).toEqual([
+      `${dir}/card.tsx: import names from @hansenexus/ui, not the namespace, so levels can be checked`,
+    ]);
+  });
+
+  test("checkLevels runs the skins rule; the committed packs pass", () => {
+    const f = fixture({ skins: { [`${dir}/button.tsx`]: "" } });
+    expect(checkLevels(f)).toEqual([
+      `${dir}/button.tsx skins button, an atom: atoms take no skin, change them through recipe tokens`,
+    ]);
+    const root = load(ROOT);
+    expect(checkSkins(root.items, root.sources, root.skins ?? {})).toEqual([]);
+  });
+
+  test("names", () => {
+    expect(
+      exportedNames("export const A = 1;\nexport function B() {}\nexport { c, d as E };")
+    ).toEqual(["A", "B", "c", "E"]);
+    expect(
+      namedImports('import { A, type B, C as D } from "@hansenexus/ui";', "@hansenexus/ui")
+    ).toEqual(["A", "B", "C"]);
   });
 });
