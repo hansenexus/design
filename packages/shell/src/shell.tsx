@@ -75,7 +75,7 @@ export type ShellProps = ShellSlots & {
 
 /** A panel: an opaque card, inset, the one neutral lift, no blur. */
 export const SHELL_PANEL =
-  "rounded-hn-lg border border-hn-line-subtle bg-hn-surface-card shadow-hn-lift";
+  "rounded-hn-lg border border-hn-line-subtle bg-hn-surface-card shadow-hn-panel";
 
 export type ShellState = {
   locale: StateLocale;

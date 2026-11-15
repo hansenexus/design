@@ -20,7 +20,7 @@ export function Checkbox({ label, className, id, ...props }: CheckboxProps) {
     <CheckboxPrimitive.Root
       id={controlId}
       className={cx(
-        "peer inline-flex size-[18px] shrink-0 cursor-pointer items-center justify-center rounded-hn-sm border border-hn-line-strong bg-hn-surface-page text-hn-action-primary-ink",
+        "peer inline-flex size-[18px] shrink-0 cursor-pointer items-center justify-center rounded-hn-control-box border border-hn-line-strong bg-hn-surface-page text-hn-action-primary-ink",
         "data-[state=checked]:border-hn-action-primary data-[state=checked]:bg-hn-action-primary",
         "data-[state=indeterminate]:border-hn-action-primary data-[state=indeterminate]:bg-hn-action-primary",
         "aria-invalid:border-hn-status-crit disabled:cursor-not-allowed disabled:opacity-50",

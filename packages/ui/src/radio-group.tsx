@@ -36,7 +36,7 @@ export function RadioGroupItem({ label, className, id, ...props }: RadioGroupIte
     <RadioGroupPrimitive.Item
       id={controlId}
       className={cx(
-        "peer inline-flex size-[18px] shrink-0 cursor-pointer items-center justify-center rounded-hn-pill border border-hn-line-strong bg-hn-surface-page",
+        "peer inline-flex size-[18px] shrink-0 cursor-pointer items-center justify-center rounded-hn-control-dot border border-hn-line-strong bg-hn-surface-page",
         "data-[state=checked]:border-hn-action-primary data-[state=checked]:bg-hn-action-primary",
         "disabled:cursor-not-allowed disabled:opacity-50",
         "in-[[aria-invalid=true]]:data-[state=unchecked]:border-hn-status-crit",
@@ -46,7 +46,7 @@ export function RadioGroupItem({ label, className, id, ...props }: RadioGroupIte
       )}
       {...props}
     >
-      <RadioGroupPrimitive.Indicator className="block size-2 rounded-hn-pill bg-hn-action-primary-ink" />
+      <RadioGroupPrimitive.Indicator className="block size-2 rounded-hn-control-dot bg-hn-action-primary-ink" />
     </RadioGroupPrimitive.Item>
   );
   if (!label) return control;

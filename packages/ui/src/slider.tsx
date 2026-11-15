@@ -39,7 +39,7 @@ export function Slider({
       )}
       {...props}
     >
-      <SliderPrimitive.Track className="relative grow overflow-hidden rounded-hn-pill bg-hn-surface-raised data-[orientation=horizontal]:h-1.5 data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1.5">
+      <SliderPrimitive.Track className="relative grow overflow-hidden rounded-hn-control-dot bg-hn-surface-raised data-[orientation=horizontal]:h-1.5 data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1.5">
         <SliderPrimitive.Range className="absolute bg-hn-action-primary data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full" />
       </SliderPrimitive.Track>
       {Array.from({ length: thumbs }, (_, i) => (
@@ -49,7 +49,7 @@ export function Slider({
           aria-label={thumbLabels?.[i] ?? ariaLabel}
           aria-labelledby={thumbLabels?.[i] ? undefined : ariaLabelledBy}
           className={cx(
-            "block size-[18px] cursor-grab rounded-hn-pill border-2 border-hn-action-primary bg-hn-surface-page shadow-hn-lift",
+            "block size-[18px] cursor-grab rounded-hn-control-dot border-2 border-hn-action-primary bg-hn-surface-page shadow-hn-raised",
             "transition-colors duration-(--hn-duration-fast) motion-reduce:transition-none",
             "hover:bg-hn-surface-raised active:cursor-grabbing data-disabled:cursor-not-allowed",
             focusRing

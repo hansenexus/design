@@ -50,7 +50,7 @@ export function SelectContent({
         position={position}
         sideOffset={position === "popper" ? sideOffset : undefined}
         className={cx(
-          "z-50 max-h-(--radix-select-content-available-height) min-w-(--radix-select-trigger-width) overflow-hidden rounded-hn-lg border border-hn-line-strong bg-hn-surface-card font-hn-sans shadow-hn-lift",
+          "z-50 max-h-(--radix-select-content-available-height) min-w-(--radix-select-trigger-width) overflow-hidden rounded-hn-lg border border-hn-line-strong bg-hn-surface-card font-hn-sans shadow-hn-overlay",
           className
         )}
         {...props}

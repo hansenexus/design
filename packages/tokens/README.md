@@ -19,7 +19,7 @@ Every token is a `--hn-*` variable: `--hn-surface-page`, `--hn-ink-muted`, `--hn
 | Attribute | Values | Default |
 | --- | --- | --- |
 | `data-mode` | `dark`, `light` | `dark` |
-| `data-theme` | `hansenexus`, `kommandant`, `portal`, `lexilink` | `hansenexus` |
+| `data-theme` | `hansenexus`, `kommandant`, `portal`, `lexilink` (a bundled theme pack) | `hansenexus` |
 | `data-density` | `compact` (36 px rows, 24 px targets), `comfortable` (48 px), `touch` (56 px, 44 px targets) | the theme's |
 
 `data-mode` also works on a subtree. A theme's per-mode overrides expect `data-theme` and
@@ -34,7 +34,7 @@ Every token is a `--hn-*` variable: `--hn-surface-page`, `--hn-ink-muted`, `--hn
 
 Utilities carry an `hn-` prefix so they never shadow Tailwind's own: `bg-hn-surface-card`,
 `text-hn-ink-body`, `border-hn-line-strong`, `rounded-hn-md`, `font-hn-mono`, `h-hn-row`,
-`min-h-hn-target`, `p-hn-4`, `shadow-hn-lift`, `ease-hn-pulse`.
+`min-h-hn-target`, `p-hn-4`, `shadow-hn-lift`, `shadow-hn-overlay`, `rounded-hn-control-dot`, `ease-hn-pulse`.
 
 Type roles are `text-hn-<role>`: each sets size, line height and weight, e.g. `text-hn-body`,
 `text-hn-meta font-hn-mono`. The family stays separate (`font-hn-*`).
@@ -95,8 +95,46 @@ is a gap to raise here, not an arbitrary `text-[Npx]`.
   `motion.json` holds the loading timings: `delay.pending` (200 ms before a spinner or pending
   indicator shows), `min-visible.pending` (400 ms it then stays), and duration plus easing for
   `pulse`, `shimmer` and `spin`.
-- `tokens/themes/`: per product, the density and any semantic that differs from the shared set.
-  `themes/<theme>.<mode>.json` holds per-mode overrides.
+- `tokens/semantic/recipe.json`: the recipes, how a theme draws rather than which colour
+  (below).
+- `tokens/themes/`: the core themes (hansenexus, kommandant, portal), per product, the density
+  and any semantic that differs from the shared set. `themes/<theme>.<mode>.json` holds per-mode
+  overrides.
+- `themes/<app>/<direction>/` at the repo root: theme packs (design#143), an app's own brand on
+  the same names. A direction holds `palette.json` (its primitives, never emitted),
+  `tokens.json` and `tokens.<mode>.json`; `themes/<app>/pack.json` names the default direction,
+  whose `data-theme` is the app's name (another direction's is `<app>-<direction>`). A pack may
+  override any core token and add none: every direction resolves exactly the core's names.
+  Packs ship as `@hansenexus/theme-<app>`; lexilink is still bundled here too (`BUNDLED_PACKS`
+  in `scripts/resolve.ts`) until it adopts its pack.
+
+## Recipes
+
+`semantic/recipe.json` holds what a theme changes about structure, so a new direction is a token
+change, never a component edit. The defaults are the hansenexus look; every theme can override
+them.
+
+| Token | Default | Read by |
+| --- | --- | --- |
+| `border.width` | `1px` | Tailwind's bare `border`, `border-t`, `divide-x` and the rest (`--default-border-width`) |
+| `border.style` | `solid` | the same utilities (`--tw-border-style`, set in the base layer; `border-dashed` still wins) |
+| `elevation.raised` | `shadow.lift` | `shadow-hn-raised`: the slider thumb |
+| `elevation.overlay` | `shadow.lift` | `shadow-hn-overlay`: menus, popovers, selects, tooltips, toasts, dialogs, sheets, ⌘K |
+| `elevation.panel` | `shadow.lift` | `shadow-hn-panel`: the shell's floating panels |
+| `control.box` | `radius.sm` | `rounded-hn-control-box`: checkbox |
+| `control.dot` | `radius.pill` | `rounded-hn-control-dot`: radio, switch, slider, scroll thumb, usage bar, menu radio dot, sheet grabber |
+| `control.bar` | `3px` | `rounded-hn-control-bar`: progress and meter tracks |
+| `control.chip` | `radius.pill` | `rounded-hn-control-chip`: badge, status badge |
+| `motif.hatch` | `none` | `bg-(image:--hn-motif-hatch)`: progress and meter tracks |
+| `motif.brace`, `motif.cross` | `none` | pack skins |
+| `radius.*`, `size.*` (density) | | as before: the corner scale and the theme's density |
+
+Control shape is a radius, so a square pack sets the `control.*` radii to its sawn edge and a
+round one keeps the pills; `control.box` and `control.dot` follow `radius.sm` and `radius.pill`
+unless a theme sets them. A motif is a CSS `background-image` value and may read a colour
+variable (`var(--hn-line-strong)`): it resolves on the element that carries `data-theme` and
+`data-mode`. A flat pack sets each `elevation.*` to a transparent zero shadow. Swift gets
+`HNBorder`, `HNElevation` and `HNControl`; `border.style` and `motif.*` are web only.
 
 ## lexilink
 
@@ -104,7 +142,8 @@ is a gap to raise here, not an arbitrary `text-[Npx]`.
 1 px ink lines, no grey fills, square corners (`radius.sm` to `lg` are 0, `xl` 4 px, `pill` stays
 round), Archivo for display and UI, Geist Mono for numbers. Orange (`action.primary`) is a solid
 block with ink text, never text and never a tint; `action.text` is ink. The source is hn-monorepo
-`apps/lexilink-next/src/styles/theme.css`; the hex values in `palette.ledger` are its oklch values
+`apps/lexilink-next/src/styles/theme.css`; it lives as the pack direction
+`themes/lexilink/ledger/`. The hex values in `palette.ledger` are its oklch values
 converted to sRGB. Two values differ from that file because the contrast rules here are stricter:
 the focus ring on light is ink (orange on paper is 2.6:1), and `line.strong` on dark is the grey
 (the 38 % dividing line, `line.subtle`, is 1.8:1). lexilink's type recipes (weight, width,

@@ -15,7 +15,7 @@ export function Switch({ label, className, id, ...props }: SwitchProps) {
     <SwitchPrimitive.Root
       id={controlId}
       className={cx(
-        "peer relative inline-flex h-6 w-[42px] shrink-0 cursor-pointer items-center rounded-hn-pill border",
+        "peer relative inline-flex h-6 w-[42px] shrink-0 cursor-pointer items-center rounded-hn-control-dot border",
         "border-hn-line-strong bg-hn-surface-raised data-[state=checked]:border-hn-action-primary data-[state=checked]:bg-hn-action-primary",
         "transition-colors duration-(--hn-duration-fast) motion-reduce:transition-none",
         "disabled:cursor-not-allowed disabled:opacity-50",
@@ -26,7 +26,7 @@ export function Switch({ label, className, id, ...props }: SwitchProps) {
     >
       <SwitchPrimitive.Thumb
         className={cx(
-          "pointer-events-none block size-[18px] translate-x-[2px] rounded-hn-pill bg-hn-ink-muted",
+          "pointer-events-none block size-[18px] translate-x-[2px] rounded-hn-control-dot bg-hn-ink-muted",
           "data-[state=checked]:translate-x-[20px] data-[state=checked]:bg-hn-action-primary-ink",
           "transition-transform duration-(--hn-duration-fast) motion-reduce:transition-none"
         )}

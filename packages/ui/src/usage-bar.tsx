@@ -62,13 +62,16 @@ export function UsageBar({
       aria-valuemax={max}
       aria-valuetext={valueText ?? `${Math.round(pct)}%`}
       data-tone={tone}
-      className={cx("w-full overflow-hidden rounded-full bg-hn-surface-raised", className)}
+      className={cx(
+        "w-full overflow-hidden rounded-hn-control-dot bg-hn-surface-raised",
+        className
+      )}
       style={{ height, ...style }}
       {...props}
     >
       <div
         className={cx(
-          "h-full rounded-full transition-[width] duration-(--hn-duration-base) motion-reduce:transition-none",
+          "h-full rounded-hn-control-dot transition-[width] duration-(--hn-duration-base) motion-reduce:transition-none",
           FILL[tone]
         )}
         style={{ width: `${pct}%` }}

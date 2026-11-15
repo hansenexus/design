@@ -28,6 +28,7 @@ on:
       - bun.lock
       - package.json
       - "packages/**"
+      - "themes/**"
       - "brand/assets/**"
       - "tools/access-proxy/**"
   workflow_dispatch:

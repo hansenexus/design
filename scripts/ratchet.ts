@@ -81,7 +81,15 @@ export function scan(file: string, source: string): Hit[] {
   return hits;
 }
 
+/**
+ * A theme pack direction's DTCG source (themes/<app>/<direction>/palette.json, tokens.json,
+ * tokens.<mode>.json) owns that pack's palette, as packages/tokens owns the core's (design#143).
+ * Everything else in a pack (skins, the package's code) goes through the ratchet.
+ */
+export const PACK_TOKEN_SOURCE = /^themes\/[^/]+\/[^/]+\/(?:palette|tokens(?:\.[a-z]+)?)\.json$/;
+
 export function isExempt(path: string): boolean {
+  if (PACK_TOKEN_SOURCE.test(path)) return true;
   return Object.keys(EXEMPT).some((p) => (p.endsWith("/") ? path.startsWith(p) : path === p));
 }
 

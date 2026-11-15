@@ -1,6 +1,6 @@
 {
   "name": "@hansenexus/shell",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "hansenexus app shell: floating panels with nav, header, main and an optional context pane, a ⌘K container that takes external command sets or a whole palette, and capability-based nav visibility. Semantic tokens only.",
   "license": "MIT",
   "keywords": [
@@ -45,8 +45,8 @@
     "radix-ui": "1.6.7"
   },
   "peerDependencies": {
-    "@hansenexus/tokens": ">=0.5.0 <0.7.0",
-    "@hansenexus/ui": "^0.3.0",
+    "@hansenexus/tokens": "^0.9.0",
+    "@hansenexus/ui": "^0.5.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

@@ -29,7 +29,7 @@ export function TooltipContent({
       <TooltipPrimitive.Content
         sideOffset={sideOffset}
         className={cx(
-          "z-50 max-w-72 rounded-hn-sm border border-hn-line-strong bg-hn-surface-raised px-2 py-1 font-hn-sans text-xs text-hn-ink-primary shadow-hn-lift",
+          "z-50 max-w-72 rounded-hn-sm border border-hn-line-strong bg-hn-surface-raised px-2 py-1 font-hn-sans text-xs text-hn-ink-primary shadow-hn-overlay",
           className
         )}
         {...props}

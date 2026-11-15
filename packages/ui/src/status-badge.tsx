@@ -33,7 +33,7 @@ export function StatusBadge({ status, className, children, ...props }: StatusBad
     <span
       data-status={status}
       className={cx(
-        "inline-flex h-6 items-center gap-1.5 whitespace-nowrap rounded-hn-pill bg-hn-surface-raised px-2.5 font-hn-sans text-[12.5px] font-semibold",
+        "inline-flex h-6 items-center gap-1.5 whitespace-nowrap rounded-hn-control-chip bg-hn-surface-raised px-2.5 font-hn-sans text-[12.5px] font-semibold",
         TEXT[status],
         className
       )}

@@ -789,6 +789,42 @@ public struct HNColors: Sendable, Equatable {
   )
 }
 
+/// Line width in points, the border.width recipe.
+public enum HNBorder {
+  public static let width: Double = 1
+}
+
+/// Control shape as corner radii in points, the control recipe.
+public struct HNControl: Sendable, Equatable {
+  public let bar: Double
+  public let box: Double
+  public let chip: Double
+  public let dot: Double
+
+  /// The hansenexus theme's values; `of(_:)` picks another theme's.
+  /// Progress and meter tracks
+  public static let bar: Double = 3
+
+  /// Checkbox
+  public static let box: Double = 6
+
+  /// Badge and status badge
+  public static let chip: Double = 999
+
+  /// Radio, switch track and thumb, slider track and thumb, menu radio dot, scroll thumb, sheet grabber, usage bar
+  public static let dot: Double = 999
+
+  /// The theme's own values.
+  public static func of(_ theme: HNTheme) -> HNControl {
+    switch theme {
+    case .hansenexus: return HNControl(bar: 3, box: 6, chip: 999, dot: 999)
+    case .kommandant: return HNControl(bar: 3, box: 6, chip: 999, dot: 999)
+    case .portal: return HNControl(bar: 3, box: 6, chip: 999, dot: 999)
+    case .lexilink: return HNControl(bar: 3, box: 0, chip: 999, dot: 999)
+    }
+  }
+}
+
 /// Waits in seconds before a pending indicator shows; faster work shows nothing.
 public enum HNDelay {
   /// Wait before a spinner or pending indicator shows; faster work shows nothing
@@ -805,6 +841,18 @@ public enum HNDuration {
 
   /// route change, confirm sheet
   public static let slow: Double = 0.32
+}
+
+/// What lifts off the page, the elevation recipe: thumb, overlays, shell panels.
+public enum HNElevation {
+  /// Menus, popovers, selects, tooltips, toasts, dialogs, sheets, the command palette
+  public static let overlay: HNShadowValue = HNShadowValue(color: HNRGBA(0x000000, alpha: 0xB3), x: 0, y: 30, blur: 60, spread: -30)
+
+  /// The shell's floating panels
+  public static let panel: HNShadowValue = HNShadowValue(color: HNRGBA(0x000000, alpha: 0xB3), x: 0, y: 30, blur: 60, spread: -30)
+
+  /// A control that sits on its track: the slider thumb
+  public static let raised: HNShadowValue = HNShadowValue(color: HNRGBA(0x000000, alpha: 0xB3), x: 0, y: 30, blur: 60, spread: -30)
 }
 
 /// Focus ring geometry in points. The ring colour is `HNColors.focus.ring`.

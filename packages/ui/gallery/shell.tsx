@@ -81,7 +81,7 @@ function OpsPresetBar({
           if (found) onRun(found);
         }}
         autoFocus
-        className="shadow-hn-lift"
+        className="shadow-hn-overlay"
       />
     </div>
   );

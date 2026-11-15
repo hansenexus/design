@@ -31,7 +31,7 @@ export function Toast({ status, className, children, ...props }: ToastProps) {
   return (
     <ToastPrimitive.Root
       className={cx(
-        "relative flex items-start gap-3 rounded-hn-lg border border-hn-line-strong bg-hn-surface-card p-3.5 pr-10 font-hn-sans text-hn-ink-primary shadow-hn-lift",
+        "relative flex items-start gap-3 rounded-hn-lg border border-hn-line-strong bg-hn-surface-card p-3.5 pr-10 font-hn-sans text-hn-ink-primary shadow-hn-overlay",
         className
       )}
       {...props}
