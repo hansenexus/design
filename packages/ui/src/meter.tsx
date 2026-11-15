@@ -59,7 +59,7 @@ export function Meter({
         <span>{label}</span>
         <span className={cx("font-hn-mono", VALUE[tone])}>{text}</span>
       </div>
-      <div className="h-1.5 overflow-hidden rounded-[3px] bg-hn-surface-raised">
+      <div className="h-1.5 overflow-hidden rounded-hn-control-bar bg-hn-surface-raised bg-(image:--hn-motif-hatch)">
         <div className={cx("h-full", FILL[tone])} style={{ width: `${pct}%` }} />
       </div>
     </div>

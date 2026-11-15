@@ -1,0 +1,44 @@
+{
+  "border": {
+    "$description": "Recipe (design#143): how a line is drawn. Tailwind's bare border, border-t, divide-x and the rest read border.width, so a pack that draws 2px beams changes one token, not the components.",
+    "width": { "$type": "dimension", "$value": "1px" },
+    "style": { "$type": "strokeStyle", "$value": "solid" }
+  },
+  "elevation": {
+    "$type": "shadow",
+    "$description": "Recipe: what lifts off the page. A flat pack sets each to a transparent zero shadow.",
+    "raised": {
+      "$value": "{shadow.lift}",
+      "$description": "A control that sits on its track: the slider thumb"
+    },
+    "overlay": {
+      "$value": "{shadow.lift}",
+      "$description": "Menus, popovers, selects, tooltips, toasts, dialogs, sheets, the command palette"
+    },
+    "panel": {
+      "$value": "{shadow.lift}",
+      "$description": "The shell's floating panels"
+    }
+  },
+  "control": {
+    "$type": "dimension",
+    "$description": "Recipe: control shape as corner radii. A square pack sets them all to its sawn edge; a round pack keeps the pills.",
+    "box": { "$value": "{radius.sm}", "$description": "Checkbox" },
+    "dot": {
+      "$value": "{radius.pill}",
+      "$description": "Radio, switch track and thumb, slider track and thumb, menu radio dot, scroll thumb, sheet grabber, usage bar"
+    },
+    "bar": { "$value": "3px", "$description": "Progress and meter tracks" },
+    "chip": { "$value": "{radius.pill}", "$description": "Badge and status badge" }
+  },
+  "motif": {
+    "$type": "string",
+    "$description": "Recipe: the pack's motif set, as CSS background-image values. Atoms paint them where a placeholder or an unfilled share shows (bg-(image:--hn-motif-hatch)); skins use brace and cross. none draws nothing.",
+    "hatch": {
+      "$value": "none",
+      "$description": "The unfilled share of a progress track, a loading placeholder"
+    },
+    "brace": { "$value": "none", "$description": "One diagonal across a square cell" },
+    "cross": { "$value": "none", "$description": "Both diagonals: the X of a cell" }
+  }
+}

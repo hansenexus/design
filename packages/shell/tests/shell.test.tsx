@@ -163,7 +163,7 @@ describe("slots", () => {
 
   // dec_2026-09-25_kommandant-visual-flat-lime-only: flat panels, the one lift, no glass.
   test("flat: opaque panels with the one lift, no blur, no translucent surface", () => {
-    expect(SHELL_PANEL).toContain("shadow-hn-lift");
+    expect(SHELL_PANEL).toContain("shadow-hn-panel"); // the elevation.panel recipe, the one lift by default
     expect(SHELL_PANEL).toContain("bg-hn-surface-card");
     const html = render(<Shell {...slots} contextPane={<p>Detail</p>} />);
     expect(html).not.toMatch(/blur|bg-[a-z-]+\/\d/);

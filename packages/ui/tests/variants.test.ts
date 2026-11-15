@@ -246,7 +246,7 @@ describe("shell-layout", () => {
     }
     // The winner draws @hansenexus/shell itself (#64): its panels, flat.
     const { SHELL_PANEL } = await import("../../shell/src");
-    expect(SHELL_PANEL).toContain("shadow-hn-lift");
+    expect(SHELL_PANEL).toContain("shadow-hn-panel"); // the elevation.panel recipe, the one lift by default
     expect(SHELL_PANEL).toContain("bg-hn-surface-card");
     expect(SHELL_PANEL).not.toMatch(/blur|\//);
     const floating = variants.find((v) => v.id === "floating-panels");

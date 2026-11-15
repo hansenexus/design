@@ -1,8 +1,9 @@
-// WCAG 2.2 AA contrast over every semantic text and UI pair, every theme, both modes.
+// WCAG 2.2 AA contrast over every semantic text and UI pair, every theme (the core themes and
+// every theme pack direction under themes/, design#143), both modes.
 // Exits 1 if any pair falls below its minimum, or if a colour token is neither
 // checked nor explicitly exempt (so a new token cannot slip past the check).
 // Run: bun scripts/contrast.ts [--tokens <dir>]
-import { MODES, type ResolvedToken, resolveTokens, THEMES } from "./resolve";
+import { allThemes, MODES, type ResolvedToken, resolveTokens } from "./resolve";
 
 /**
  * 1.4.3 text: 4.5:1. 1.4.11 non-text UI (borders, focus, status shapes): 3:1.
@@ -138,12 +139,12 @@ export function checkSet(theme: string, mode: string, tokens: ResolvedToken[]) {
   return { results, errors };
 }
 
-export async function checkAll(tokensDir?: string) {
+export async function checkAll(tokensDir?: string, packsDir?: string) {
   const results: PairResult[] = [];
   const errors: string[] = [];
-  for (const theme of THEMES) {
+  for (const theme of allThemes(packsDir)) {
     for (const mode of MODES) {
-      const set = checkSet(theme, mode, await resolveTokens(theme, mode, tokensDir));
+      const set = checkSet(theme, mode, await resolveTokens(theme, mode, tokensDir, packsDir));
       results.push(...set.results);
       errors.push(...set.errors);
     }

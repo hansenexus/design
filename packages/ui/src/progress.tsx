@@ -56,7 +56,7 @@ export function Progress({
         </div>
       ) : null}
       {determinate ? (
-        <div className="h-1.5 overflow-hidden rounded-[3px] bg-hn-surface-raised">
+        <div className="h-1.5 overflow-hidden rounded-hn-control-bar bg-hn-surface-raised bg-(image:--hn-motif-hatch)">
           <div
             className={cx(
               "h-full transition-[width] duration-(--hn-duration-base) motion-reduce:transition-none",
@@ -66,7 +66,7 @@ export function Progress({
           />
         </div>
       ) : (
-        <div className="h-1.5 rounded-[3px] bg-hn-skeleton-base animate-hn-pulse motion-reduce:animate-none" />
+        <div className="h-1.5 rounded-hn-control-bar bg-hn-skeleton-base animate-hn-pulse motion-reduce:animate-none" />
       )}
     </div>
   );

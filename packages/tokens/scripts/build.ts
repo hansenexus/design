@@ -123,7 +123,29 @@ const TAILWIND_NAMESPACE: Record<string, (rest: string) => string> = {
   shadow: (rest) => `--shadow-hn-${rest}`,
   ease: (group) => `--ease-hn-${group}`,
   text: (rest) => `--text-hn-${rest}`,
+  // The recipes (design#143): shadow-hn-overlay, rounded-hn-control-dot. border.width and
+  // border.style are not utilities: Tailwind's own border utilities read them (RECIPE_DEFAULTS).
+  elevation: (rest) => `--shadow-hn-${rest}`,
+  control: (rest) => `--radius-hn-control-${rest}`,
 };
+
+// Tailwind's bare border, border-t, divide-x and the rest take their width from
+// --default-border-width, so every line in every component follows the border.width recipe.
+const RECIPE_DEFAULTS = ["  --default-border-width: var(--hn-border-width);"];
+
+// The border.style recipe: Tailwind's border utilities draw with var(--tw-border-style), whose
+// registered initial value is solid. Setting it in the base layer keeps border-dashed and the
+// other style utilities working (utilities win over base).
+const BORDER_STYLE = [
+  "@layer base {",
+  "  *,",
+  "  ::before,",
+  "  ::after,",
+  "  ::backdrop {",
+  "    --tw-border-style: var(--hn-border-style);",
+  "  }",
+  "}",
+];
 
 // Tailwind's own rounded-sm/md/lg/xl read the token of the same name, so web and Swift say the
 // same step for the same value (HNRadius.lg is rounded-lg, design#140). This replaces Tailwind's
@@ -193,7 +215,7 @@ export function renderTailwind(all: Resolved): string {
       lines.push(`  --radius-${key}: var(${t.cssVar});`);
     }
   }
-  lines.push("", ...ANIMATIONS);
+  lines.push(...RECIPE_DEFAULTS, "", ...ANIMATIONS);
   return [
     HEADER,
     '/* Import after tailwindcss: @import "tailwindcss"; @import "@hansenexus/tokens/tailwind.css"; */',
@@ -204,6 +226,8 @@ export function renderTailwind(all: Resolved): string {
     "}",
     "",
     ...MOTION_VARIANTS,
+    "",
+    ...BORDER_STYLE,
     "",
   ].join("\n");
 }

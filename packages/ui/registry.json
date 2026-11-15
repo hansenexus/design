@@ -9,7 +9,7 @@
       "title": "hansenexus tokens",
       "description": "Installs @hansenexus/tokens and imports its Tailwind v4 theme (--hn-* variables, dark and light).",
       "meta": { "level": "atom" },
-      "dependencies": ["@hansenexus/tokens@^0.4.0"],
+      "dependencies": ["@hansenexus/tokens@^0.9.0"],
       "css": {
         "@import \"@hansenexus/tokens/tailwind.css\"": {}
       }
@@ -944,7 +944,7 @@
         "level": "template",
         "uses": ["button", "command", "cx", "dialog", "kbd", "rail-item", "state-copy"]
       },
-      "dependencies": ["@hansenexus/shell@^0.1.0"],
+      "dependencies": ["@hansenexus/shell@^0.2.0"],
       "registryDependencies": ["@hansenexus/tokens"]
     },
     {

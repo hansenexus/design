@@ -46,6 +46,9 @@ const TYPE_NAME: Record<string, string> = {
   shadow: "HNShadow",
   size: "HNSize",
   text: "HNTypeScale",
+  border: "HNBorder",
+  elevation: "HNElevation",
+  control: "HNControl",
 };
 
 const GROUP_DOC: Record<string, string> = {
@@ -61,6 +64,9 @@ const GROUP_DOC: Record<string, string> = {
   focus: "Focus ring geometry in points. The ring colour is `HNColors.focus.ring`.",
   size: "Row height and minimum target in points, per theme or per density.",
   text: "Type scale per theme: size, line height (points) and weight per role. `Font.hn(.body)` in SwiftUI reads it.",
+  border: "Line width in points, the border.width recipe.",
+  elevation: "What lifts off the page, the elevation recipe: thumb, overlays, shell panels.",
+  control: "Control shape as corner radii in points, the control recipe.",
 };
 
 const SWIFT_KEYWORDS = new Set(["default", "case", "func", "let", "var", "in", "is", "self"]);
@@ -326,7 +332,28 @@ function renderEnum(name: string, docText: string, cases: readonly string[], def
   ];
 }
 
-export function renderSwift(all: Resolved, densities: Record<string, ResolvedToken[]>): string {
+/**
+ * Token types with no SwiftUI meaning: border.style is a CSS stroke style, motif.* are CSS
+ * background-image values. They stay on the web.
+ */
+const WEB_ONLY_TYPES = new Set(["strokeStyle", "string"]);
+
+function withoutWebOnly(all: Resolved): Resolved {
+  const out = {} as Resolved;
+  for (const theme of THEMES) {
+    out[theme] = {} as Record<Mode, ResolvedToken[]>;
+    for (const mode of MODES) {
+      out[theme][mode] = all[theme][mode].filter((t) => !WEB_ONLY_TYPES.has(t.type));
+    }
+  }
+  return out;
+}
+
+export function renderSwift(
+  resolved: Resolved,
+  densities: Record<string, ResolvedToken[]>
+): string {
+  const all = withoutWebOnly(resolved);
   const sections: string[][] = [
     renderEnum("HNTheme", "Themes, the values of data-theme on the web.", THEMES, DEFAULT_THEME),
     renderEnum("HNMode", "Modes, the values of data-mode on the web.", MODES, DEFAULT_MODE),

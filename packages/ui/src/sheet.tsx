@@ -103,7 +103,7 @@ export function SheetContent({
           onInteractOutside?.(e);
         }}
         className={cx(
-          "fixed z-50 flex flex-col overflow-hidden border-hn-line-strong bg-hn-surface-card font-hn-sans text-hn-ink-primary shadow-hn-lift outline-none",
+          "fixed z-50 flex flex-col overflow-hidden border-hn-line-strong bg-hn-surface-card font-hn-sans text-hn-ink-primary shadow-hn-overlay outline-none",
           side !== "bottom" && responsive ? EDGE_RESPONSIVE[side] : EDGE[side],
           className
         )}
@@ -113,7 +113,7 @@ export function SheetContent({
           <span
             aria-hidden="true"
             className={cx(
-              "mx-auto mt-2 block h-1 w-10 shrink-0 rounded-hn-pill bg-hn-line-strong",
+              "mx-auto mt-2 block h-1 w-10 shrink-0 rounded-hn-control-dot bg-hn-line-strong",
               handle
             )}
           />

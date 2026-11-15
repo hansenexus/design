@@ -52,7 +52,7 @@ export function ScrollBar({
       )}
       {...props}
     >
-      <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-hn-pill bg-hn-line-strong hover:bg-hn-ink-muted" />
+      <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-hn-control-dot bg-hn-line-strong hover:bg-hn-ink-muted" />
     </ScrollAreaPrimitive.Scrollbar>
   );
 }

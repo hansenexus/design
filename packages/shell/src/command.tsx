@@ -149,7 +149,7 @@ export function PaletteBody({
       label={label}
       locale={locale}
       autoFocus
-      className="shadow-hn-lift"
+      className="shadow-hn-overlay"
     />
   );
 }

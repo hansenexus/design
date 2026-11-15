@@ -16,7 +16,7 @@ export function Badge({ tone = "neutral", className, ...props }: BadgeProps) {
     <span
       data-tone={tone}
       className={cx(
-        "inline-flex h-6 items-center gap-1.5 whitespace-nowrap rounded-hn-pill px-2.5 font-hn-sans text-[12.5px] font-semibold",
+        "inline-flex h-6 items-center gap-1.5 whitespace-nowrap rounded-hn-control-chip px-2.5 font-hn-sans text-[12.5px] font-semibold",
         TONE[tone],
         className
       )}

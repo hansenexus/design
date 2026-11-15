@@ -458,7 +458,12 @@ bun run outdated -- ~/repos/some-app --json                  # every block with 
 - Colour only through semantic tokens. Tailwind's own palette is removed from the build
   (`src/no-palette.css`), and the repo ratchet fails CI on a raw colour outside `packages/tokens`.
 - Lime is a flat fill with dark text (`action.primary`) or text (`action.text`). No glow, gradient,
-  coloured shadow or sheen; overlays use the one `shadow.lift`.
+  coloured shadow or sheen; overlays use the one `shadow.lift` through `elevation.overlay`.
+- Shape comes from the recipes of @hansenexus/tokens (design#143), never a hardcoded value:
+  line width from `border.width` (bare `border`), lift from `shadow-hn-raised|overlay|panel`,
+  control shape from `rounded-hn-control-box|dot|bar|chip`, motifs from
+  `bg-(image:--hn-motif-hatch)`. A theme pack changes them; atoms never fork. Avatar and the
+  circle skeleton stay round in every theme: they are identity shapes, not controls.
 - Status is never colour alone: StatusGlyph draws ok dot, busy ring, warn triangle, crit diamond,
   off hollow circle, unknown dashed circle. Off and unknown labels use `ink.muted`.
 - Targets follow the density: 24 px minimum on desktop, 44 px under `data-density="touch"`.

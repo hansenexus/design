@@ -117,4 +117,21 @@ describe("cli", () => {
     );
     expect(run(dir).code).toBe(0);
   });
+
+  test("a pack direction's token source owns its palette; its skins do not (design#143)", () => {
+    const clean = repo(
+      {
+        "themes/acme/bold/palette.json":
+          '{ "palette": { "acme": { "red": { "$value": "#c00" } } } }',
+        "themes/acme/bold/tokens.json": '{ "x": { "$value": "{palette.acme.red}" } }',
+        "themes/acme/bold/tokens.dark.json": '{ "x": { "$value": "#900" } }',
+      },
+      {}
+    );
+    expect(run(clean).code).toBe(0);
+    const skin = repo({ "themes/acme/bold/skins/card.tsx": 'const c = "#c00";\n' }, {});
+    const r = run(skin);
+    expect(r.code).toBe(1);
+    expect(r.err).toContain("themes/acme/bold/skins/card.tsx:1 hex #c00");
+  });
 });

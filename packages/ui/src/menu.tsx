@@ -16,7 +16,7 @@ export const MenuRadioGroup = MenuPrimitive.RadioGroup;
  */
 export const MENU_STYLES = {
   content:
-    "z-50 flex min-w-44 flex-col gap-px overflow-hidden rounded-hn-lg border border-hn-line-strong bg-hn-surface-card p-1 font-hn-sans shadow-hn-lift",
+    "z-50 flex min-w-44 flex-col gap-px overflow-hidden rounded-hn-lg border border-hn-line-strong bg-hn-surface-card p-1 font-hn-sans shadow-hn-overlay",
   item:
     "relative flex h-8 min-h-hn-target cursor-pointer items-center gap-2.5 rounded-hn-sm px-2.5 text-sm text-hn-ink-body outline-none select-none " +
     "data-highlighted:bg-hn-surface-raised data-highlighted:text-hn-ink-primary " +
@@ -24,7 +24,7 @@ export const MENU_STYLES = {
   danger: "text-hn-status-crit data-highlighted:text-hn-status-crit",
   subTrigger: "data-[state=open]:bg-hn-surface-raised data-[state=open]:text-hn-ink-primary",
   indicator: "absolute left-2.5 flex size-4 items-center justify-center text-hn-action-text",
-  radioDot: "block size-2 rounded-hn-pill bg-hn-action-text",
+  radioDot: "block size-2 rounded-hn-control-dot bg-hn-action-text",
   label: "px-2.5 pt-2 pb-1 text-[11px] font-semibold tracking-[0.06em] text-hn-ink-muted uppercase",
   separator: "-mx-1 my-1 h-px bg-hn-line-subtle",
 } as const;

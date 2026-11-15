@@ -445,7 +445,7 @@ export function CommandDialog({
               onSelect?.(item);
               if (closeOnSelect) setOpen(false);
             }}
-            className={cx("shadow-hn-lift", className)}
+            className={cx("shadow-hn-overlay", className)}
             {...props}
           />
         </DialogPrimitive.Content>
