@@ -2,6 +2,7 @@ import type { ComponentProps, ReactNode } from "react";
 import { Button } from "./button";
 import { cx } from "./cx";
 import { STATE_FRAME, type StateTitleElement } from "./empty-state";
+import { skinnable } from "./skin";
 import { STATE_COPY, type StateLocale } from "./state-copy";
 
 /** What Next.js hands an error boundary: `digest` is the server-side reference, safe to show. */
@@ -51,7 +52,7 @@ function details(error: StateError): string {
  * A data surface that failed. Production shows the copy, the error reference (digest) and an
  * optional retry; the raw message and stack only in development. Log details server-side.
  */
-export function ErrorState({
+function ErrorStateBase({
   error,
   digest = error?.digest,
   onRetry,
@@ -98,3 +99,12 @@ export function ErrorState({
     </div>
   );
 }
+
+declare module "./skin" {
+  interface SkinSlots {
+    "error-state": ErrorStateProps;
+  }
+}
+
+/** A data surface that failed: copy, the error reference and an optional retry. */
+export const ErrorState = skinnable("error-state", ErrorStateBase);

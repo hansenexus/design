@@ -29,6 +29,20 @@
       ]
     },
     {
+      "name": "skin",
+      "type": "registry:ui",
+      "title": "skin",
+      "description": "The theme-pack skin registry: skinnable(), ThemePack, useSkin and the typed SkinSlots that molecules, organisms and templates add their slots to.",
+      "meta": { "level": "atom" },
+      "registryDependencies": ["@hansenexus/tokens"],
+      "files": [
+        {
+          "path": "src/skin.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "icons",
       "type": "registry:ui",
       "title": "icons",
@@ -468,7 +482,12 @@
       "title": "EmptyState",
       "description": "Nothing to show (empty) or nothing matched (no-results): title, description, action, an aria-hidden illustration.",
       "meta": { "level": "molecule" },
-      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx", "@hansenexus/state-copy"],
+      "registryDependencies": [
+        "@hansenexus/tokens",
+        "@hansenexus/cx",
+        "@hansenexus/skin",
+        "@hansenexus/state-copy"
+      ],
       "files": [
         {
           "path": "src/empty-state.tsx",
@@ -487,6 +506,7 @@
         "@hansenexus/button",
         "@hansenexus/cx",
         "@hansenexus/empty-state",
+        "@hansenexus/skin",
         "@hansenexus/state-copy"
       ],
       "files": [
@@ -653,6 +673,7 @@
         "@hansenexus/cx",
         "@hansenexus/layout-copy",
         "@hansenexus/skeleton",
+        "@hansenexus/skin",
         "@hansenexus/state-copy"
       ],
       "files": [
@@ -673,6 +694,7 @@
         "@hansenexus/cx",
         "@hansenexus/icons",
         "@hansenexus/layout-copy",
+        "@hansenexus/skin",
         "@hansenexus/status-glyph",
         "@hansenexus/state-copy"
       ],
@@ -942,7 +964,7 @@
       "description": "The app shell from the shell-layout vote: floating panels for nav, header, main and an optional context pane, and a ⌘K container for external command sets or a whole palette. Installs the npm package @hansenexus/shell; it copies no files.",
       "meta": {
         "level": "template",
-        "uses": ["button", "command", "cx", "dialog", "kbd", "rail-item", "state-copy"]
+        "uses": ["button", "command", "cx", "dialog", "kbd", "rail-item", "skin", "state-copy"]
       },
       "dependencies": ["@hansenexus/shell@^0.2.0"],
       "registryDependencies": ["@hansenexus/tokens"]

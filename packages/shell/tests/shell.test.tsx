@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { skinSlots, ThemePack } from "@hansenexus/ui";
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import pkg from "../package.json";
@@ -145,6 +146,34 @@ describe("slots", () => {
     expect(html).toMatch(/<main data-shell-panel="main"[^>]*>.*Main slot/);
     expect(html).not.toContain("<aside");
     expect(html.match(/data-shell-panel=/g)).toHaveLength(3);
+  });
+
+  test("the shell is the template slot of a theme pack (design#143)", () => {
+    expect(skinSlots()).toContain("shell");
+    const plain = render(<Shell {...slots} />);
+    const empty = render(
+      <ThemePack pack={{ id: "t" }}>
+        <Shell {...slots} />
+      </ThemePack>
+    );
+    expect(empty).toBe(plain);
+    const framed = render(
+      <ThemePack
+        pack={{
+          id: "t",
+          skins: {
+            shell: ({ Base, ...props }) => (
+              <div data-pack-frame="">
+                <Base {...props} />
+              </div>
+            ),
+          },
+        }}
+      >
+        <Shell {...slots} />
+      </ThemePack>
+    );
+    expect(framed).toBe(`<div data-pack-frame="">${plain}</div>`);
   });
 
   test("the context pane is optional, open by default and can start closed", () => {

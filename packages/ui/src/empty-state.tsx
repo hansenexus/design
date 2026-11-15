@@ -1,5 +1,6 @@
 import type { ComponentProps, ReactNode } from "react";
 import { cx } from "./cx";
+import { skinnable } from "./skin";
 import { STATE_COPY, type StateLocale } from "./state-copy";
 
 export type EmptyStateVariant = "empty" | "no-results";
@@ -30,7 +31,7 @@ export const STATE_FRAME =
   "flex flex-col items-center gap-3 px-4 py-10 text-center font-hn-sans text-hn-ink-body";
 
 /** A data surface with nothing to show, and what to do about it. */
-export function EmptyState({
+function EmptyStateBase({
   variant = "empty",
   locale = "en",
   title,
@@ -57,3 +58,12 @@ export function EmptyState({
     </div>
   );
 }
+
+declare module "./skin" {
+  interface SkinSlots {
+    "empty-state": EmptyStateProps;
+  }
+}
+
+/** A data surface with nothing to show, and what to do about it. */
+export const EmptyState = skinnable("empty-state", EmptyStateBase);

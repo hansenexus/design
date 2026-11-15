@@ -12,6 +12,7 @@ export type Level = (typeof LEVELS)[number];
 export const ITEM_SCENES: Record<string, Scene> = {
   tokens: "kit",
   cx: "kit",
+  skin: "kit",
   icons: "kit",
   "status-glyph": "kit",
   badge: "kit",

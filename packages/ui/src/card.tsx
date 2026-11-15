@@ -2,6 +2,7 @@ import type { ComponentProps, ReactNode } from "react";
 import { cx } from "./cx";
 import { LAYOUT_COPY } from "./layout-copy";
 import { Skeleton, SkeletonGroup } from "./skeleton";
+import { skinnable } from "./skin";
 import type { StateLocale } from "./state-copy";
 
 export type CardProps = ComponentProps<"div"> & {
@@ -16,7 +17,7 @@ export type CardProps = ComponentProps<"div"> & {
 const SURFACE = { card: "bg-hn-surface-card", raised: "bg-hn-surface-raised" } as const;
 
 /** A bordered surface for one thing: a machine, a run, a setting. Header, body, footer inside. */
-export function Card({
+function CardRoot({
   surface = "card",
   disabled = false,
   pending = false,
@@ -41,7 +42,7 @@ export function Card({
   );
 }
 
-export function CardHeader({ className, ...props }: ComponentProps<"div">) {
+function CardHeaderBase({ className, ...props }: ComponentProps<"div">) {
   return <div className={cx("flex flex-col gap-1 px-4 pt-4", className)} {...props} />;
 }
 
@@ -52,7 +53,7 @@ export type CardTitleProps = ComponentProps<"h3"> & {
   as?: CardTitleElement;
 };
 
-export function CardTitle({ as: Title = "h3", className, ...props }: CardTitleProps) {
+function CardTitleBase({ as: Title = "h3", className, ...props }: CardTitleProps) {
   return (
     <Title
       className={cx(
@@ -64,16 +65,16 @@ export function CardTitle({ as: Title = "h3", className, ...props }: CardTitlePr
   );
 }
 
-export function CardDescription({ className, ...props }: ComponentProps<"p">) {
+function CardDescriptionBase({ className, ...props }: ComponentProps<"p">) {
   return <p className={cx("m-0 text-[13px] text-hn-ink-muted", className)} {...props} />;
 }
 
-export function CardBody({ className, ...props }: ComponentProps<"div">) {
+function CardBodyBase({ className, ...props }: ComponentProps<"div">) {
   return <div className={cx("px-4 py-4 text-sm", className)} {...props} />;
 }
 
 /** Actions and meta, right-aligned, on a subtle rule. */
-export function CardFooter({ className, ...props }: ComponentProps<"div">) {
+function CardFooterBase({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
       className={cx(
@@ -84,6 +85,27 @@ export function CardFooter({ className, ...props }: ComponentProps<"div">) {
     />
   );
 }
+
+declare module "./skin" {
+  interface SkinSlots {
+    card: CardProps;
+    "card.header": ComponentProps<"div">;
+    "card.title": CardTitleProps;
+    "card.description": ComponentProps<"p">;
+    "card.body": ComponentProps<"div">;
+    "card.footer": ComponentProps<"div">;
+  }
+}
+
+/** A bordered surface for one thing: a machine, a run, a setting. Header, body, footer inside. */
+export const Card = skinnable("card", CardRoot);
+/** The card's head: title and description, stacked. */
+export const CardHeader = skinnable("card.header", CardHeaderBase);
+export const CardTitle = skinnable("card.title", CardTitleBase);
+export const CardDescription = skinnable("card.description", CardDescriptionBase);
+export const CardBody = skinnable("card.body", CardBodyBase);
+/** Actions and meta, right-aligned, on a subtle rule. */
+export const CardFooter = skinnable("card.footer", CardFooterBase);
 
 export type CardSkeletonProps = Omit<ComponentProps<"div">, "children"> & {
   /** Lines of body copy. */

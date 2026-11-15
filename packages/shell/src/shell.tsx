@@ -13,6 +13,7 @@ import {
   Kbd,
   STATE_COPY,
   type StateLocale,
+  skinnable,
 } from "@hansenexus/ui";
 import {
   type ComponentProps,
@@ -114,7 +115,7 @@ function useControllable(
   return [value ?? own, set];
 }
 
-export function Shell({
+function ShellBase({
   nav,
   header,
   main,
@@ -257,6 +258,15 @@ export function Shell({
     </ShellContext.Provider>
   );
 }
+
+declare module "@hansenexus/ui" {
+  interface SkinSlots {
+    shell: ShellProps;
+  }
+}
+
+/** The app shell: nav, header, main and the optional context pane as floating panels. */
+export const Shell = skinnable("shell", ShellBase);
 
 function PanelIcon() {
   return (

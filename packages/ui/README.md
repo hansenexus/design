@@ -464,6 +464,30 @@ bun run outdated -- ~/repos/some-app --json                  # every block with 
   control shape from `rounded-hn-control-box|dot|bar|chip`, motifs from
   `bg-(image:--hn-motif-hatch)`. A theme pack changes them; atoms never fork. Avatar and the
   circle skeleton stay round in every theme: they are identity shapes, not controls.
+- Structure beyond the recipes comes from skins (design#143). A molecule, organism or template
+  wrapped in `skinnable(slot, Base)` (`src/skin.tsx`) renders the active pack's skin for that
+  slot, else itself. Slots so far: `card` and `card.header|title|description|body|footer`,
+  `empty-state`, `error-state`, `alert`, and `shell` from @hansenexus/shell. A slot's props are
+  typed: each file adds its slots to `SkinSlots` by declaration merging, so a pack's `skins` only
+  accepts slots that exist, with their props. A skin gets the props plus `Base`, to wrap or to
+  replace. Atoms have no slot.
+
+  ```tsx
+  import { cx, ThemePack, type ThemePackDefinition } from "@hansenexus/ui";
+
+  const pack: ThemePackDefinition = {
+    id: "fachwerk",
+    skins: {
+      "card.header": ({ Base, className, ...props }) => (
+        <Base {...props} className={cx("border-b-2 border-hn-line-strong", className)} />
+      ),
+    },
+  };
+
+  <html data-theme={pack.id}>
+    <ThemePack pack={pack}>{app}</ThemePack>
+  </html>;
+  ```
 - Status is never colour alone: StatusGlyph draws ok dot, busy ring, warn triangle, crit diamond,
   off hollow circle, unknown dashed circle. Off and unknown labels use `ink.muted`.
 - Targets follow the density: 24 px minimum on desktop, 44 px under `data-density="touch"`.

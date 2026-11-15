@@ -6,9 +6,11 @@
 // it draws in `meta.uses`; the same rule holds for those.
 // It also fails when a gallery preview card names an item the registry lacks, or when an item
 // has no scene in packages/ui/gallery/levels.ts, so the gallery nav lists every item by level.
+// Theme-pack skins (themes/<app>/<direction>/skins/, design#143) sit at the level of the item they
+// skin and follow the same rule (checkSkins).
 // Run: bun scripts/levels.ts [--root <dir>]
-import { readdirSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { resolve, sep } from "node:path";
 import { ITEM_SCENES, LEVELS, type Level } from "../packages/ui/gallery/levels";
 
 export const UI = "packages/ui";
@@ -26,6 +28,8 @@ export type Input = {
   /** Gallery source text per file (relative to packages/ui), searched for preview cards. */
   gallery: Record<string, string>;
   scenes: Record<string, string>;
+  /** Theme-pack skin sources (design#143), keyed by repo path: themes/<app>/<direction>/skins/*. */
+  skins?: Record<string, string>;
 };
 
 const rank = (level: Level) => LEVELS.indexOf(level);
@@ -49,7 +53,118 @@ export function previewCardItems(source: string): string[] {
   return [...source.matchAll(/<PreviewCard\b[^>]*?\bitem="([^"]+)"/g)].map((m) => m[1] ?? "");
 }
 
-export function checkLevels({ items, sources, gallery, scenes }: Input): string[] {
+/** Names a source file exports: declarations and `export { a, b as c }` lists. */
+export function exportedNames(source: string): string[] {
+  const declared = [
+    ...source.matchAll(
+      /export\s+(?:declare\s+)?(?:async\s+)?(?:const|let|function|class|type|interface|enum)\s+(\w+)/g
+    ),
+  ].map((m) => m[1] ?? "");
+  const listed = [...source.matchAll(/export\s+(?:type\s+)?\{([^}]*)\}/g)].flatMap((m) =>
+    (m[1] ?? "").split(",").map((n) => (n.trim().split(/\s+as\s+/)[1] ?? n).trim())
+  );
+  return [...declared, ...listed].filter(Boolean);
+}
+
+/** `import { A, type B, C as D } from "<pkg>"` → ["A", "B", "C"], over every such import. */
+export function namedImports(source: string, pkg: string): string[] {
+  const from = new RegExp(`import\\s+(?:type\\s+)?\\{([^}]*)\\}\\s*from\\s*"${pkg}"`, "g");
+  return [...source.matchAll(from)].flatMap((m) =>
+    (m[1] ?? "")
+      .split(",")
+      .map(
+        (n) =>
+          n
+            .trim()
+            .replace(/^type\s+/, "")
+            .split(/\s+as\s+/)[0] ?? ""
+      )
+      .filter(Boolean)
+  );
+}
+
+const SKIN_FILE = /^themes\/[^/]+\/[^/]+\/skins\/([^/]+)\.tsx?$/;
+
+/**
+ * Theme-pack skins (design#143). A file `skins/<item>.tsx` or `skins/<item>.<part>.tsx` skins a
+ * registry item, so it sits at that item's level and imports only that level or lower: named
+ * imports from @hansenexus/ui map to the item that exports each name, @hansenexus/shell is the
+ * shell, `./<file>` is the sibling skin. Atoms have no skin: a pack changes them through recipe
+ * tokens. `_<name>.tsx` is a helper at atom level; `index.ts(x)` collects the skins and is free.
+ */
+export function checkSkins(
+  items: Item[],
+  sources: Record<string, string>,
+  skins: Record<string, string>
+): string[] {
+  const errors: string[] = [];
+  const byName = new Map(items.map((i) => [i.name, i]));
+  const exporter = new Map<string, Item>();
+  for (const item of items)
+    for (const f of item.files ?? [])
+      for (const name of exportedNames(sources[f.path] ?? "")) exporter.set(name, item);
+
+  /** The level a skin file sits at, or a reason it has none. */
+  const fileLevel = (base: string): Level | string => {
+    if (base === "index") return "template";
+    if (base.startsWith("_")) return "atom";
+    const name = base.split(".")[0] ?? base;
+    const item = byName.get(name);
+    if (!item) return `is named for ${name}, which is not a registry item`;
+    const level = levelOf(item);
+    if (!level) return `skins ${name}, which has no level`;
+    if (level === "atom")
+      return `skins ${name}, an atom: atoms take no skin, change them through recipe tokens`;
+    return level;
+  };
+
+  for (const [path, source] of Object.entries(skins)) {
+    const base = path.match(SKIN_FILE)?.[1]?.replace(/\.tsx?$/, "");
+    if (base === undefined) {
+      errors.push(`${path}: a skin lives in themes/<app>/<direction>/skins/<item>.tsx`);
+      continue;
+    }
+    const level = fileLevel(base);
+    if (!(LEVELS as readonly string[]).includes(level)) {
+      errors.push(`${path} ${level}`);
+      continue;
+    }
+    const own = level as Level;
+    const deps: [string, Level | string][] = [];
+    if (/import\s+\*\s+as\s+\w+\s+from\s+"@hansenexus\/ui"/.test(source))
+      errors.push(
+        `${path}: import names from @hansenexus/ui, not the namespace, so levels can be checked`
+      );
+    for (const name of namedImports(source, "@hansenexus/ui")) {
+      const item = exporter.get(name);
+      if (!item) errors.push(`${path}: @hansenexus/ui exports no ${name} from a registry item`);
+      else deps.push([`${name} (${item.name})`, levelOf(item) ?? "atom"]);
+    }
+    if (/from\s+"@hansenexus\/shell"/.test(source)) {
+      const shell = byName.get("shell");
+      deps.push(["@hansenexus/shell", (shell && levelOf(shell)) ?? "template"]);
+    }
+    for (const m of source.matchAll(/(?:from|import)\s*"(\.{1,2}\/[^"]+)"/g)) {
+      const target = m[1] ?? "";
+      if (!target.startsWith("./") || target.slice(2).includes("/")) {
+        errors.push(`${path}: imports ${target}; a skin imports only sibling skins (./<file>)`);
+        continue;
+      }
+      const sibling = fileLevel(target.slice(2).replace(/\.tsx?$/, ""));
+      deps.push([target, sibling]);
+    }
+    for (const [what, depLevel] of deps) {
+      if (!(LEVELS as readonly string[]).includes(depLevel)) continue;
+      if (rank(depLevel as Level) <= rank(own)) continue;
+      errors.push(
+        `${path} (${own}) imports ${what} (${depLevel}): a skin at level ${own} imports only ${LEVELS.slice(0, rank(own) + 1).join("|")}`
+      );
+    }
+  }
+  return errors;
+}
+
+export function checkLevels({ items, sources, gallery, scenes, skins = {} }: Input): string[] {
   const errors: string[] = [];
   const names = new Set(items.map((i) => i.name));
 
@@ -107,7 +222,20 @@ export function checkLevels({ items, sources, gallery, scenes }: Input): string[
       }
     }
   }
+  errors.push(...checkSkins(items, sources, skins));
   return errors;
+}
+
+/** Every file under themes/<app>/<direction>/skins/, keyed by repo path. */
+function loadSkins(root: string): Record<string, string> {
+  const skins: Record<string, string> = {};
+  const themes = resolve(root, "themes");
+  if (!existsSync(themes)) return skins;
+  for (const f of readdirSync(themes, { recursive: true }) as string[]) {
+    const path = `themes/${f.split(sep).join("/")}`;
+    if (/\/skins\/.+\.tsx?$/.test(path)) skins[path] = readFileSync(resolve(root, path), "utf8");
+  }
+  return skins;
 }
 
 export function load(root: string): Input {
@@ -122,7 +250,7 @@ export function load(root: string): Input {
   for (const f of readdirSync(resolve(ui, "gallery"), { recursive: true }) as string[])
     if (/\.tsx$/.test(f) && !f.startsWith("dist/"))
       gallery[`gallery/${f}`] = readFileSync(resolve(ui, "gallery", f), "utf8");
-  return { items, sources, gallery, scenes: ITEM_SCENES };
+  return { items, sources, gallery, scenes: ITEM_SCENES, skins: loadSkins(root) };
 }
 
 if (import.meta.main) {
