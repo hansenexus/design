@@ -10,7 +10,7 @@ hansenexus design system: DTCG tokens, UI primitives, state illustrations, the s
 | [`@hansenexus/illustrations`](packages/illustrations) | Eight geometric state motifs (empty, no-results, error, 404, offline, no-permission, success, maintenance) as React SVG, one import path each, colour only through `currentColor` and `--hn-*`, ≤ 3 KB gzip each |
 | [`@hansenexus/shell`](packages/shell) | The app shell from the shell-layout vote: floating panels with the slots nav, header, main and an optional context pane, container-query layout (tab bar below 768 px), capability-based nav visibility, and a ⌘K container that takes external command sets or a whole palette (the Lotse ops preset mounts there) |
 | [`@hansenexus/state-check`](packages/state-check) | The frontend state contract as a CI ratchet: dynamic Next.js routes need `loading.tsx` or `<Suspense>`; opt-in client-router route (wouter, React Router), Convex `useQuery` loading-branch and pending-action rules; CLI, config, per-app baseline |
-| [`themes/`](themes) | Theme packs: an app's brand and structure on the core names, one folder per direction, tokens plus recipes (border, elevation, control shape, motifs); contrast CI covers every direction |
+| [`themes/`](themes) | Theme packs, one `@hansenexus/theme-<app>` per app: the app's brand and structure on the core names, one folder per direction, tokens plus recipes (border, elevation, control shape, motifs) and skins for molecules and up; contrast CI covers every direction, the gallery renders each pack (`lexilink`, `fachwerk`) |
 | [`brand/`](brand) | The mark and wordmark in every variant, favicons, app icon, menu bar template; usage rules |
 
 ```sh
@@ -50,17 +50,20 @@ workflow on its own tag. The tag must match the package's `package.json` version
 | `@hansenexus/state-check` | `state-check-v<version>` | `.github/workflows/release-state-check.yml` |
 | `@hansenexus/illustrations` | `illustrations-v<version>` | `.github/workflows/release-illustrations.yml` |
 | `@hansenexus/shell` | `shell-v<version>` | `.github/workflows/release-shell.yml` |
+| `@hansenexus/theme-<app>` | `theme-<app>-v<version>` | `.github/workflows/release-theme.yml` |
 
 The tokens release also pushes a plain `<version>` tag on the same commit: the Swift package
 (`Package.swift`, [swift/README.md](swift/README.md)) resolves from those, so its version tracks
 `@hansenexus/tokens`.
 
 Run a workflow by hand (`gh workflow run <file> -f dry_run=true`) to pack and validate without
-publishing.
+publishing. The theme workflow also takes the pack's app:
+`gh workflow run release-theme.yml -f app=fachwerk -f dry_run=true`.
 
 ```sh
 bun add @hansenexus/tokens @hansenexus/ui
 bun add @hansenexus/shell   # the app shell, on top of both
+bun add @hansenexus/theme-fachwerk   # an app's theme pack, see themes/README.md
 ```
 
 ## Hosted gallery

@@ -18,7 +18,8 @@ import {
 import { Badge, Button, MotionProvider, ThemePack } from "../src";
 import { Check, Restart } from "./icons";
 import { levelOf } from "./levels";
-import { GALLERY_THEMES, packFor } from "./packs";
+import { packFor } from "./packs";
+import { GALLERY_THEMES } from "./themes";
 import {
   DEFAULT_VIEW,
   installCommand,

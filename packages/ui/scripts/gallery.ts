@@ -25,9 +25,9 @@ import {
 } from "node:fs";
 import { dirname, extname, resolve, sep } from "node:path";
 import type { BunPlugin } from "bun";
-import { DECIDE_PATH, type DecideBody, type DecideReply } from "../gallery/decide";
-import { BUNDLED_PACKS, packThemes } from "../../tokens/scripts/resolve";
 import { renderPackCss } from "../../tokens/scripts/build";
+import { BUNDLED_PACKS, packThemes } from "../../tokens/scripts/resolve";
+import { DECIDE_PATH, type DecideBody, type DecideReply } from "../gallery/decide";
 import { graphSource, loadGraph } from "./graph";
 import { decide, readDecision, registrySource } from "./variants";
 

@@ -3,7 +3,7 @@
 // tests/gallery-view.test.ts covers them without a DOM.
 import { type Density, densities, type Mode, modes } from "@hansenexus/tokens";
 import { motionMs } from "../src/motion";
-import { GALLERY_THEMES } from "./packs";
+import { GALLERY_THEMES } from "./themes";
 
 /** The gallery scenes, one page each: kit is ./, the rest ?scene=<name>. */
 export const SCENES = [

@@ -1481,7 +1481,7 @@ if (root) {
       <BareContext.Provider value={bare}>
         {framed ? (
           <ViewProvider view={readView(query)}>
-            <Page />
+            <PackedPage theme={readView(query).theme} />
           </ViewProvider>
         ) : (
           <Gallery />

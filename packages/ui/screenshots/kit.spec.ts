@@ -153,6 +153,38 @@ for (const mode of MODES) {
       await expect(page).toHaveScreenshot(`${scene}-${info.project.name}-${mode}.png`);
     });
   }
+
+  // The fachwerk theme pack (design#143): its recipe tokens over the kit, its empty-state skin
+  // in states, its card.header skin in layout.
+  test(`fachwerk kit ${mode}`, async ({ page }, info) => {
+    await page.goto(`/gallery/?scene=kit&theme=fachwerk&mode=${mode}&bare=1`);
+    await page.evaluate(() => document.fonts.ready);
+    await expect(page.locator("h1")).toBeVisible();
+    await expect(page).toHaveScreenshot(`fachwerk-kit-${info.project.name}-${mode}.png`, {
+      fullPage: true,
+    });
+  });
+
+  test(`fachwerk states ${mode}`, async ({ page }, info) => {
+    await page.goto(`/gallery/?scene=states&theme=fachwerk&mode=${mode}&bare=1`);
+    await page.evaluate(() => document.fonts.ready);
+    await expect(page.locator('[role="progressbar"]')).toHaveCount(3);
+    await expect(page.locator('[class*="motif-hatch"][class*="border"]').first()).toBeVisible();
+    await expect(page).toHaveScreenshot(`fachwerk-states-${info.project.name}-${mode}.png`, {
+      fullPage: true,
+    });
+  });
+
+  test(`fachwerk layout ${mode}`, async ({ page }, info) => {
+    await page.goto(`/gallery/?scene=layout&theme=fachwerk&mode=${mode}&bare=1`);
+    await page.evaluate(() => document.fonts.ready);
+    await expect(page.locator('[role="img"][aria-label="hansenexus"] img')).toBeVisible();
+    await expect(page.locator('svg[role="status"]')).toHaveCount(1);
+    await expect(page.locator('[class*="motif-brace"]').first()).toBeVisible();
+    await expect(page).toHaveScreenshot(`fachwerk-layout-${info.project.name}-${mode}.png`, {
+      fullPage: true,
+    });
+  });
 }
 
 test("layout: dismiss closes an alert, the accordion works from the keyboard", async ({ page }) => {

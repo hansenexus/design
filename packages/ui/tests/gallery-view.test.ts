@@ -64,13 +64,22 @@ describe("gallery view (#57)", () => {
     expect(installCommand("skeleton")).toBe("/design add skeleton");
   });
 
-  test("the theme list is every token theme, lexilink included (#62)", () => {
-    expect(VIEW_OPTIONS.theme).toEqual(["hansenexus", "kommandant", "portal", "lexilink"]);
-    const view = { ...DEFAULT_VIEW, theme: "lexilink" as const };
-    const q = writeView(new URLSearchParams(), view);
-    expect(q.toString()).toBe("theme=lexilink");
-    expect(readView(q)).toEqual(view);
-    expect(viewAttributes(view).theme).toBe("lexilink");
+  test("the theme list is every token theme, lexilink included (#62), then each pack (design 143)", () => {
+    expect(VIEW_OPTIONS.theme).toEqual([
+      "hansenexus",
+      "kommandant",
+      "portal",
+      "lexilink",
+      "fachwerk",
+    ]);
+    for (const theme of ["lexilink", "fachwerk"]) {
+      const view = { ...DEFAULT_VIEW, theme };
+      const q = writeView(new URLSearchParams(), view);
+      expect(q.toString()).toBe(`theme=${theme}`);
+      expect(readView(q)).toEqual(view);
+      expect(viewAttributes(view).theme).toBe(theme);
+    }
+    expect(readView(new URLSearchParams("theme=nope")).theme).toBe(DEFAULT_VIEW.theme);
   });
 });
 
