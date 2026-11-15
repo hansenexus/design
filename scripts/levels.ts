@@ -229,11 +229,19 @@ export function checkLevels({ items, sources, gallery, scenes, skins = {} }: Inp
 /** Every file under themes/<app>/<direction>/skins/, keyed by repo path. */
 function loadSkins(root: string): Record<string, string> {
   const skins: Record<string, string> = {};
-  const themes = resolve(root, "themes");
-  if (!existsSync(themes)) return skins;
-  for (const f of readdirSync(themes, { recursive: true }) as string[]) {
-    const path = `themes/${f.split(sep).join("/")}`;
-    if (/\/skins\/.+\.tsx?$/.test(path)) skins[path] = readFileSync(resolve(root, path), "utf8");
+  const dirs = (path: string) =>
+    existsSync(resolve(root, path))
+      ? readdirSync(resolve(root, path), { withFileTypes: true })
+          .filter((d) => d.isDirectory() && d.name !== "dist" && d.name !== "node_modules")
+          .map((d) => `${path}/${d.name}`)
+      : [];
+  for (const direction of dirs("themes").flatMap(dirs)) {
+    const folder = `${direction}/skins`;
+    if (!existsSync(resolve(root, folder))) continue;
+    for (const f of readdirSync(resolve(root, folder), { recursive: true }) as string[]) {
+      const path = `${folder}/${f.split(sep).join("/")}`;
+      if (/\.tsx?$/.test(path)) skins[path] = readFileSync(resolve(root, path), "utf8");
+    }
   }
   return skins;
 }

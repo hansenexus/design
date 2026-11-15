@@ -2,6 +2,9 @@
 @import "tailwindcss";
 @import "../src/no-palette.css";
 @import "@hansenexus/tokens/tailwind.css";
+/* The theme packs @hansenexus/tokens does not bundle (design#143), written by scripts/gallery.ts. */
+@import "./dist/packs.css";
 @source "../src";
 @source "../../shell/src";
+@source "../../../themes";
 @source "./";

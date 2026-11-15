@@ -1,0 +1,55 @@
+{
+  "name": "@hansenexus/theme-lexilink",
+  "version": "0.1.0",
+  "description": "lexilink's theme pack for the hansenexus design system: B2 Ledger as recipe tokens (paper and ink, square corners, one orange block).",
+  "license": "MIT",
+  "keywords": [
+    "design-tokens",
+    "theme",
+    "react",
+    "tailwindcss",
+    "design-system"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hansenexus/design.git",
+    "directory": "themes/lexilink"
+  },
+  "bugs": "https://github.com/hansenexus/design/issues",
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./theme.css": "./dist/theme.css"
+  },
+  "files": [
+    "dist/",
+    "pack.json",
+    "ledger/",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "bun ../../scripts/theme-build.ts",
+    "prepublishOnly": "bun ../../scripts/theme-build.ts"
+  },
+  "peerDependencies": {
+    "@hansenexus/tokens": "^0.9.0",
+    "@hansenexus/ui": "^0.5.0",
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@hansenexus/tokens": "workspace:*",
+    "@hansenexus/ui": "workspace:*",
+    "@types/react": "19.3.0",
+    "react": "19.3.0"
+  }
+}

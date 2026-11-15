@@ -7,7 +7,6 @@
 // panel, whose data-theme redeclares them), and a card with a `loop` gets an auto-loop toggle
 // that drives its content through QueryState's states. ViewProvider carries the same scale to the
 // timers that read the motion tokens in TS (MotionProvider, #91).
-import { themes } from "@hansenexus/tokens";
 import {
   type CSSProperties,
   createContext,
@@ -16,9 +15,10 @@ import {
   useEffect,
   useState,
 } from "react";
-import { Badge, Button, MotionProvider } from "../src";
+import { Badge, Button, MotionProvider, ThemePack } from "../src";
 import { Check, Restart } from "./icons";
 import { levelOf } from "./levels";
+import { GALLERY_THEMES, packFor } from "./packs";
 import {
   DEFAULT_VIEW,
   installCommand,
@@ -79,7 +79,7 @@ function ThemePanel({ theme, view, children }: { theme: string; view: View; chil
       className="flex min-w-0 flex-col gap-2 rounded-hn-lg border border-hn-line-subtle bg-hn-surface-page p-3 text-hn-ink-primary"
     >
       <span className="font-hn-mono text-xs text-hn-ink-muted">{theme}</span>
-      {children}
+      <ThemePack pack={packFor(theme)}>{children}</ThemePack>
     </div>
   );
 }
@@ -178,7 +178,7 @@ export function PreviewCard({
       <div key={`${run}-${view.speed}-${view.motion}`} data-run={run} className="contents">
         {view.compare === "on" ? (
           <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,260px),1fr))] gap-3">
-            {themes.map((theme) => (
+            {GALLERY_THEMES.map((theme) => (
               <ThemePanel key={theme} theme={theme} view={view}>
                 {content}
               </ThemePanel>

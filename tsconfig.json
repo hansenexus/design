@@ -20,6 +20,9 @@
     "packages/*/gallery/**/*.ts",
     "packages/*/gallery/**/*.tsx",
     "packages/*/screenshots/**/*.ts",
-    "packages/*/*.config.ts"
+    "packages/*/*.config.ts",
+    "themes/*/*.ts",
+    "themes/*/*/skins/*.ts",
+    "themes/*/*/skins/*.tsx"
   ]
 }
