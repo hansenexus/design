@@ -21,7 +21,12 @@ function SplitCard({ kpi }: KpiCardProps) {
           {kpi.value}
         </p>
         <p className="m-0 flex flex-wrap items-center gap-x-1.5 text-xs">
-          <span className={cx("inline-flex items-center gap-0.5 font-semibold", TONE_TEXT[tone])}>
+          <span
+            className={cx(
+              "relative inline-flex items-center gap-0.5 font-semibold",
+              TONE_TEXT[tone]
+            )}
+          >
             <DeltaContent kpi={kpi} arrowClassName="size-3.5" />
           </span>
           <span className="text-hn-ink-muted" aria-hidden="true">

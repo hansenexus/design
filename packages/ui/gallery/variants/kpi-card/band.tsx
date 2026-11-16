@@ -25,7 +25,7 @@ function BandCard({ kpi }: KpiCardProps) {
           <p className="m-0 font-hn-display text-[28px] leading-none font-semibold tabular-nums text-hn-ink-primary [overflow-wrap:anywhere]">
             {kpi.value}
           </p>
-          <Badge className={cx("gap-1 px-2", TONE_TEXT[tone])}>
+          <Badge className={cx("relative gap-1 px-2", TONE_TEXT[tone])}>
             <DeltaContent kpi={kpi} />
           </Badge>
         </div>

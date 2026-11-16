@@ -19,7 +19,7 @@ function SectionCard({ kpi }: KpiCardProps) {
     <Card className="gap-3 p-4">
       <div className="flex items-start justify-between gap-3">
         <p className="m-0 min-w-0 text-[13px] text-hn-ink-muted">{kpi.label}</p>
-        <Badge className={cx("shrink-0 gap-1 px-2", TONE_TEXT[tone])}>
+        <Badge className={cx("relative shrink-0 gap-1 px-2", TONE_TEXT[tone])}>
           <DeltaContent kpi={kpi} />
         </Badge>
       </div>

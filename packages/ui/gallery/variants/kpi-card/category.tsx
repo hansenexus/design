@@ -53,7 +53,11 @@ export function DeltaArrow({ direction, className }: { direction: Direction; cla
   return <Glyph width={14} height={14} strokeWidth={2.2} className={cx("shrink-0", className)} />;
 }
 
-/** Arrow and delta as seen, plus the spoken form ("up 12.5% vs last week") for screen readers. */
+/**
+ * Arrow and delta as seen, plus the spoken form ("up 12.5% vs last week") for screen readers.
+ * The container must be `relative`: the absolute sr-only span otherwise escapes the vote's
+ * horizontal strip at 390 px and widens the page.
+ */
 export function DeltaContent({ kpi, arrowClassName }: { kpi: Kpi; arrowClassName?: string }) {
   return (
     <>
