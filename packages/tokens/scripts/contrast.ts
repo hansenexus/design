@@ -62,6 +62,8 @@ export const RULES: Rule[] = [
     bg: SURFACES,
   },
   { kind: "placeholder", fg: ["skeleton.base", "skeleton.highlight"], bg: SURFACES },
+  // Scrollbars (design#163): the track is clear, so the thumb sits on whatever surface scrolls.
+  { kind: "ui", fg: ["scrollbar.thumb", "scrollbar.thumb-hover"], bg: SURFACES },
   // Cards divide rows with line.subtle; the rail carries its own ink set in both modes.
   { kind: "divider", fg: ["line.subtle"], bg: ["surface.card"] },
   { kind: "text", fg: ["rail.ink", "rail.muted"], bg: ["surface.rail"] },
@@ -91,6 +93,7 @@ export const EXEMPT: Record<string, string> = {
   "nav.active": "a fill; its label carries the contrast (nav.active-ink on it)",
   "nav.tab": "a fill; its label carries the contrast (nav.tab-ink on it)",
   "panel.main": "a ground; the text rule above checks every ink on it",
+  "scrollbar.track": "clear; the thumb is checked on every surface it can sit on",
 };
 
 function luminance(hex: string): number {

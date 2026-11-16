@@ -78,5 +78,18 @@
       "$value": "32px",
       "$description": "Height of the brand row at the head of the rail"
     }
+  },
+  "scrollbar": {
+    "$description": "Recipe (design#163): how native scrollbars draw. The colours are scrollbar.thumb, thumb-hover and track; a pack that wants the OS bar width sets width to auto.",
+    "width": {
+      "$type": "string",
+      "$value": "thin",
+      "$description": "scrollbar-width of every scrolling box: thin or auto"
+    },
+    "size": {
+      "$type": "dimension",
+      "$value": "8px",
+      "$description": "Bar thickness where a browser lacks scrollbar-width and draws ::-webkit-scrollbar"
+    }
   }
 }

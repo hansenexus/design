@@ -75,6 +75,13 @@
       "$value": "{palette.fachwerk.night-red-light}"
     }
   },
+  "scrollbar": {
+    "$type": "color",
+    "thumb-hover": {
+      "$value": "{palette.fachwerk.night-ink}",
+      "$description": "The lifted grey is already the resting thumb; the pointer turns it to oak"
+    }
+  },
   "action": {
     "$type": "color",
     "primary": {

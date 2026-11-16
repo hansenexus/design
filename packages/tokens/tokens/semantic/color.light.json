@@ -64,6 +64,22 @@
     "base": { "$value": "{palette.warm.200}", "$description": "The resting placeholder fill" },
     "highlight": { "$value": "{palette.warm.300}", "$description": "The pulse's far end" }
   },
+  "scrollbar": {
+    "$type": "color",
+    "$description": "Native scrollbars and the ScrollArea bar (design#163). The thumb follows the theme's lines, so a theme that recolours line.strong recolours its bars.",
+    "thumb": {
+      "$value": "{line.strong}",
+      "$description": "The resting thumb; 3:1 on every surface"
+    },
+    "thumb-hover": {
+      "$value": "{ink.muted}",
+      "$description": "The thumb under the pointer or while dragged"
+    },
+    "track": {
+      "$value": "#00000000",
+      "$description": "Clear, so the bar sits on its container's own surface"
+    }
+  },
   "terminal": {
     "$type": "color",
     "$description": "The 16 ANSI colours of a terminal drawn on surface.page or surface.card. Every one is text-contrast (4.5:1) on both. Lime is green, as elsewhere; magenta and cyan are muted so lime stays the only accent.",

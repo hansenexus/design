@@ -168,4 +168,32 @@ describe("recipes", () => {
     const css = readFileSync(join(dist, "tokens.css"), "utf8");
     expect(css).toContain("--hn-motif-hatch: none;");
   });
+
+  test("scrollbars (design#163): thumb, hover and track in every theme and pack direction, both modes", async () => {
+    for (const theme of allThemes()) {
+      for (const mode of MODES) {
+        const t = new Map((await resolveTokens(theme, mode)).map((x) => [x.path, x.value]));
+        for (const key of ["thumb", "thumb-hover", "track"])
+          expect(t.get(`scrollbar.${key}`), `${theme}/${mode} scrollbar.${key}`).toBeString();
+        expect(["thin", "auto"]).toContain(t.get("scrollbar.width") ?? "");
+        expect(t.get("scrollbar.size")).toMatch(/^\d+px$/);
+        // The pointer has to show: hover is never the resting thumb.
+        expect(t.get("scrollbar.thumb-hover"), `${theme}/${mode}`).not.toBe(
+          t.get("scrollbar.thumb")
+        );
+      }
+    }
+  });
+
+  test("tailwind.css: native bars read the scrollbar tokens, with an opt-out and a webkit fallback", async () => {
+    await built;
+    const tw = readFileSync(join(dist, "tailwind.css"), "utf8");
+    expect(tw).toContain("scrollbar-color: var(--hn-scrollbar-thumb) var(--hn-scrollbar-track);");
+    expect(tw).toContain("scrollbar-width: var(--hn-scrollbar-width);");
+    expect(tw).toContain('[data-scrollbar="native"] *');
+    expect(tw).toContain("@utility scrollbar-native {");
+    expect(tw).toContain("@supports not (scrollbar-color: auto) {");
+    expect(tw).toContain("background-color: var(--hn-scrollbar-thumb-hover);");
+    expect(tw).toContain("--color-hn-scrollbar-thumb: var(--hn-scrollbar-thumb);");
+  });
 });
