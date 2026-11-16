@@ -1,4 +1,5 @@
-// Builds dist/: index.js (ESM, dependencies external), index.d.ts and friends, styles.css
+// Builds dist/: index.js (ESM, dependencies external), index.d.ts and friends, workbench/index.js
+// (the screen-fixture contract, `@hansenexus/ui/workbench`, design#148), styles.css
 // (the utilities the primitives use, Tailwind v4) and r/*.json (the shadcn registry).
 // Run: bun scripts/build.ts
 import { readFileSync, rmSync } from "node:fs";
@@ -16,7 +17,7 @@ function run(cmd: string[]) {
 rmSync(DIST, { recursive: true, force: true });
 
 const js = await Bun.build({
-  entrypoints: [resolve(ROOT, "src/index.ts")],
+  entrypoints: [resolve(ROOT, "src/index.ts"), resolve(ROOT, "src/workbench/index.ts")],
   outdir: DIST,
   target: "browser",
   format: "esm",
@@ -28,7 +29,7 @@ const js = await Bun.build({
 });
 if (!js.success) {
   for (const log of js.logs) console.error(log);
-  throw new Error("build: bundling src/index.ts failed");
+  throw new Error("build: bundling src/index.ts and src/workbench/index.ts failed");
 }
 
 if (/jsx-dev-runtime|jsxDEV/.test(readFileSync(resolve(DIST, "index.js"), "utf8"))) {

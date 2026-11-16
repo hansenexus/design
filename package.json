@@ -4,7 +4,8 @@
   "type": "module",
   "workspaces": [
     "packages/*",
-    "themes/*"
+    "themes/*",
+    "workbench/example"
   ],
   "scripts": {
     "lint": "biome check .",

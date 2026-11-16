@@ -26,6 +26,7 @@ export const SCENES = [
   "controls",
   "motion",
   "shell",
+  "screens",
   "vote",
 ] as const;
 export type Scene = (typeof SCENES)[number];

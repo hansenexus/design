@@ -29,6 +29,7 @@ on:
       - package.json
       - "packages/**"
       - "themes/**"
+      - "workbench/**"
       - "brand/assets/**"
       - "tools/access-proxy/**"
   workflow_dispatch:

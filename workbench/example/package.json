@@ -1,0 +1,13 @@
+{
+  "name": "@hansenexus/workbench-example",
+  "private": true,
+  "description": "The screen-fixture contract's reference app (design#148): screens the gallery workbench renders under every theme pack. Never published.",
+  "type": "module",
+  "devDependencies": {
+    "@hansenexus/shell": "workspace:*",
+    "@hansenexus/tokens": "workspace:*",
+    "@hansenexus/ui": "workspace:*",
+    "@types/react": "19.3.0",
+    "react": "19.3.0"
+  }
+}

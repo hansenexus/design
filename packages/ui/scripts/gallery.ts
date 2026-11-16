@@ -30,6 +30,7 @@ import { BUNDLED_PACKS, packThemes } from "../../tokens/scripts/resolve";
 import { DECIDE_PATH, type DecideBody, type DecideReply } from "../gallery/decide";
 import { graphSource, loadGraph } from "./graph";
 import { decide, readDecision, registrySource } from "./variants";
+import { readManifest, resolveApps, screensCss, screensPlugin } from "./workbench";
 
 const ROOT = resolve(import.meta.dir, "..");
 const OUT = resolve(ROOT, "gallery/dist");
@@ -142,6 +143,12 @@ export async function buildGallery() {
   writeFileSync(resolve(OUT, "graph.json"), `${JSON.stringify(graph, null, 2)}\n`);
   writeFileSync(resolve(OUT, "fonts.css"), fontsCss());
   writeFileSync(resolve(OUT, "packs.css"), await packsCss());
+  // The app screens of the workbench (design#148): bundled as virtual:screens, their folders
+  // added to Tailwind's sources.
+  const screens = resolveApps(readManifest());
+  for (const s of screens.skipped)
+    console.warn(`gallery: skipping ${s.app}'s screens: ${s.reason}`);
+  writeFileSync(resolve(OUT, "screens.css"), screensCss(screens.apps));
   mkdirSync(resolve(OUT, "brand"), { recursive: true });
   for (const file of BRAND_FILES) {
     copyFileSync(resolve(BRAND, file), resolve(OUT, "brand", file.split("/").pop() ?? file));
@@ -152,7 +159,12 @@ export async function buildGallery() {
     target: "browser",
     format: "esm",
     minify: true,
-    plugins: [variants, uiSource, graphPlugin(graphSource(graph))],
+    plugins: [
+      screensPlugin(screens.apps, screens.skipped),
+      variants,
+      uiSource,
+      graphPlugin(graphSource(graph)),
+    ],
     define: { "process.env.NODE_ENV": JSON.stringify("production") },
   });
   if (!js.success) {

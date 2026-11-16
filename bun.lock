@@ -127,6 +127,16 @@
         "react": "^19.0.0",
       },
     },
+    "workbench/example": {
+      "name": "@hansenexus/workbench-example",
+      "devDependencies": {
+        "@hansenexus/shell": "workspace:*",
+        "@hansenexus/tokens": "workspace:*",
+        "@hansenexus/ui": "workspace:*",
+        "@types/react": "19.3.0",
+        "react": "19.3.0",
+      },
+    },
   },
   "packages": {
     "@babel/code-frame": ["@babel/code-frame@7.29.7", "", { "dependencies": { "@babel/helper-validator-identifier": "^7.29.7", "js-tokens": "^4.0.0", "picocolors": "^1.1.1" } }, "sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw=="],
@@ -248,6 +258,8 @@
     "@hansenexus/tokens": ["@hansenexus/tokens@workspace:packages/tokens"],
 
     "@hansenexus/ui": ["@hansenexus/ui@workspace:packages/ui"],
+
+    "@hansenexus/workbench-example": ["@hansenexus/workbench-example@workspace:workbench/example"],
 
     "@happy-dom/global-registrator": ["@happy-dom/global-registrator@20.14.5", "", { "dependencies": { "@types/node": ">=20.0.0", "happy-dom": "^20.14.5" } }, "sha512-B05ID9DhSwLs6mlm1fzlkAtTIvB3duCvjJjfr19LBrlTK7VZtRjDqoTRIVv13GuYuNdhByu8LSZgThwV3Rkj7g=="],
 
