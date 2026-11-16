@@ -148,6 +148,10 @@ describe("slots", () => {
     expect(html).toMatch(/<main data-shell-panel="main"[^>]*>.*Main slot/);
     expect(html).not.toContain("<aside");
     expect(html.match(/data-shell-panel=/g)).toHaveLength(3);
+    // design#152: main's fill is panel.main alone; a second bg utility would win by sort order.
+    const mainTag = html.match(/<main data-shell-panel="main"[^>]*>/)?.[0] ?? "";
+    expect(mainTag).toContain("bg-hn-panel-main");
+    expect(mainTag).not.toContain("bg-hn-surface-card");
   });
 
   test("the shell is the template slot of a theme pack (design#143)", () => {

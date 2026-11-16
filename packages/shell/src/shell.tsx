@@ -86,6 +86,12 @@ export type ShellProps = ShellSlots & {
 export const SHELL_PANEL =
   "rounded-(--hn-shell-radius) border-(length:--hn-border-width) border-hn-line-subtle bg-hn-surface-card shadow-hn-panel";
 
+// The main panel's frame with its own fill instead of SHELL_PANEL's card: two bg utilities on one
+// element resolve by Tailwind's sort order, not class order, so panel.main would always lose.
+// panel.main is surface.card unless a pack seats its pages on another ground.
+const MAIN_PANEL =
+  "rounded-(--hn-shell-radius) border-(length:--hn-border-width) border-hn-line-subtle bg-hn-panel-main shadow-hn-panel";
+
 export type ShellState = {
   locale: StateLocale;
   /** A context pane was passed. */
@@ -239,9 +245,8 @@ function ShellBase({
           <MainPanel
             data-shell-panel="main"
             className={cx(
-              SHELL_PANEL,
-              // panel.main is surface.card unless a pack seats its pages on another ground.
-              "relative order-2 -mt-(--hn-shell-seam) min-h-0 flex-1 overflow-y-auto bg-hn-panel-main",
+              MAIN_PANEL,
+              "relative order-2 -mt-(--hn-shell-seam) min-h-0 flex-1 overflow-y-auto",
               "@3xl:order-none @3xl:col-start-2 @3xl:row-start-2 @3xl:-ml-(--hn-shell-seam)",
               !pageOwnsMain && "p-4 @3xl:px-8 @3xl:py-6"
             )}
