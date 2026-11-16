@@ -1,0 +1,6 @@
+{
+  "$comment": "The apps whose screens the gallery workbench renders (design#148). README.md has the fields.",
+  "apps": {
+    "example": { "path": "workbench/example", "entry": "index.ts" }
+  }
+}

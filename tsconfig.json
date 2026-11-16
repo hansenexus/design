@@ -23,6 +23,8 @@
     "packages/*/*.config.ts",
     "themes/*/*.ts",
     "themes/*/*/skins/*.ts",
-    "themes/*/*/skins/*.tsx"
+    "themes/*/*/skins/*.tsx",
+    "workbench/example/*.ts",
+    "workbench/example/*.tsx"
   ]
 }

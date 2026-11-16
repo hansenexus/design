@@ -4,6 +4,8 @@
 @import "@hansenexus/tokens/tailwind.css";
 /* The theme packs @hansenexus/tokens does not bundle (design#143), written by scripts/gallery.ts. */
 @import "./dist/packs.css";
+/* The app screens' own styles and Tailwind sources (design#148), written by scripts/workbench.ts. */
+@import "./dist/screens.css";
 @source "../src";
 @source "../../shell/src";
 @source "../../../themes";

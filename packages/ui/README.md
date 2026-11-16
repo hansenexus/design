@@ -519,6 +519,14 @@ bun run gallery -- --serve    # look at it: http://127.0.0.1:4410/gallery/?scene
 bun run gallery -- --out /tmp/kit-site   # the static site the hosted gallery serves (see the root README)
 ```
 
+## App screens (`@hansenexus/ui/workbench`)
+
+The screen-fixture contract (design#148): an app exports its pure-UI screens plus fixture data
+with `defineScreens` from `@hansenexus/ui/workbench`, and the gallery's `screens` scene renders
+them under every theme pack. Types and three small helpers, no runtime weight; not a registry
+item. The rules, `apps.json` and how a private app's screens reach the hosted gallery are in
+[workbench/README.md](../../workbench/README.md).
+
 ## Variant votes
 
 Design-system alternatives are compared in the gallery, not in the monorepo variant preview

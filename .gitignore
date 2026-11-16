@@ -8,3 +8,6 @@ playwright-report/
 # Client wallpapers are rendered locally, never committed (public repository, design#122).
 brand/wallpapers/*/
 !brand/wallpapers/hansenexus/
+
+# App checkouts for the gallery workbench (design#148): private sources, never committed.
+workbench/.checkouts/

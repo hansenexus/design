@@ -129,6 +129,7 @@ import { Navigation } from "./navigation";
 import { Overlays } from "./overlays";
 import { packFor } from "./packs";
 import { BareContext, PreviewCard, ViewProvider, ViewToolbar } from "./preview";
+import { Screens } from "./screens";
 import { ShellScene } from "./shell";
 import {
   frameQuery,
@@ -1183,6 +1184,8 @@ function Scenes({ scene }: { scene: Scene }) {
       return <Controls />;
     case "motion":
       return <Motion />;
+    case "screens":
+      return <Screens query={query} />;
     case "shell":
       return <ShellScene />;
     case "loading":
