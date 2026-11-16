@@ -964,7 +964,17 @@
       "description": "The app shell from the shell-layout vote: floating panels for nav, header, main and an optional context pane, and a ⌘K container for external command sets or a whole palette. Installs the npm package @hansenexus/shell; it copies no files.",
       "meta": {
         "level": "template",
-        "uses": ["button", "command", "cx", "dialog", "kbd", "rail-item", "skin", "state-copy"]
+        "uses": [
+          "button",
+          "command",
+          "cx",
+          "dialog",
+          "kbd",
+          "rail-item",
+          "sheet",
+          "skin",
+          "state-copy"
+        ]
       },
       "dependencies": ["@hansenexus/shell@^0.2.0"],
       "registryDependencies": ["@hansenexus/tokens"]

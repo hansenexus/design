@@ -10,6 +10,8 @@ export type ShellCopy = {
   hideContext: string;
   /** The button that opens the ⌘K container, for touch and for anyone who does not know ⌘K. */
   openCommand: string;
+  /** The phone tab that opens the whole nav when it has more rows than tabs. */
+  more: string;
 };
 
 export const SHELL_COPY: Record<StateLocale, ShellCopy> = {
@@ -19,6 +21,7 @@ export const SHELL_COPY: Record<StateLocale, ShellCopy> = {
     showContext: "Show context panel",
     hideContext: "Hide context panel",
     openCommand: "Search or run a command",
+    more: "More",
   },
   de: {
     nav: "App",
@@ -26,5 +29,6 @@ export const SHELL_COPY: Record<StateLocale, ShellCopy> = {
     showContext: "Kontextbereich zeigen",
     hideContext: "Kontextbereich ausblenden",
     openCommand: "Suchen oder Befehl ausführen",
+    more: "Mehr",
   },
 };

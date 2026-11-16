@@ -41,6 +41,12 @@ export const RULES: Rule[] = [
   { kind: "text", fg: ["ink.primary", "action.text"], bg: ["surface.tint"] },
   { kind: "text", fg: ["action.primary-ink"], bg: ["action.primary", "action.primary-hover"] },
   { kind: "text", fg: ["action.danger-ink"], bg: ["action.danger"] },
+  // The shell's main panel (design#152) carries every page's text.
+  { kind: "text", fg: ["ink.primary", "ink.body", "ink.muted", "action.text"], bg: ["panel.main"] },
+  // The shell's active nav cells (design#152): each ink on its own fill.
+  { kind: "text", fg: ["nav.active-ink", "nav.active-meta"], bg: ["nav.active"] },
+  { kind: "ui", fg: ["nav.active-icon"], bg: ["nav.active"] },
+  { kind: "text", fg: ["nav.tab-ink"], bg: ["nav.tab"] },
   {
     kind: "ui",
     fg: [
@@ -82,6 +88,9 @@ export const EXEMPT: Record<string, string> = {
   "action.primary": "a fill; its label carries the contrast (action.primary-ink on it)",
   "action.primary-hover": "a fill; its label carries the contrast (action.primary-ink on it)",
   "action.danger": "a fill; its label carries the contrast (action.danger-ink on it)",
+  "nav.active": "a fill; its label carries the contrast (nav.active-ink on it)",
+  "nav.tab": "a fill; its label carries the contrast (nav.tab-ink on it)",
+  "panel.main": "a ground; the text rule above checks every ink on it",
 };
 
 function luminance(hex: string): number {

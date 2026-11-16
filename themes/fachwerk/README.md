@@ -8,7 +8,9 @@ forked.
 - **Tokens** (`fachwerk/`): limewash paper, ink beams, terracotta action, ochre warnings; night
   variants for dark mode. Contrast CI holds both modes to WCAG 2.2 AA.
 - **Recipes**: 2 px borders, 2 px radii, square controls (bars flat), no shadows, comfortable
-  density, hatch, brace and cross motifs from `--hn-line-subtle`.
+  density, hatch, brace and cross motifs from `--hn-line-subtle`. The shell is flush: no inset
+  or gap, panels share a 2 px beam, a 232 px rail of 48 px cells with beams between them, the
+  active row and phone tab a terracotta cell, pages on the limewash (`panel.main`).
 - **Skins** (`fachwerk/skins/`): `card.header` sets a braced beam bay before the title,
   `empty-state` stands in a hatched frame.
 - **Fonts**: Bricolage Grotesque (display, sans) and IBM Plex Mono. The app loads them, e.g.

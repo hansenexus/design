@@ -7,6 +7,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import pkg from "../package.json";
 import * as shell from "../src";
 import {
+  activeNavId,
   commandGroups,
   findCommand,
   navCommands,
@@ -20,6 +21,7 @@ import {
   ShellContextToggle,
   ShellNav,
   type ShellNavItem,
+  type ShellNavLink,
   type ShellPalette,
   visibleNavItems,
 } from "../src";
@@ -146,6 +148,16 @@ describe("slots", () => {
     expect(html).toMatch(/<main data-shell-panel="main"[^>]*>.*Main slot/);
     expect(html).not.toContain("<aside");
     expect(html.match(/data-shell-panel=/g)).toHaveLength(3);
+    // design#152: main's fill is panel.main alone; a second bg utility would win by sort order.
+    const mainTag = html.match(/<main data-shell-panel="main"[^>]*>/)?.[0] ?? "";
+    expect(mainTag).toContain("bg-hn-panel-main");
+    expect(mainTag).not.toContain("bg-hn-surface-card");
+    // fachwerk#286: rail/tab bar and header are sticky, so the dev HUD pill dodges them.
+    const navTag = html.match(/<nav aria-label="App" data-shell-panel="nav"[^>]*>/)?.[0] ?? "";
+    const headerTag = html.match(/<header data-shell-panel="header"[^>]*>/)?.[0] ?? "";
+    expect(navTag).toMatch(/\bsticky\b/);
+    expect(headerTag).toMatch(/\bsticky\b/);
+    expect(mainTag).not.toMatch(/\bsticky\b/);
   });
 
   test("the shell is the template slot of a theme pack (design#143)", () => {
@@ -241,6 +253,85 @@ describe("slots", () => {
 
   test("useShell outside a Shell throws", () => {
     expect(() => render(<ShellContextToggle />)).toThrow(/not inside a <Shell>/);
+  });
+});
+
+// design#152: what fachwerk needed to mount the shell instead of its own.
+describe("nav: sections, active path, More, link", () => {
+  const ROWS: ShellNavItem[] = [
+    { id: "home", label: "Start", href: "/space" },
+    { id: "classes", label: "Classes", href: "/space/classes", section: "teach" },
+    { id: "quiz", label: "Quiz", href: "/space/quiz", section: "teach" },
+    { id: "seating", label: "Seating", href: "/space/seating", section: "teach" },
+    { id: "modules", label: "Modules", href: "/space/modules", section: "manage" },
+    { id: "admin", label: "Admin", href: "/space/admin", section: "manage", requires: ["op"] },
+  ];
+  const SECTIONS = [
+    { id: "teach", label: "Teaching" },
+    { id: "manage", label: "Admin" },
+  ];
+
+  test("activeNavId: longest prefix on a segment boundary, query and hash ignored", () => {
+    expect(activeNavId(ROWS, "/space")).toBe("home");
+    expect(activeNavId(ROWS, "/space/")).toBe("home");
+    expect(activeNavId(ROWS, "/space/quiz/host?code=1")).toBe("quiz");
+    expect(activeNavId(ROWS, "/space/classes/abc#roster")).toBe("classes");
+    expect(activeNavId(ROWS, "/space/quizzes")).toBe("home");
+    expect(activeNavId(ROWS, "/settings")).toBeUndefined();
+    expect(activeNavId([{ id: "root", href: "/" }], "/anything")).toBe("root");
+  });
+
+  test("a section's heading comes before its first visible row; an empty section draws none", () => {
+    const html = render(<ShellNav items={ROWS} sections={SECTIONS} activeId="quiz" />);
+    expect(html.match(/data-shell-nav-section="teach"/g)).toHaveLength(1);
+    expect(html.match(/data-shell-nav-section="manage"/g)).toHaveLength(1);
+    expect(html.indexOf("Teaching")).toBeLessThan(html.indexOf('href="/space/classes"'));
+    const onlyHome = render(<ShellNav items={ROWS.slice(0, 1)} sections={SECTIONS} />);
+    expect(onlyHome).not.toContain("data-shell-nav-section");
+  });
+
+  test("tabLimit: the first tabLimit - 1 rows and a More tab; no More when all fit", () => {
+    const html = render(<ShellNav items={ROWS} tabLimit={4} activeId="modules" />);
+    const tabs = html.slice(html.indexOf('data-shell-nav="tabs"'));
+    expect(tabs.match(/<a /g)).toHaveLength(3);
+    expect(tabs).toContain('title="More"');
+    // The active row sits behind More, so More carries aria-current.
+    expect(tabs).toMatch(/<button[^>]*aria-current="page"[^>]*title="More"/);
+    const fits = render(<ShellNav items={ROWS} tabLimit={5} />);
+    expect(fits).not.toContain('title="More"');
+  });
+
+  test("More speaks German inside a German shell", () => {
+    const html = render(
+      <Shell
+        locale="de"
+        nav={<ShellNav items={ROWS} tabLimit={3} />}
+        header={<h1>Start</h1>}
+        main={<p>Body</p>}
+      />
+    );
+    expect(html).toContain('title="Mehr"');
+  });
+
+  test("link renders every row and tab through the router's component", () => {
+    const Link: ShellNavLink = ({ href, ...props }) => <a data-router="" href={href} {...props} />;
+    const html = render(<ShellNav items={ROWS.slice(0, 2)} link={Link} activeId="home" />);
+    expect(html.match(/data-router=""/g)).toHaveLength(4);
+    expect(html.match(/aria-current="page"/g)).toHaveLength(2);
+  });
+
+  test("the layout reads the shell recipe: inset, gap, rail width, seam, panel radius", () => {
+    const html = render(
+      <Shell
+        nav={<ShellNav items={ROWS} />}
+        header={<h1>Start</h1>}
+        main={<p>Body</p>}
+        contextPane={<p>Detail</p>}
+      />
+    );
+    for (const name of ["inset", "gap", "rail", "context", "seam"])
+      expect(html).toContain(`--hn-shell-${name}`);
+    expect(SHELL_PANEL).toContain("rounded-(--hn-shell-radius)");
   });
 });
 

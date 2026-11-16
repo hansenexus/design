@@ -24,6 +24,9 @@ bun add @hansenexus/shell @hansenexus/ui @hansenexus/tokens react react-dom
 | `main` | `ReactNode` | The page. It scrolls inside its own panel. |
 | `contextPane` | `ReactNode`, optional | The detail of what main has selected. |
 
+`pageOwnsMain` is for an app whose pages render their own `<main>` landmark and padding: the main
+panel is then a plain, unpadded `<div>`, so the page has one main landmark, not two.
+
 The layout follows the shell's own width, not the viewport's (container queries). The shell looks
 right wherever it is mounted, including a gallery card:
 
@@ -37,7 +40,14 @@ Below 1024 px the context pane is not drawn. A narrow app shows that detail as a
 its own. `contextOpen`/`defaultContextOpen` (default `true`)/`onContextOpenChange` control it, and
 `ShellContextToggle` toggles it.
 
-Give the shell the height it should fill, e.g. `className="h-dvh"` or a full-height parent.
+Give the shell a parent with the height it should fill, e.g. `<div className="h-dvh">`. Its root is
+`h-full`, and a height in `className` does not override that: Tailwind v4 emits `h-full` after
+`h-dvh`, so the shell would take its content's height and main would never scroll.
+
+Inset, gap, column widths, corner and seam are the `shell.*` recipe tokens (design#152,
+`@hansenexus/tokens` README, Recipes). The defaults float three cards apart; a flush pack such as
+fachwerk sets inset and gap to 0 and the seam to its border width, so neighbouring panels overlap
+onto one shared beam. No prop changes the layout: the pack does.
 
 ```tsx
 import {
@@ -47,6 +57,7 @@ import {
   ShellContextToggle,
   ShellNav,
   type ShellNavItem,
+  activeNavId,
 } from "@hansenexus/shell";
 
 const NAV: ShellNavItem[] = [
@@ -60,12 +71,11 @@ export function App() {
   const caps = { infra: fleetConfigured, desktop: inTauri };
   return (
     <Shell
-      className="h-dvh"
       nav={
         <ShellNav
           items={NAV}
           capabilities={caps}
-          activeId={NAV.find((n) => location.startsWith(n.href))?.id}
+          activeId={activeNavId(NAV, location)}
           brand={<Brand />}
           onNavigate={(item, e) => {
             e.preventDefault();
@@ -96,6 +106,18 @@ A row lists the capabilities it `requires`. It is shown only when every one of t
 `capabilities`, and otherwise hidden rather than disabled. `navVisible(requires, capabilities)` is
 the rule itself. `ShellNav` and `navCommands` both apply it, so a hidden page is offered in neither
 the nav nor the palette.
+
+## Nav: sections, active row, phone tabs
+
+| Prop | What it does |
+| --- | --- |
+| `items[].section` + `sections` | Rows carry a section id; `sections` (`{ id, label }[]`) names the ones that get a heading. A heading is drawn before the first visible row of its section, so a section whose rows are all hidden has none. Order the items yourself. |
+| `activeId` | The current row. `activeNavId(items, pathname)` picks the longest `href` that is a prefix of the path on a segment boundary, ignoring query and hash: `/space/seating/plans/7` marks `/space/seating/plans`, not `/space`. |
+| `link` | A component every row renders through (`ComponentType<ComponentProps<"a"> & { href }>`), e.g. a wrapper around next/link or a locale-aware Link, so routing and prefetch stay the app's. Without it a row is an `<a>`. |
+| `tabLimit` | Below 768 px, the most tabs the bar shows. With more visible rows than that, the first `tabLimit - 1` are tabs and the last is More (`moreLabel`, default from `SHELL_COPY`), which opens a bottom Sheet with the whole nav in its sections. More carries `aria-current` when the active row is folded into it. Without `tabLimit` every row is a tab. |
+
+The active rail row and tab take their colours from the `nav.*` tokens and their height, padding,
+corner and dividers from `shell.nav-*`, so a pack restyles them without a prop.
 
 ## ⌘K container
 
