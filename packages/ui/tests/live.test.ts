@@ -101,6 +101,17 @@ describe("live packs (design#149)", () => {
     expect(out.logs.map(String).join("\n")).toContain('imports "left-pad", not a core package');
   });
 
+  test("without git on the PATH (the gallery image) the live source falls back, no throw", () => {
+    const script = `import { extractLive } from ${JSON.stringify(resolve(import.meta.dir, "../scripts/live.ts"))}; console.log(JSON.stringify(extractLive("HEAD", ${JSON.stringify(join(tmp(), "_live"))})));`;
+    const proc = Bun.spawnSync([process.execPath, "-e", script], {
+      env: { PATH: "/nonexistent-149" },
+      stdout: "pipe",
+      stderr: "pipe",
+    });
+    expect(proc.stderr.toString()).toBe("");
+    expect(proc.stdout.toString().trim()).toBe("null");
+  });
+
   test("the gallery imports live.css after the packs", () => {
     const css = readFileSync(resolve(import.meta.dir, "../gallery/gallery.css"), "utf8");
     expect(css.indexOf('@import "./dist/live.css";')).toBeGreaterThan(

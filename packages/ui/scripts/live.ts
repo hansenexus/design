@@ -35,9 +35,14 @@ export type LiveSource = {
   extracted: boolean;
 };
 
+/** git's stdout, or null on a failure or where there is no git (the gallery image). */
 function git(args: string[], cwd: string) {
-  const proc = Bun.spawnSync(["git", ...args], { cwd, stdout: "pipe", stderr: "pipe" });
-  return proc.exitCode === 0 ? proc.stdout : null;
+  try {
+    const proc = Bun.spawnSync(["git", ...args], { cwd, stdout: "pipe", stderr: "pipe" });
+    return proc.exitCode === 0 ? proc.stdout : null;
+  } catch {
+    return null;
+  }
 }
 
 /** Extracts `ref`'s themes/ into `dir`, or returns null when there is no git or no such ref. */

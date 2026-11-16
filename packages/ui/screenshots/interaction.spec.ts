@@ -145,7 +145,7 @@ test("view toolbar: a fixed viewport renders the scene in an iframe of that widt
 test("compare: every card renders once per theme, side by side", async ({ page }) => {
   await page.goto("/gallery/?scene=loading");
   const toolbar = page.getByRole("toolbar", { name: "Gallery view" });
-  await toolbar.getByText("Compare", { exact: false }).first().click();
+  await toolbar.locator("summary", { hasText: "Compare" }).click();
   await toolbar
     .getByRole("group", { name: "Compare with" })
     .getByLabel("every theme of this build")
@@ -191,7 +191,7 @@ test("compare: a list of themes, the candidate next to its live copy (design#149
 }) => {
   await page.goto("/gallery/?scene=loading&theme=fachwerk");
   const toolbar = page.getByRole("toolbar", { name: "Gallery view" });
-  await toolbar.getByText("Compare", { exact: false }).first().click();
+  await toolbar.locator("summary", { hasText: "Compare" }).click();
   const options = toolbar.getByRole("group", { name: "Compare with" });
   await expect(options.locator('[data-compare-option="fachwerk"]')).toBeDisabled();
   await options.locator('[data-compare-option="fachwerk@live"]').check();
