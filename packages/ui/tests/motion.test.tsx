@@ -1,11 +1,10 @@
 // hansenexus/design#91: the toolbar's speed and reduced motion reach every motion consumer. TS
 // timers read the motion tokens through motionMs/useMotionMs, which a MotionProvider scales; CSS
 // reads the --hn-* variables, and motion-reduce: also matches a data-reduced-motion attribute.
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, jest, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, jest, test } from "bun:test";
 import { readdirSync, readFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { ms } from "@hansenexus/tokens";
-import { GlobalRegistrator } from "@happy-dom/global-registrator";
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { motionVariables } from "../gallery/view";
@@ -46,13 +45,6 @@ describe("timers under a MotionProvider", () => {
   let container: HTMLElement;
   let root: Root;
 
-  beforeAll(() => {
-    GlobalRegistrator.register();
-    Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
-  });
-  afterAll(async () => {
-    await GlobalRegistrator.unregister();
-  });
   beforeEach(() => {
     jest.useFakeTimers();
     container = document.createElement("div");

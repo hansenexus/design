@@ -115,6 +115,27 @@
       ]
     },
     {
+      "name": "alert-dialog",
+      "type": "registry:ui",
+      "title": "AlertDialog",
+      "description": "A modal confirmation before a destructive or irreversible action, on Radix AlertDialog: the tone shows as a glyph and a crit top rule before the buttons, what happens sits in a raised box, focus starts on Cancel.",
+      "meta": { "level": "molecule" },
+      "dependencies": ["radix-ui"],
+      "registryDependencies": [
+        "@hansenexus/tokens",
+        "@hansenexus/cx",
+        "@hansenexus/icons",
+        "@hansenexus/button",
+        "@hansenexus/status-glyph"
+      ],
+      "files": [
+        {
+          "path": "src/alert-dialog.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "brand-geometry",
       "type": "registry:lib",
       "title": "brand geometry",

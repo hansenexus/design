@@ -62,6 +62,7 @@ export const GROUPS: SceneGroup[] = [
     label: "Overlays",
     scenes: [
       { id: "dialog", label: "Dialog", items: 3 },
+      { id: "alert-dialog", label: "Alert dialog", items: 1 },
       { id: "menu", label: "Menu", items: 2 },
       { id: "select", label: "Select", items: 2 },
       { id: "tooltip", label: "Tooltip", items: 2 },
