@@ -6,6 +6,8 @@
 @import "./dist/packs.css";
 /* The app screens' own styles and Tailwind sources (design#148), written by scripts/workbench.ts. */
 @import "./dist/screens.css";
+/* The live copy of every theme pack, from main, under <id>@live (design#149), by scripts/live.ts. */
+@import "./dist/live.css";
 @source "../src";
 @source "../../shell/src";
 @source "../../../themes";

@@ -4,6 +4,7 @@
 // scene nav stays out of the frame.
 // Names are an invented estate: no real hostnames, IPs or people in a public repo.
 
+import { LIVE_PACKS, LIVE_SOURCE } from "virtual:live-packs";
 import { CATEGORIES } from "virtual:variants";
 import { NotFoundIllustration } from "@hansenexus/illustrations/404";
 import { EmptyIllustration } from "@hansenexus/illustrations/empty";
@@ -124,10 +125,11 @@ import { Data } from "./data";
 import { Bell, Check, Key, MapIcon, More, Restart, Server } from "./icons";
 import { ItemPage, isItem } from "./item";
 import { itemsByLevel, type Level } from "./levels";
+import { Matrix } from "./matrix";
 import { Motion } from "./motion-scene";
 import { Navigation } from "./navigation";
 import { Overlays } from "./overlays";
-import { packFor } from "./packs";
+import { packFor, registerLive } from "./packs";
 import { BareContext, PreviewCard, ViewProvider, ViewToolbar } from "./preview";
 import { Screens } from "./screens";
 import { ShellScene } from "./shell";
@@ -1428,6 +1430,8 @@ const itemParam = isItem(itemQuery) ? itemQuery : null;
 const bare = query.get("bare") === "1";
 const framed = bare || query.get("frame") === "1";
 applyView(readView(query));
+// The live copies of the packs, from main (design#149, scripts/live.ts).
+registerLive(LIVE_PACKS);
 
 /**
  * The page: nav, view toolbar and the scene. A toolbar change updates <html> and the query in
@@ -1460,8 +1464,10 @@ function Gallery() {
     <ViewProvider view={view}>
       <SceneNav current={itemParam ? null : scene} view={view} />
       <LevelNav view={view} />
-      <ViewToolbar view={view} onChange={change} />
-      {view.viewport === "auto" ? (
+      <ViewToolbar view={view} onChange={change} liveSource={LIVE_SOURCE} />
+      {view.matrix === "on" ? (
+        <Matrix view={view} liveSource={LIVE_SOURCE} />
+      ) : view.viewport === "auto" ? (
         <PackedPage theme={view.theme} />
       ) : (
         <div className="overflow-x-auto bg-hn-surface-band p-4 sm:p-6">

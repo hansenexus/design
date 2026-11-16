@@ -29,6 +29,7 @@ import { renderPackCss } from "../../tokens/scripts/build";
 import { BUNDLED_PACKS, packThemes } from "../../tokens/scripts/resolve";
 import { DECIDE_PATH, type DecideBody, type DecideReply } from "../gallery/decide";
 import { graphSource, loadGraph } from "./graph";
+import { liveCss, livePlugin, liveSource } from "./live";
 import { decide, readDecision, registrySource } from "./variants";
 import { readManifest, resolveApps, screensCss, screensPlugin } from "./workbench";
 
@@ -149,6 +150,10 @@ export async function buildGallery() {
   for (const s of screens.skipped)
     console.warn(`gallery: skipping ${s.app}'s screens: ${s.reason}`);
   writeFileSync(resolve(OUT, "screens.css"), screensCss(screens.apps));
+  // The live copy of every pack (design#149): main's themes under <id>@live.
+  const live = liveSource();
+  console.log(`gallery: live packs from ${live.label}`);
+  writeFileSync(resolve(OUT, "live.css"), await liveCss(live));
   mkdirSync(resolve(OUT, "brand"), { recursive: true });
   for (const file of BRAND_FILES) {
     copyFileSync(resolve(BRAND, file), resolve(OUT, "brand", file.split("/").pop() ?? file));
@@ -161,6 +166,7 @@ export async function buildGallery() {
     minify: true,
     plugins: [
       screensPlugin(screens.apps, screens.skipped),
+      livePlugin(live),
       variants,
       uiSource,
       graphPlugin(graphSource(graph)),

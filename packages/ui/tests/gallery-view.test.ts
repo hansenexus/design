@@ -1,15 +1,21 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { ms } from "@hansenexus/tokens";
+import { BUILD_THEMES, PACK_GROUPS, packOf } from "../gallery/themes";
 import {
+  comparedThemes,
+  compareThemes,
   DEFAULT_VIEW,
   frameQuery,
   installCommand,
   LOOP,
   LOOP_HOLD_MS,
   loopTimings,
+  MATRIX_ROWS,
+  matrixQuery,
   motionTokens,
   motionVariables,
+  readCompare,
   readView,
   VIEW_OPTIONS,
   viewAttributes,
@@ -64,18 +70,20 @@ describe("gallery view (#57)", () => {
     expect(installCommand("skeleton")).toBe("/design add skeleton");
   });
 
-  test("the theme list is every token theme, lexilink included (#62), then each pack (design 143)", () => {
+  test("the theme list is every token theme, lexilink included (#62), each pack (design 143), then the live copies (design 149)", () => {
     expect(VIEW_OPTIONS.theme).toEqual([
       "hansenexus",
       "kommandant",
       "portal",
       "lexilink",
       "fachwerk",
+      "lexilink@live",
+      "fachwerk@live",
     ]);
-    for (const theme of ["lexilink", "fachwerk"]) {
+    for (const theme of ["lexilink", "fachwerk", "fachwerk@live"]) {
       const view = { ...DEFAULT_VIEW, theme };
       const q = writeView(new URLSearchParams(), view);
-      expect(q.toString()).toBe(`theme=${theme}`);
+      expect(q.get("theme")).toBe(theme);
       expect(readView(q)).toEqual(view);
       expect(viewAttributes(view).theme).toBe(theme);
     }
@@ -92,7 +100,7 @@ describe("review tools (#60)", () => {
     expect(readView(new URLSearchParams("compare=maybe&speed=3&motion=none"))).toEqual(
       DEFAULT_VIEW
     );
-    const view = { ...DEFAULT_VIEW, compare: "on" as const, speed: "0.25" as const };
+    const view = { ...DEFAULT_VIEW, compare: "on", speed: "0.25" as const };
     const q = writeView(new URLSearchParams(), { ...view, motion: "reduced" });
     expect(q.toString()).toBe("compare=on&speed=0.25&motion=reduced");
     expect(readView(q)).toEqual({ ...view, motion: "reduced" });
@@ -152,5 +160,89 @@ describe("review tools (#60)", () => {
     expect(reduced.delayMs).toBe(0);
     expect(reduced.minVisibleMs).toBe(0);
     for (const step of reduced.steps) expect(step.ms).toBeGreaterThan(0);
+  });
+});
+
+describe("pack switcher and compare (design#149)", () => {
+  test("each theme belongs to one pack, its live copy to the same", () => {
+    expect(packOf("kommandant")).toBe("core");
+    expect(packOf("lexilink")).toBe("lexilink");
+    expect(packOf("fachwerk")).toBe("fachwerk");
+    expect(packOf("fachwerk@live")).toBe("fachwerk");
+    expect(packOf("fachwerk-blueprint")).toBe("fachwerk");
+    expect(PACK_GROUPS.map((g) => g.pack)).toEqual(["core", "lexilink", "fachwerk"]);
+    expect(PACK_GROUPS.find((g) => g.pack === "fachwerk")?.directions).toEqual([
+      "fachwerk",
+      "fachwerk@live",
+    ]);
+    expect(PACK_GROUPS.find((g) => g.pack === "core")?.directions).toEqual([
+      "hansenexus",
+      "kommandant",
+      "portal",
+    ]);
+  });
+
+  test("compare is off, on (every theme of this build), or a list of known themes", () => {
+    expect(readCompare(null)).toBe("off");
+    expect(readCompare("on")).toBe("on");
+    expect(readCompare("nope")).toBe("off");
+    expect(readCompare("fachwerk,nope,lexilink,fachwerk")).toBe("fachwerk,lexilink");
+    expect(compareThemes({ compare: "on" })).toEqual([...BUILD_THEMES]);
+    expect(BUILD_THEMES.some((t) => t.endsWith("@live"))).toBe(false);
+    expect(compareThemes({ compare: "off" })).toEqual([]);
+    expect(compareThemes({ compare: "fachwerk,fachwerk@live" })).toEqual([
+      "fachwerk",
+      "fachwerk@live",
+    ]);
+  });
+
+  test("the compared themes start with the current one, without repeats", () => {
+    const view = { ...DEFAULT_VIEW, theme: "fachwerk", compare: "lexilink,fachwerk,fachwerk@live" };
+    expect(comparedThemes(view)).toEqual(["fachwerk", "lexilink", "fachwerk@live"]);
+    expect(comparedThemes({ ...view, compare: "off" })).toEqual(["fachwerk"]);
+    const q = writeView(new URLSearchParams(), view);
+    expect(q.get("compare")).toBe("lexilink,fachwerk,fachwerk@live");
+    expect(readView(q)).toEqual(view);
+  });
+
+  test("the matrix is light and dark at 1280 and 390, and round-trips", () => {
+    expect(MATRIX_ROWS.map((r) => `${r.mode}@${r.width}`)).toEqual([
+      "light@1280",
+      "dark@1280",
+      "light@390",
+      "dark@390",
+    ]);
+    expect(readView(new URLSearchParams("matrix=maybe")).matrix).toBe("off");
+    const view = { ...DEFAULT_VIEW, matrix: "on" as const };
+    expect(readView(writeView(new URLSearchParams(), view))).toEqual(view);
+  });
+
+  test("a matrix cell is the page alone, in its theme and mode, with no compare or matrix", () => {
+    const view = {
+      ...DEFAULT_VIEW,
+      theme: "fachwerk",
+      viewport: "390" as const,
+      compare: "lexilink",
+      matrix: "on" as const,
+      density: "compact" as const,
+    };
+    const q = matrixQuery(
+      new URLSearchParams(
+        "scene=screens&screen=example/machines&frame=1&compare=lexilink&matrix=on"
+      ),
+      view,
+      "lexilink@live",
+      "light"
+    );
+    expect(q.get("bare")).toBe("1");
+    expect(q.get("frame")).toBeNull();
+    expect(q.get("theme")).toBe("lexilink@live");
+    expect(q.get("mode")).toBe("light");
+    expect(q.get("density")).toBe("compact");
+    expect(q.get("viewport")).toBeNull();
+    expect(q.get("compare")).toBeNull();
+    expect(q.get("matrix")).toBeNull();
+    expect(q.get("scene")).toBe("screens");
+    expect(q.get("screen")).toBe("example/machines");
   });
 });

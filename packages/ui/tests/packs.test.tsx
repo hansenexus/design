@@ -4,8 +4,8 @@ import type { ComponentType } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { DEMOS } from "../gallery/demos";
 import { levelOf } from "../gallery/levels";
-import { PACKS, packFor } from "../gallery/packs";
-import { GALLERY_THEMES, PACK_THEMES } from "../gallery/themes";
+import { PACKS, packFor, registerLive } from "../gallery/packs";
+import { GALLERY_THEMES, LIVE_THEMES, PACK_APPS, PACK_THEMES, packOf } from "../gallery/themes";
 import { type Skins, skinSlots, ThemePack, type ThemePackDefinition } from "../src";
 
 // The theme-pack contract of design#143, over every pack the gallery ships (themes/<app>/):
@@ -49,6 +49,26 @@ describe("theme packs (design#143)", () => {
       (id) => !(themes as readonly string[]).includes(id)
     );
     expect(PACK_THEMES).toEqual(unbundled);
+  });
+
+  test("the pack switcher's apps are the packs' apps, each direction has a live copy (design#149)", () => {
+    expect(new Set(PACKS.map((p) => packOf(p.id)))).toEqual(new Set(PACK_APPS));
+    expect(PACKS.map((p) => packOf(p.id))).not.toContain("core");
+    expect([...LIVE_THEMES].sort()).toEqual(PACKS.map((p) => `${p.id}@live`).sort());
+  });
+
+  test("a live copy renders its own skins once registered (design#149)", () => {
+    expect(packFor("fachwerk@live").skins).toBeUndefined();
+    const live = PACKS.map((p) => ({ ...p, id: `${p.id}@live` }));
+    registerLive(live);
+    try {
+      const fachwerk = packFor("fachwerk");
+      expect(packFor("fachwerk@live")).toBe(live.find((p) => p.id === "fachwerk@live") ?? fachwerk);
+      expect(packFor("fachwerk@live").skins).toBe(fachwerk.skins);
+      expect(packFor("fachwerk")).toBe(fachwerk);
+    } finally {
+      registerLive([]);
+    }
   });
 
   for (const pack of PACKS) {

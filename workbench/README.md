@@ -117,6 +117,31 @@ WORKBENCH_FACHWERK=$HOME/repos/fachwerk bun run gallery -- --serve
 `?scene=screens&screen=<id>&fixture=<id>` shows one screen; the toolbar's theme, mode and viewport
 apply as on every scene, and `&bare=1` leaves only the screen for a screenshot.
 
+## Packs side by side (design#149)
+
+The toolbar picks **Pack** (core, lexilink, fachwerk, …) and then its **Direction**; a screen's
+own picker in its header picks app and screen, the fixture links the fixture. **Compare** is a
+checklist of themes: every card of a scene, or the current page in the matrix, renders once per
+checked theme next to the current one. **Matrix** (`&matrix=on`) shows the current page (a
+scene, an item page or an app screen with its fixture) once per compared theme, light and dark
+at 1280 and 390 px, each cell the page alone in an iframe at its real width.
+
+Every pack direction also exists as **`<id>@live`**, built from `main`'s `themes/`
+(`packages/ui/scripts/live.ts`): on a theme-pack branch, compare `fachwerk` with
+`fachwerk@live` to see the candidate next to what ships.
+
+- Main comes from `git archive origin/main themes` (override with `WORKBENCH_LIVE_REF=<ref>`),
+  extracted into the ignored `workbench/.checkouts/_live`. Fetch main first (`git fetch origin`).
+- Without git (the gallery image) an existing `workbench/.checkouts/_live` is used; with neither,
+  the live copies are this build's own packs and the Direction picker says so.
+- An extracted pack may import only core packages (react, `@hansenexus/*`, radix-ui), as a
+  screen may; they resolve to the gallery's own copies.
+
+```sh
+# fachwerk, lexilink and main's fachwerk on the example screen, light/dark × 1280/390
+http://127.0.0.1:4410/gallery/?scene=screens&screen=example/machines&theme=fachwerk&compare=lexilink,fachwerk@live&matrix=on
+```
+
 ## In CI, and per-PR previews (design#150)
 
 `.github/workflows/kit-gallery.yml` builds the gallery image on main and on pull requests:

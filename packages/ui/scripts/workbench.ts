@@ -61,6 +61,18 @@ const SOURCE: Record<string, string> = {
   "@hansenexus/shell": resolve(REPO, "packages/shell/src/index.ts"),
 };
 
+/**
+ * Where a bare core import from outside this repository's packages goes: the gallery's own copy
+ * (from source for ui and shell), so one React and one skin context serve everything; null when
+ * the specifier is no core package.
+ */
+export function coreImport(spec: string): string | null {
+  const source = SOURCE[spec];
+  if (source) return source;
+  if (ALLOWED.some((re) => re.test(spec))) return Bun.resolveSync(spec, UI);
+  return null;
+}
+
 /** WORKBENCH_FACHWERK for fachwerk: the variable that points at a local checkout. */
 export function envKey(app: string): string {
   return `WORKBENCH_${app.toUpperCase().replace(/[^A-Z0-9]/g, "_")}`;
@@ -149,9 +161,8 @@ export function resolveScreenImport(
     if (spec === alias || spec.startsWith(`${alias}/`))
       return { path: Bun.resolveSync(target + spec.slice(alias.length), dirname(importer)) };
   }
-  const source = SOURCE[spec];
-  if (source) return { path: source };
-  if (ALLOWED.some((re) => re.test(spec))) return { path: Bun.resolveSync(spec, UI) };
+  const core = coreImport(spec);
+  if (core) return { path: core };
   return {
     error: `${from}: a screen imports only relative files, react, react-dom, @hansenexus/*, radix-ui and the aliases in workbench/apps.json (design#148)`,
   };

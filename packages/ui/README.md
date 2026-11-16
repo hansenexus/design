@@ -527,6 +527,11 @@ them under every theme pack. Types and three small helpers, no runtime weight; n
 item. The rules, `apps.json` and how a private app's screens reach the hosted gallery are in
 [workbench/README.md](../../workbench/README.md).
 
+The toolbar's **Pack → Direction** pickers, **Compare** (a checklist of themes) and **Matrix**
+(the page per compared theme, light/dark × 1280/390) put packs side by side (design#149). Each
+pack direction also has a live copy `<id>@live`, built from `main` by `scripts/live.ts`, so a
+theme-pack branch compares the candidate with what ships; see workbench/README.md.
+
 ## Variant votes
 
 Design-system alternatives are compared in the gallery, not in the monorepo variant preview

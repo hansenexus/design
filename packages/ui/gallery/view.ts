@@ -1,9 +1,10 @@
 // The gallery view: theme, density, mode and viewport, plus the review tools of #60 (compare,
-// speed, motion), read from and written to the query so a view can be linked. Pure functions, so
+// speed, motion) and the pack compare of design#149 (compare as a list of themes, the matrix),
+// read from and written to the query so a view can be linked. Pure functions, so
 // tests/gallery-view.test.ts covers them without a DOM.
 import { type Density, densities, type Mode, modes } from "@hansenexus/tokens";
 import { motionMs } from "../src/motion";
-import { GALLERY_THEMES } from "./themes";
+import { BUILD_THEMES, GALLERY_THEMES } from "./themes";
 
 /** The gallery scenes, one page each: kit is ./, the rest ?scene=<name>. */
 export const SCENES = [
@@ -43,9 +44,24 @@ export type Speed = (typeof SPEEDS)[number];
 export const MOTIONS = ["full", "reduced"] as const;
 export type Motion = (typeof MOTIONS)[number];
 
-/** "on" renders each preview card once per theme, side by side. */
-export const COMPARES = ["off", "on"] as const;
-export type Compare = (typeof COMPARES)[number];
+/**
+ * What the current theme is compared with: "off", "on" (every theme of this build, the
+ * preview cards' panels of #60), or a comma list of themes (design#149), e.g.
+ * "fachwerk@live,lexilink". The query keeps it as written.
+ */
+export type Compare = string;
+
+/** "on" renders the page as a matrix of frames: a column per theme, a row per mode and width. */
+export const MATRICES = ["off", "on"] as const;
+export type Matrix = (typeof MATRICES)[number];
+
+/** The matrix rows (design#149): light and dark at 1280, then at 390, at a phone's height. */
+export const MATRIX_ROWS = [
+  { mode: "light", width: 1280, height: 800 },
+  { mode: "dark", width: 1280, height: 800 },
+  { mode: "light", width: 390, height: 844 },
+  { mode: "dark", width: 390, height: 844 },
+] as const satisfies readonly { mode: Mode; width: number; height: number }[];
 
 /** "auto" leaves data-density unset, so the theme's own density applies. */
 export type DensityChoice = Density | "auto";
@@ -57,6 +73,7 @@ export interface View {
   mode: Mode;
   viewport: Viewport;
   compare: Compare;
+  matrix: Matrix;
   speed: Speed;
   motion: Motion;
 }
@@ -68,6 +85,7 @@ export const DEFAULT_VIEW: View = {
   mode: "dark",
   viewport: "auto",
   compare: "off",
+  matrix: "off",
   speed: "1",
   motion: "full",
 };
@@ -77,15 +95,43 @@ export const VIEW_OPTIONS = {
   density: ["auto", ...densities] as readonly DensityChoice[],
   mode: modes,
   viewport: VIEWPORTS,
-  compare: COMPARES,
+  matrix: MATRICES,
   speed: SPEEDS,
   motion: MOTIONS,
 } as const;
 
-const KEYS = ["theme", "density", "mode", "viewport", "compare", "speed", "motion"] as const;
+const KEYS = [
+  "theme",
+  "density",
+  "mode",
+  "viewport",
+  "compare",
+  "matrix",
+  "speed",
+  "motion",
+] as const;
 
 function pick<T extends string>(list: readonly T[], value: string | null, fallback: T): T {
   return list.find((v) => v === value) ?? fallback;
+}
+
+/** "off", "on", or the known themes of a comma list in order, without repeats; else "off". */
+export function readCompare(value: string | null): Compare {
+  if (value === "on") return "on";
+  const list = [...new Set((value ?? "").split(","))].filter((t) => GALLERY_THEMES.includes(t));
+  return list.length ? list.join(",") : "off";
+}
+
+/** The themes the current one is compared with, none for "off". */
+export function compareThemes(view: Pick<View, "compare">): string[] {
+  if (view.compare === "on") return [...BUILD_THEMES];
+  if (view.compare === "off") return [];
+  return view.compare.split(",");
+}
+
+/** The themes side by side: the current one first, then those it is compared with. */
+export function comparedThemes(view: Pick<View, "theme" | "compare">): string[] {
+  return [...new Set([view.theme, ...compareThemes(view)])];
 }
 
 export function readView(query: URLSearchParams): View {
@@ -94,7 +140,8 @@ export function readView(query: URLSearchParams): View {
     density: pick(VIEW_OPTIONS.density, query.get("density"), DEFAULT_VIEW.density),
     mode: pick(VIEW_OPTIONS.mode, query.get("mode"), DEFAULT_VIEW.mode),
     viewport: pick(VIEW_OPTIONS.viewport, query.get("viewport"), DEFAULT_VIEW.viewport),
-    compare: pick(VIEW_OPTIONS.compare, query.get("compare"), DEFAULT_VIEW.compare),
+    compare: readCompare(query.get("compare")),
+    matrix: pick(VIEW_OPTIONS.matrix, query.get("matrix"), DEFAULT_VIEW.matrix),
     speed: pick(VIEW_OPTIONS.speed, query.get("speed"), DEFAULT_VIEW.speed),
     motion: pick(VIEW_OPTIONS.motion, query.get("motion"), DEFAULT_VIEW.motion),
   };
@@ -131,6 +178,29 @@ export function writeView(query: URLSearchParams, view: View): URLSearchParams {
 export function frameQuery(query: URLSearchParams, view: View): URLSearchParams {
   const next = writeView(query, { ...view, viewport: "auto" });
   next.set("frame", "1");
+  return next;
+}
+
+/**
+ * The query of one matrix cell (design#149): the page alone (bare), under `theme` in `mode`, at
+ * the frame's own width; no compare or matrix inside it.
+ */
+export function matrixQuery(
+  query: URLSearchParams,
+  view: View,
+  theme: string,
+  mode: Mode
+): URLSearchParams {
+  const next = writeView(query, {
+    ...view,
+    theme,
+    mode,
+    viewport: "auto",
+    compare: "off",
+    matrix: "off",
+  });
+  next.delete("frame");
+  next.set("bare", "1");
   return next;
 }
 
