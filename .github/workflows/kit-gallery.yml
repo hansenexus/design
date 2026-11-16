@@ -47,10 +47,13 @@ on:
       - "tools/access-proxy/**"
   workflow_dispatch:
 
-# One main run at a time, never cancelled: each sha gets its image.
+# One main run at a time, never cancelled: each sha gets its image. A pull request's runs group
+# by its number, never by github.ref: for a closed PR github.ref is the base branch, so the
+# closed run would join main's group and cancel the merge's own image build (design#158).
+# A newer push to the PR cancels its older run; the closed run (tag cleanup) is never cancelled.
 concurrency:
-  group: kit-gallery-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: kit-gallery-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
 
 permissions:
   contents: read
