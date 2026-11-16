@@ -6,7 +6,7 @@ colour follows `data-mode`, `data-theme` and `data-density` on an ancestor.
 
 Button, Badge, StatusBadge, Switch, Dialog, Menu, Tabs, Table, Meter, Sparkline, Kbd, Toast,
 Tooltip, Input, Select, RailItem. Small charts: StatusDot, UsageBar, RingGauge and Sparkline (line or
-area). For forms: Field, Label, FieldHelp, FieldError, Textarea,
+area), and KpiCard (one number with its trend). For forms: Field, Label, FieldHelp, FieldError, Textarea,
 Checkbox, RadioGroup and FormAlert. For layout: Card (CardHeader, CardTitle, CardDescription,
 CardBody, CardFooter, CardSkeleton), Alert and Banner, Avatar, Separator, Accordion. For dates and
 data: Popover, Calendar, DatePicker, Combobox and DataTable. Overlays and navigation: Sheet,
@@ -82,6 +82,25 @@ import { RingGauge, Sparkline, StatusDot, UsageBar } from "@hansenexus/ui";
 - **Sparkline** `area` adds a fading fill under the line; `min`/`max` fix the scale (values outside
   are capped); `stretch` fills the container's width with a crisp stroke.
 - The UsageBar fill and the RingGauge arc animate over `duration.base`, not under reduced motion.
+
+### KPI card
+
+```tsx
+import { KpiCard, KpiCardSkeleton } from "@hansenexus/ui";
+
+<KpiCard label="Median merge time" value="38 min" delta="−12%" direction="down" good="down"
+  period="vs last week" trend={mergeTimes} />
+<KpiCardSkeleton label="Loading merge time" />   {/* sparkline={false} without a trend slot */}
+```
+
+- The shadcn dashboard-01 section card (decided in the kpi-card vote, design#187): label top left,
+  the delta as a badge top right, the value large, the period and a small Sparkline on a footer rule.
+- **Tone** comes from `direction` against `good` (default `up`): ok, crit, or muted when flat; the
+  arrow carries the direction, so colour is never alone. `kpiTone()` gives the tone for your own
+  markup.
+- **Spoken delta.** The badge reads "up 12% vs last week" (`locale="de"`: "gestiegen um …");
+  `kpiDeltaLabel()` builds it. Without `delta` there is no badge, without `period` and `trend` no
+  footer.
 
 ### Loading
 

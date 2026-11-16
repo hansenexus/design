@@ -1058,6 +1058,31 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "kpi-card",
+      "type": "registry:ui",
+      "title": "KpiCard",
+      "description": "One number with its trend: label, value, a delta badge with direction arrow, period and an optional sparkline on a footer rule, plus KpiCardSkeleton for loading.",
+      "meta": { "level": "organism" },
+      "registryDependencies": [
+        "@hansenexus/tokens",
+        "@hansenexus/badge",
+        "@hansenexus/card",
+        "@hansenexus/cx",
+        "@hansenexus/icons",
+        "@hansenexus/layout-copy",
+        "@hansenexus/skeleton",
+        "@hansenexus/skin",
+        "@hansenexus/sparkline",
+        "@hansenexus/state-copy"
+      ],
+      "files": [
+        {
+          "path": "src/kpi-card.tsx",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }

@@ -24,6 +24,7 @@ export * from "./hansenexus-mark";
 export * from "./hansenexus-wordmark";
 export * from "./input";
 export * from "./kbd";
+export * from "./kpi-card";
 export * from "./label";
 export * from "./layout-copy";
 export * from "./menu";
