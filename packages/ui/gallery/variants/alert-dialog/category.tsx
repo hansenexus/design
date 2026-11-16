@@ -1,6 +1,6 @@
 // The alert-dialog vote (hansenexus/design#167): how the kit asks before a destructive or
-// irreversible action. The component is built on Radix AlertDialog after the vote; the variants
-// here differ in tone, icon, typed confirmation and phone layout.
+// irreversible action. Decided for marked over plain and typed (decisions/alert-dialog.json,
+// design#204); the component itself is built on Radix AlertDialog under design#167.
 //
 // Every cell is a stage of fixed size (560 × 460 or 390 × 780), scaled down to fit. It shows the
 // dialog frozen open over a faux app page, drawn through plain elements: Radix AlertDialog is
@@ -27,7 +27,7 @@ export type Scenario = {
   locale: "en" | "de";
   /** destructive: data or access is lost. neutral: irreversible, but nothing is destroyed. */
   tone: "destructive" | "neutral";
-  /** high: losing it would hurt; the typed variant asks for the name here. */
+  /** high: losing it would hurt. */
   risk: "high" | "normal";
   title: string;
   description: string;
@@ -36,10 +36,6 @@ export type Scenario = {
   /** Names the action; never "OK" or "Yes". */
   action: string;
   cancel: string;
-  /** The name a typed confirmation asks for (risk: high). */
-  confirm?: string;
-  /** Label of the typed-confirmation field. */
-  confirmLabel?: string;
   /** Heading over the consequences. */
   consequencesLabel: string;
   /** The page under the dialog. */
@@ -230,8 +226,6 @@ export const SCENARIOS: Scenario[] = [
     consequencesLabel: "What happens",
     action: "Delete kran-03",
     cancel: "Cancel",
-    confirm: "kran-03",
-    confirmLabel: "Type kran-03 to confirm",
     page: MACHINES,
   },
   {
@@ -289,8 +283,6 @@ export const SCENARIOS: Scenario[] = [
     consequencesLabel: "Was passiert",
     action: "Projekt löschen",
     cancel: "Abbrechen",
-    confirm: "Dachstuhl Nord",
-    confirmLabel: "Zum Bestätigen „Dachstuhl Nord“ eingeben",
     page: {
       app: "fachwerk",
       heading: "Projekte",

@@ -1,4 +1,4 @@
-// Marked: the tone is visible before the buttons. A destructive ask gets a crit glyph in a tinted
+// Marked, the winner (decisions/alert-dialog.json): the tone is visible before the buttons. A destructive ask gets a crit glyph in a tinted
 // tile and a crit rule along the top edge; a neutral one the info glyph on a raised tile. The
 // consequences sit in a raised box. On phones the glyph and the title centre above the text.
 import { cx, StatusGlyph } from "../../../src";
