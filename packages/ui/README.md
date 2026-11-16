@@ -280,6 +280,50 @@ import { Combobox, DataTable, DatePicker, Field, Input } from "@hansenexus/ui";
 - **Copy.** `STATE_COPY[locale].date`, `.combobox` and `.table`; `{query}` and `{row}` are filled
   by `fillCopy`.
 
+### Charts
+
+The chart base (design#179, the vote's `categorical`) on Recharts v3. The core entry carries the
+Recharts-free half, so an app without charts never loads it; `@hansenexus/ui/chart` adds
+`ChartTooltip` and `ChartLegend` (Recharts' own `Tooltip` and `Legend`, shadcn's names) and needs
+`recharts` (an optional peer, `^3`).
+
+```tsx
+import { type ChartConfig, ChartContainer, ChartLegendContent, ChartTooltipContent, chartColor } from "@hansenexus/ui";
+import { ChartTooltip } from "@hansenexus/ui/chart";
+import { Bar, BarChart, ResponsiveContainer, XAxis } from "recharts";
+
+const config = {
+  carpentry: { label: "Carpentry" },          // chart.series-1
+  roofing: { label: "Roofing" },              // chart.series-2
+  failed: { label: "Failed", tone: "crit" },  // status.crit, takes no series hue
+} satisfies ChartConfig;
+
+<ChartContainer config={config}>
+  <ResponsiveContainer height={200}>
+    <BarChart data={weeks}>
+      <XAxis dataKey="week" />
+      <ChartTooltip content={<ChartTooltipContent unit="h" />} />
+      {Object.keys(config).map((k) => <Bar key={k} dataKey={k} stackId="t" fill={chartColor(k)} />)}
+    </BarChart>
+  </ResponsiveContainer>
+  <ChartLegendContent />
+</ChartContainer>
+```
+
+- **ChartConfig** maps a series key (a data field, or a slice name for a pie) to its label and,
+  only when the series means a state, a `tone` (`ok`, `busy`, `warn`, `crit`). Untoned series take
+  `chart.series-1` … `6` in config order (lime, sky, amber, plum, teal, coral; a seventh wraps);
+  a toned one takes its `status.*` colour. Never a raw colour.
+- **ChartContainer** sets `--chart-<key>` per series and hands the config to the tooltip and
+  legend inside. Marks say `chartColor(key)` (`var(--chart-<key>)`); a key with characters outside
+  `[\w-]` is slugged the same way on both sides.
+- **ChartTooltipContent** is the floating card on `surface.raised`: the x label, then a swatch,
+  label and value per series. `unit` is appended, `formatValue` replaces the formatting,
+  `seriesBy="name"` reads a pie's slice name (and drops the heading), `hideLabel` drops it too.
+- **ChartLegendContent** is one centred, wrapping row of square swatches in config order; `hide`
+  leaves series out. Swatches are `aria-hidden`: the label carries the name, so colour is never the
+  only cue. Keep amber and coral series away from warn and crit status UI, or tone the series.
+
 ### Overlays and navigation
 
 ```tsx

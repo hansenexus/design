@@ -20,6 +20,9 @@ const ANSI = ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "whi
 /** The 16 ANSI colours, normal then bright: terminal.black ... terminal.bright-white. */
 export const TERMINAL = [...ANSI, ...ANSI.map((c) => `bright-${c}`)].map((c) => `terminal.${c}`);
 
+/** The six chart series colours in drawing order: chart.series-1 ... chart.series-6. */
+export const CHART_SERIES = [1, 2, 3, 4, 5, 6].map((n) => `chart.series-${n}`);
+
 type Rule = { kind: keyof typeof AA; fg: string[]; bg: string[] };
 
 export const RULES: Rule[] = [
@@ -76,6 +79,9 @@ export const RULES: Rule[] = [
   // A terminal draws on surface.page or, inset in a panel, surface.card (kommandant's xterm);
   // every ANSI colour, black and white included, is text on both.
   { kind: "text", fg: TERMINAL, bg: ["surface.page", "surface.card"] },
+  // Chart series (design#179) are marks and legend swatches: graphics, 3:1 on the card a chart
+  // sits in, the page, and the raised tooltip card that repeats them.
+  { kind: "ui", fg: CHART_SERIES, bg: ["surface.page", "surface.card", "surface.raised"] },
   // The mark is a graphic: 3:1 against the flat grounds it is allowed on (the app icon tile,
   // paper). Lime on paper is not a pair on purpose; on light the mark is lime-deep.
   { kind: "ui", fg: ["brand.lime", "brand.paper"], bg: ["brand.ink"] },

@@ -29,6 +29,10 @@
       "types": "./dist/workbench/index.d.ts",
       "import": "./dist/workbench/index.js"
     },
+    "./chart": {
+      "types": "./dist/chart/index.d.ts",
+      "import": "./dist/chart/index.js"
+    },
     "./styles.css": "./dist/styles.css",
     "./registry/*": "./dist/r/*"
   },
@@ -57,7 +61,13 @@
   "peerDependencies": {
     "@hansenexus/tokens": "^0.9.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "recharts": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "recharts": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@fontsource-variable/archivo": "5.3.0",

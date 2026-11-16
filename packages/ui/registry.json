@@ -871,6 +871,20 @@
       ]
     },
     {
+      "name": "chart",
+      "type": "registry:ui",
+      "title": "Chart",
+      "description": "The chart base: ChartConfig maps each series to a chart.series token or a status tone, ChartContainer sets --chart-<key>, ChartTooltipContent and ChartLegendContent read it. Recharts-free: hand them to Recharts' Tooltip and Legend.",
+      "meta": { "level": "organism" },
+      "registryDependencies": ["@hansenexus/tokens", "@hansenexus/cx"],
+      "files": [
+        {
+          "path": "src/chart.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "sheet",
       "type": "registry:ui",
       "title": "Sheet",
