@@ -1,17 +1,12 @@
 // hansenexus/design#167: the kit AlertDialog, the marked layout of the vote
-// (decisions/alert-dialog.json). Rendered for real in happy-dom, since Radix portals the content.
-import { afterAll, afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { GlobalRegistrator } from "@happy-dom/global-registrator";
-import type { Root } from "react-dom/client";
-import type { AlertDialogTone } from "../src";
-
-// Radix picks its layout effect when its module loads, by whether a document exists; the DOM has
-// to be in place before react-dom and the kit load, so they are imported after registering.
-GlobalRegistrator.register();
-Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
-const { act } = await import("react");
-const { createRoot } = await import("react-dom/client");
-const {
+// (decisions/alert-dialog.json). Rendered for real in happy-dom (tests/dom.ts, the bunfig.toml
+// preload), since Radix portals the content.
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { act } from "react";
+import { createRoot, type Root } from "react-dom/client";
+import { ITEM_SCENES } from "../gallery/levels";
+import { loadRegistry } from "../scripts/registry";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -22,11 +17,10 @@ const {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  type AlertDialogTone,
   AlertDialogTrigger,
   Button,
-} = await import("../src");
-const { loadRegistry } = await import("../scripts/registry");
-const { ITEM_SCENES } = await import("../gallery/levels");
+} from "../src";
 
 function Ask({
   tone,
@@ -66,9 +60,6 @@ describe("AlertDialog", () => {
   let container: HTMLElement;
   let root: Root;
 
-  afterAll(async () => {
-    await GlobalRegistrator.unregister();
-  });
   beforeEach(() => {
     container = document.createElement("div");
     document.body.append(container);

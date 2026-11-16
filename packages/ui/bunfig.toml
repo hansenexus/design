@@ -1,0 +1,5 @@
+# One DOM for every ui test file, registered before any test file loads. Radix decides at module
+# load whether a document exists (its layout-effect hook); bun runs all files in one process, so
+# a file that registered its own DOM got a Radix another file had already loaded without one.
+[test]
+preload = ["./tests/dom.ts"]
