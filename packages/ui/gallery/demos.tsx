@@ -13,6 +13,17 @@ import {
   AccordionItem,
   AccordionTrigger,
   Alert,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogConsequence,
+  AlertDialogConsequences,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
   Avatar,
   Badge,
   Breadcrumb,
@@ -298,6 +309,28 @@ export const DEMOS: Record<string, () => ReactNode> = {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  ),
+  "alert-dialog": () => (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="danger">Delete kran-03</Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete kran-03?</AlertDialogTitle>
+          <AlertDialogDescription>
+            kran-03 leaves the cluster and its disks are wiped. This cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogConsequences label="What happens">
+          <AlertDialogConsequence>2 volumes, 48 GB, are erased</AlertDialogConsequence>
+        </AlertDialogConsequences>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction>Delete kran-03</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   ),
   "brand-geometry": () => (
     <svg

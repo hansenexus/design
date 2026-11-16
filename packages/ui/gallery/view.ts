@@ -10,6 +10,7 @@ import { BUILD_THEMES, GALLERY_THEMES } from "./themes";
 export const SCENES = [
   "kit",
   "dialog",
+  "alert-dialog",
   "menu",
   "select",
   "tooltip",
@@ -36,6 +37,7 @@ export type Scene = (typeof SCENES)[number];
 export const SCENE_LABELS: Record<Scene, string> = {
   kit: "Kit",
   dialog: "Dialog",
+  "alert-dialog": "Alert dialog",
   menu: "Menu",
   select: "Select",
   tooltip: "Tooltip",
@@ -75,7 +77,7 @@ export const SCENE_GROUPS: { id: string; label: string; scenes: Scene[] }[] = [
   {
     id: "overlays",
     label: "Overlays",
-    scenes: ["dialog", "menu", "select", "tooltip", "toast", "overlays"],
+    scenes: ["dialog", "alert-dialog", "menu", "select", "tooltip", "toast", "overlays"],
   },
   { id: "templates", label: "Templates", scenes: ["shell", "screens"] },
   { id: "review", label: "Review", scenes: ["vote"] },

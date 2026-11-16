@@ -119,6 +119,7 @@ import {
   TooltipTrigger,
   useDelayedVisibility,
 } from "../src";
+import { AlertDialogScene } from "./alert-dialog-scene";
 import { Workbench } from "./chrome";
 import { Controls } from "./controls";
 import { Data } from "./data";
@@ -1193,6 +1194,8 @@ function Scenes({ scene }: { scene: Scene }) {
       return <Brand />;
     case "kit":
       return <Kit />;
+    case "alert-dialog":
+      return <AlertDialogScene />;
     case "dialog":
       return (
         <Stage>

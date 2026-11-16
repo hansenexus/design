@@ -18,6 +18,7 @@ export const ITEM_SCENES: Record<string, Scene> = {
   badge: "kit",
   button: "kit",
   dialog: "dialog",
+  "alert-dialog": "alert-dialog",
   "brand-geometry": "brand",
   "hansenexus-mark": "brand",
   "hansenexus-wordmark": "brand",
