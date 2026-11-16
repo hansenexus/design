@@ -110,6 +110,15 @@ public struct HNColors: Sendable, Equatable {
     public let statusWarn: HNRGBA
   }
 
+  public struct Scrollbar: Sendable, Equatable {
+    /// The resting thumb; 3:1 on every surface
+    public let thumb: HNRGBA
+    /// The thumb under the pointer or while dragged
+    public let thumbHover: HNRGBA
+    /// Clear, so the bar sits on its container's own surface
+    public let track: HNRGBA
+  }
+
   public struct Skeleton: Sendable, Equatable {
     /// The resting placeholder fill
     public let base: HNRGBA
@@ -175,6 +184,7 @@ public struct HNColors: Sendable, Equatable {
   public let nav: Nav
   public let panel: Panel
   public let rail: Rail
+  public let scrollbar: Scrollbar
   public let skeleton: Skeleton
   public let status: Status
   public let surface: Surface
@@ -241,6 +251,11 @@ public struct HNColors: Sendable, Equatable {
       statusCrit: HNRGBA(0xFF7A66),
       statusOk: HNRGBA(0x42C501),
       statusWarn: HNRGBA(0xF0A53A)
+    ),
+    scrollbar: Scrollbar(
+      thumb: HNRGBA(0x8A8273),
+      thumbHover: HNRGBA(0xA39C8C),
+      track: HNRGBA(0x000000, alpha: 0x00)
     ),
     skeleton: Skeleton(
       base: HNRGBA(0x3A352C),
@@ -330,6 +345,11 @@ public struct HNColors: Sendable, Equatable {
       statusOk: HNRGBA(0x42C501),
       statusWarn: HNRGBA(0xF0A53A)
     ),
+    scrollbar: Scrollbar(
+      thumb: HNRGBA(0x8A8273),
+      thumbHover: HNRGBA(0x6B6456),
+      track: HNRGBA(0x000000, alpha: 0x00)
+    ),
     skeleton: Skeleton(
       base: HNRGBA(0xD8CFBD),
       highlight: HNRGBA(0xCDC6B6)
@@ -417,6 +437,11 @@ public struct HNColors: Sendable, Equatable {
       statusCrit: HNRGBA(0xFF6B5E),
       statusOk: HNRGBA(0x8BE45F),
       statusWarn: HNRGBA(0xE0A04A)
+    ),
+    scrollbar: Scrollbar(
+      thumb: HNRGBA(0x746B56),
+      thumbHover: HNRGBA(0x9A927F),
+      track: HNRGBA(0x000000, alpha: 0x00)
     ),
     skeleton: Skeleton(
       base: HNRGBA(0x3A352C),
@@ -506,6 +531,11 @@ public struct HNColors: Sendable, Equatable {
       statusOk: HNRGBA(0x8BE45F),
       statusWarn: HNRGBA(0xE0A04A)
     ),
+    scrollbar: Scrollbar(
+      thumb: HNRGBA(0x8A8273),
+      thumbHover: HNRGBA(0x6B6456),
+      track: HNRGBA(0x000000, alpha: 0x00)
+    ),
     skeleton: Skeleton(
       base: HNRGBA(0xD8CFBD),
       highlight: HNRGBA(0xCDC6B6)
@@ -593,6 +623,11 @@ public struct HNColors: Sendable, Equatable {
       statusCrit: HNRGBA(0xFF7A66),
       statusOk: HNRGBA(0x42C501),
       statusWarn: HNRGBA(0xF0A53A)
+    ),
+    scrollbar: Scrollbar(
+      thumb: HNRGBA(0x8A8273),
+      thumbHover: HNRGBA(0xA39C8C),
+      track: HNRGBA(0x000000, alpha: 0x00)
     ),
     skeleton: Skeleton(
       base: HNRGBA(0x3A352C),
@@ -682,6 +717,11 @@ public struct HNColors: Sendable, Equatable {
       statusOk: HNRGBA(0x42C501),
       statusWarn: HNRGBA(0xF0A53A)
     ),
+    scrollbar: Scrollbar(
+      thumb: HNRGBA(0x8A8273),
+      thumbHover: HNRGBA(0x6B6456),
+      track: HNRGBA(0x000000, alpha: 0x00)
+    ),
     skeleton: Skeleton(
       base: HNRGBA(0xD8CFBD),
       highlight: HNRGBA(0xCDC6B6)
@@ -770,6 +810,11 @@ public struct HNColors: Sendable, Equatable {
       statusOk: HNRGBA(0x42C501),
       statusWarn: HNRGBA(0xF0A53A)
     ),
+    scrollbar: Scrollbar(
+      thumb: HNRGBA(0x8F8C85),
+      thumbHover: HNRGBA(0xEFEBE2),
+      track: HNRGBA(0x000000, alpha: 0x00)
+    ),
     skeleton: Skeleton(
       base: HNRGBA(0x3F3A34),
       highlight: HNRGBA(0x47413C)
@@ -857,6 +902,11 @@ public struct HNColors: Sendable, Equatable {
       statusCrit: HNRGBA(0xFF7A66),
       statusOk: HNRGBA(0x42C501),
       statusWarn: HNRGBA(0xF0A53A)
+    ),
+    scrollbar: Scrollbar(
+      thumb: HNRGBA(0x070707),
+      thumbHover: HNRGBA(0x717171),
+      track: HNRGBA(0x000000, alpha: 0x00)
     ),
     skeleton: Skeleton(
       base: HNRGBA(0xDEDEDE),
@@ -1041,6 +1091,12 @@ public struct HNRadius: Sendable, Equatable {
     case .lexilink: return HNRadius(lg: 0, md: 0, pill: 999, sm: 0, xl: 4)
     }
   }
+}
+
+/// Scrollbar thickness in points, the scrollbar recipe. The colours are `HNColors.scrollbar`.
+public enum HNScrollbar {
+  /// Bar thickness where a browser lacks scrollbar-width and draws ::-webkit-scrollbar
+  public static let size: Double = 8
 }
 
 public enum HNShadow {

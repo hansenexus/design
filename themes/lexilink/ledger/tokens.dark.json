@@ -36,6 +36,13 @@
       "$description": "A control boundary: the dividing line is 1.8:1, below 3:1, so controls take the grey"
     }
   },
+  "scrollbar": {
+    "$type": "color",
+    "thumb-hover": {
+      "$value": "{palette.ledger.night-ink}",
+      "$description": "Grey is already the resting thumb; the pointer turns it to ink"
+    }
+  },
   "action": {
     "$type": "color",
     "primary": {

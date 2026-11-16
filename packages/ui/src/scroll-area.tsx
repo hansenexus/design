@@ -47,12 +47,14 @@ export function ScrollBar({
       className={cx(
         "flex touch-none p-px select-none",
         "transition-colors duration-(--hn-duration-fast) motion-reduce:transition-none",
-        orientation === "vertical" ? "h-full w-2 border-l border-l-transparent" : "h-2 flex-col",
+        orientation === "vertical"
+          ? "h-full w-(--hn-scrollbar-size) border-l border-l-transparent"
+          : "h-(--hn-scrollbar-size) flex-col",
         className
       )}
       {...props}
     >
-      <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-hn-control-dot bg-hn-line-strong hover:bg-hn-ink-muted" />
+      <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-hn-control-dot bg-hn-scrollbar-thumb hover:bg-hn-scrollbar-thumb-hover active:bg-hn-scrollbar-thumb-hover" />
     </ScrollAreaPrimitive.Scrollbar>
   );
 }

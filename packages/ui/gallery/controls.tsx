@@ -1,5 +1,6 @@
 // The controls scene: Menu with its radio group and an open sub-menu, a live ContextMenu (the
-// screenshot spec right-clicks it open), Toggle, ToggleGroup, Slider and ScrollArea in their
+// screenshot spec right-clicks it open), Toggle, ToggleGroup, Slider, ScrollArea and the native
+// scrollbars in their
 // states. Names are an invented estate: no real hostnames, IPs or people in a public repo.
 
 import { type ReactNode, useState } from "react";
@@ -299,6 +300,32 @@ export function Controls() {
                 ))}
               </div>
             </ScrollArea>
+          </Card>
+        </Section>
+        <Section title="Native scrollbars: themed, opted out">
+          <Card>
+            <p className="m-0 text-[13px] text-hn-ink-muted">
+              Any overflow box draws its bars in the scrollbar tokens. data-scrollbar="native" (or
+              the scrollbar-native utility) hands them back to the OS.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {(["themed", "native"] as const).map((kind) => (
+                <section
+                  key={kind}
+                  aria-label={`${kind} scrollbar`}
+                  data-scrollbar={kind === "native" ? "native" : undefined}
+                  className="h-40 overflow-auto rounded-hn-md border border-hn-line-subtle"
+                >
+                  <ul className="m-0 flex w-[140%] list-none flex-col p-0 font-hn-mono text-sm text-hn-ink-primary">
+                    {HOSTS.map((h) => (
+                      <li key={h} className="border-b border-hn-line-subtle px-3 py-1.5">
+                        {kind} · {h}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </div>
           </Card>
         </Section>
       </div>

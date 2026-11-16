@@ -156,6 +156,48 @@ const BORDER_STYLE = [
   "}",
 ];
 
+// Native scrollbars (design#163): every scrolling box, the page included, draws its bars in the
+// scrollbar tokens. scrollbar-color is inherited and scrollbar-width is not, so both go on every
+// element. Browsers without the standard properties (Safari before 26.2) get ::-webkit-scrollbar
+// instead; where the standard ones exist Chromium ignores the pseudo-elements anyway.
+// Opt out with data-scrollbar="native" on a subtree or the scrollbar-native utility on one box:
+// both hand the bars back to the OS.
+const NATIVE = '[data-scrollbar="native"], [data-scrollbar="native"] *, .scrollbar-native';
+const SCROLLBARS = [
+  "@layer base {",
+  "  * {",
+  "    scrollbar-color: var(--hn-scrollbar-thumb) var(--hn-scrollbar-track);",
+  "    scrollbar-width: var(--hn-scrollbar-width);",
+  "  }",
+  '  [data-scrollbar="native"],',
+  '  [data-scrollbar="native"] * {',
+  "    scrollbar-color: auto;",
+  "    scrollbar-width: auto;",
+  "  }",
+  "  @supports not (scrollbar-color: auto) {",
+  `    :not(${NATIVE})::-webkit-scrollbar {`,
+  "      width: var(--hn-scrollbar-size);",
+  "      height: var(--hn-scrollbar-size);",
+  "    }",
+  `    :not(${NATIVE})::-webkit-scrollbar-track,`,
+  `    :not(${NATIVE})::-webkit-scrollbar-corner {`,
+  "      background-color: var(--hn-scrollbar-track);",
+  "    }",
+  `    :not(${NATIVE})::-webkit-scrollbar-thumb {`,
+  "      background-color: var(--hn-scrollbar-thumb);",
+  "      border-radius: var(--hn-control-dot);",
+  "    }",
+  `    :not(${NATIVE})::-webkit-scrollbar-thumb:hover {`,
+  "      background-color: var(--hn-scrollbar-thumb-hover);",
+  "    }",
+  "  }",
+  "}",
+  "@utility scrollbar-native {",
+  "  scrollbar-color: auto;",
+  "  scrollbar-width: auto;",
+  "}",
+];
+
 // Tailwind's own rounded-sm/md/lg/xl read the token of the same name, so web and Swift say the
 // same step for the same value (HNRadius.lg is rounded-lg, design#140). This replaces Tailwind's
 // default radii for those four steps; rounded-full and the rest stay Tailwind's.
@@ -237,6 +279,8 @@ export function renderTailwind(all: Resolved): string {
     ...MOTION_VARIANTS,
     "",
     ...BORDER_STYLE,
+    "",
+    ...SCROLLBARS,
     "",
   ].join("\n");
 }

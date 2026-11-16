@@ -53,6 +53,15 @@ Two loading animations come with their keyframes: `animate-hn-pulse` (a skeleton
 reduced motion whatever the OS says; without it nothing changes. The gallery's motion switch uses
 it.
 
+Native scrollbars follow the theme: `tailwind.css` gives every element, the page included,
+`scrollbar-color: var(--hn-scrollbar-thumb) var(--hn-scrollbar-track)` and
+`scrollbar-width: var(--hn-scrollbar-width)` in the base layer, with a `::-webkit-scrollbar`
+fallback (`scrollbar.size` thick) only where a browser lacks the standard properties. The track is
+clear, so the thumb (3:1 on every surface, checked) sits on whatever scrolls. To hand the bars back
+to the OS, set `data-scrollbar="native"` on a subtree or the `scrollbar-native` utility on one box.
+A theme changes them through the `scrollbar.*` colours and the `scrollbar` recipe (`width: auto`
+for the OS bar width).
+
 ## TypeScript
 
 ```ts

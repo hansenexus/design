@@ -50,6 +50,7 @@ const TYPE_NAME: Record<string, string> = {
   elevation: "HNElevation",
   control: "HNControl",
   shell: "HNShell",
+  scrollbar: "HNScrollbar",
 };
 
 const GROUP_DOC: Record<string, string> = {
@@ -69,6 +70,8 @@ const GROUP_DOC: Record<string, string> = {
   elevation: "What lifts off the page, the elevation recipe: thumb, overlays, shell panels.",
   control: "Control shape as corner radii in points, the control recipe.",
   shell: "The shell layout in points, the shell recipe: insets, gaps, column widths, rail rows.",
+  scrollbar:
+    "Scrollbar thickness in points, the scrollbar recipe. The colours are `HNColors.scrollbar`.",
 };
 
 const SWIFT_KEYWORDS = new Set(["default", "case", "func", "let", "var", "in", "is", "self"]);
