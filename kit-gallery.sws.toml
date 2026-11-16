@@ -37,3 +37,10 @@ Cache-Control = "public, max-age=86400"
 source = "/r/**"
 [advanced.headers.headers]
 Cache-Control = "no-cache"
+
+# Per-PR previews (design#150): hn-infra's kit-previews pod serves each PR's site from /public/pr,
+# and a preview changes with every push, hashed names or not, so every response revalidates.
+[[advanced.headers]]
+source = "/pr/**"
+[advanced.headers.headers]
+Cache-Control = "no-cache"

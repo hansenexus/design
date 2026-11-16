@@ -116,3 +116,24 @@ WORKBENCH_FACHWERK=$HOME/repos/fachwerk bun run gallery -- --serve
 
 `?scene=screens&screen=<id>&fixture=<id>` shows one screen; the toolbar's theme, mode and viewport
 apply as on every scene, and `&bare=1` leaves only the screen for a screenshot.
+
+## In CI, and per-PR previews (design#150)
+
+`.github/workflows/kit-gallery.yml` builds the gallery image on main and on pull requests:
+
+- **Private app screens.** A read-only token of the workbench GitHub App (repository variable
+  `WORKBENCH_APP_ID`, secret `WORKBENCH_APP_KEY`; contents:read on the app repositories only) is
+  minted per run and handed to `workbench-checkout.ts`. Never for a fork's pull request; without
+  the app the gallery skips those apps and the screens index says why.
+- **Live packs.** Main's `themes/` is extracted into `workbench/.checkouts/_live` before the
+  image build, which has no `.git`, so `<id>@live` is main on every build.
+- **Previews.** A pull request from this repository also pushes `kit-gallery:pr-<N>` to Harbor
+  (repository variable `KIT_PREVIEWS_ENABLED=true`). hn-infra's `kit-previews` pod
+  (`infrastructure/design`) pulls every `pr-*` tag and serves it at
+  `https://design.hansenexus.dev/pr/<N>/`, behind the same Cloudflare Access app and
+  access-proxy as the gallery. The link is in the run's summary. Closing the PR deletes the tag,
+  and the pod drops the preview.
+
+Owner steps, once: create the GitHub App and set its variable and secret; give the Harbor push
+robot delete on the `design` project; merge the hn-infra change; then set
+`KIT_PREVIEWS_ENABLED=true`.
