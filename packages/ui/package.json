@@ -76,6 +76,8 @@
     "@types/react-dom": "19.3.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "react-is": "19.3.0",
+    "recharts": "3.10.1",
     "shadcn": "4.21.0",
     "tailwindcss": "4.3.3"
   }
