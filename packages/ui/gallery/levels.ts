@@ -63,6 +63,7 @@ export const ITEM_SCENES: Record<string, Scene> = {
   "date-picker": "data",
   combobox: "data",
   "data-table": "data",
+  chart: "charts",
   sheet: "overlays",
   breadcrumb: "navigation",
   pagination: "navigation",

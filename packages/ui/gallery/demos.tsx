@@ -127,8 +127,10 @@ import {
   useDelayedVisibility,
   useMotionMs,
 } from "../src";
+import { ChartCard } from "./charts";
 import { Bell, More, Restart, Server } from "./icons";
 import { DemoShell } from "./shell";
+import { HOURS_BY_TRADE } from "./variants/chart-base/category";
 
 const TODAY = new Date(2026, 8, 14);
 const HOSTS = ["kran-01", "kran-02", "pegel"];
@@ -636,6 +638,7 @@ export const DEMOS: Record<string, () => ReactNode> = {
     />
   ),
   "data-table": () => <DataTable columns={COLUMNS} rows={ROWS} getRowId={(r) => r.id} />,
+  chart: () => <ChartCard spec={HOURS_BY_TRADE} height={160} />,
   sheet: () => (
     <Sheet>
       <SheetTrigger asChild>

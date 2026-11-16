@@ -56,6 +56,15 @@ public struct HNColors: Sendable, Equatable {
     public let paper: HNRGBA
   }
 
+  public struct Chart: Sendable, Equatable {
+    public let series1: HNRGBA
+    public let series2: HNRGBA
+    public let series3: HNRGBA
+    public let series4: HNRGBA
+    public let series5: HNRGBA
+    public let series6: HNRGBA
+  }
+
   public struct Focus: Sendable, Equatable {
     public let ring: HNRGBA
   }
@@ -178,6 +187,7 @@ public struct HNColors: Sendable, Equatable {
 
   public let action: Action
   public let brand: Brand
+  public let chart: Chart
   public let focus: Focus
   public let ink: Ink
   public let line: Line
@@ -219,6 +229,14 @@ public struct HNColors: Sendable, Equatable {
       lime: HNRGBA(0x42C501),
       limeDeep: HNRGBA(0x2B7300),
       paper: HNRGBA(0xF4F0E6)
+    ),
+    chart: Chart(
+      series1: HNRGBA(0x42C501),
+      series2: HNRGBA(0x8FB8FF),
+      series3: HNRGBA(0xF0A53A),
+      series4: HNRGBA(0xD59CC8),
+      series5: HNRGBA(0x7ABFC3),
+      series6: HNRGBA(0xFF7A66)
     ),
     focus: Focus(
       ring: HNRGBA(0x42C501)
@@ -313,6 +331,14 @@ public struct HNColors: Sendable, Equatable {
       limeDeep: HNRGBA(0x2B7300),
       paper: HNRGBA(0xF4F0E6)
     ),
+    chart: Chart(
+      series1: HNRGBA(0x2B7300),
+      series2: HNRGBA(0x1F5FBF),
+      series3: HNRGBA(0x8A5200),
+      series4: HNRGBA(0x834F78),
+      series5: HNRGBA(0x356E71),
+      series6: HNRGBA(0xB3261E)
+    ),
     focus: Focus(
       ring: HNRGBA(0x2B7300)
     ),
@@ -405,6 +431,14 @@ public struct HNColors: Sendable, Equatable {
       lime: HNRGBA(0x42C501),
       limeDeep: HNRGBA(0x2B7300),
       paper: HNRGBA(0xF4F0E6)
+    ),
+    chart: Chart(
+      series1: HNRGBA(0x42C501),
+      series2: HNRGBA(0x8FB8FF),
+      series3: HNRGBA(0xF0A53A),
+      series4: HNRGBA(0xD59CC8),
+      series5: HNRGBA(0x7ABFC3),
+      series6: HNRGBA(0xFF7A66)
     ),
     focus: Focus(
       ring: HNRGBA(0x42C501)
@@ -499,6 +533,14 @@ public struct HNColors: Sendable, Equatable {
       limeDeep: HNRGBA(0x2B7300),
       paper: HNRGBA(0xF4F0E6)
     ),
+    chart: Chart(
+      series1: HNRGBA(0x2B7300),
+      series2: HNRGBA(0x1F5FBF),
+      series3: HNRGBA(0x8A5200),
+      series4: HNRGBA(0x834F78),
+      series5: HNRGBA(0x356E71),
+      series6: HNRGBA(0xB3261E)
+    ),
     focus: Focus(
       ring: HNRGBA(0x2B7300)
     ),
@@ -591,6 +633,14 @@ public struct HNColors: Sendable, Equatable {
       lime: HNRGBA(0x42C501),
       limeDeep: HNRGBA(0x2B7300),
       paper: HNRGBA(0xF4F0E6)
+    ),
+    chart: Chart(
+      series1: HNRGBA(0x42C501),
+      series2: HNRGBA(0x8FB8FF),
+      series3: HNRGBA(0xF0A53A),
+      series4: HNRGBA(0xD59CC8),
+      series5: HNRGBA(0x7ABFC3),
+      series6: HNRGBA(0xFF7A66)
     ),
     focus: Focus(
       ring: HNRGBA(0x42C501)
@@ -685,6 +735,14 @@ public struct HNColors: Sendable, Equatable {
       limeDeep: HNRGBA(0x2B7300),
       paper: HNRGBA(0xF4F0E6)
     ),
+    chart: Chart(
+      series1: HNRGBA(0x2B7300),
+      series2: HNRGBA(0x1F5FBF),
+      series3: HNRGBA(0x8A5200),
+      series4: HNRGBA(0x834F78),
+      series5: HNRGBA(0x356E71),
+      series6: HNRGBA(0xB3261E)
+    ),
     focus: Focus(
       ring: HNRGBA(0x2B7300)
     ),
@@ -778,6 +836,14 @@ public struct HNColors: Sendable, Equatable {
       limeDeep: HNRGBA(0x2B7300),
       paper: HNRGBA(0xF4F0E6)
     ),
+    chart: Chart(
+      series1: HNRGBA(0x42C501),
+      series2: HNRGBA(0x8FB8FF),
+      series3: HNRGBA(0xF0A53A),
+      series4: HNRGBA(0xD59CC8),
+      series5: HNRGBA(0x7ABFC3),
+      series6: HNRGBA(0xFF7A66)
+    ),
     focus: Focus(
       ring: HNRGBA(0xF3821D)
     ),
@@ -870,6 +936,14 @@ public struct HNColors: Sendable, Equatable {
       lime: HNRGBA(0x42C501),
       limeDeep: HNRGBA(0x2B7300),
       paper: HNRGBA(0xF4F0E6)
+    ),
+    chart: Chart(
+      series1: HNRGBA(0x2B7300),
+      series2: HNRGBA(0x1F5FBF),
+      series3: HNRGBA(0x8A5200),
+      series4: HNRGBA(0x834F78),
+      series5: HNRGBA(0x356E71),
+      series6: HNRGBA(0xB3261E)
     ),
     focus: Focus(
       ring: HNRGBA(0x070707)

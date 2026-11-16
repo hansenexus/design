@@ -103,6 +103,16 @@
     "bright-cyan": { "$value": "{palette.teal.200}" },
     "bright-white": { "$value": "{palette.warm.50}" }
   },
+  "chart": {
+    "$type": "color",
+    "$description": "Chart series colours in order (design#179): lime, then the muted sky, amber, plum, teal and coral. The terminal hues, read from the palette so a pack that aliases terminal colours to status (kommandant) keeps series apart from tones. Each is 3:1 on surface.page, surface.card and surface.raised. A series that means a state takes status.* instead.",
+    "series-1": { "$value": "{palette.lime.500}" },
+    "series-2": { "$value": "{palette.sky.300}" },
+    "series-3": { "$value": "{palette.amber.400}" },
+    "series-4": { "$value": "{palette.plum.300}" },
+    "series-5": { "$value": "{palette.teal.300}" },
+    "series-6": { "$value": "{palette.coral.400}" }
+  },
   "focus": {
     "ring": { "$type": "color", "$value": "{palette.lime.500}" }
   },

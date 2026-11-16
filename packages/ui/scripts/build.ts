@@ -1,5 +1,6 @@
 // Builds dist/: index.js (ESM, dependencies external), index.d.ts and friends, workbench/index.js
-// (the screen-fixture contract, `@hansenexus/ui/workbench`, design#148), styles.css
+// (the screen-fixture contract, `@hansenexus/ui/workbench`, design#148), chart/index.js (the
+// Recharts half of the chart base, `@hansenexus/ui/chart`, design#179), styles.css
 // (the utilities the primitives use, Tailwind v4) and r/*.json (the shadcn registry).
 // Run: bun scripts/build.ts
 import { readFileSync, rmSync } from "node:fs";
@@ -17,7 +18,11 @@ function run(cmd: string[]) {
 rmSync(DIST, { recursive: true, force: true });
 
 const js = await Bun.build({
-  entrypoints: [resolve(ROOT, "src/index.ts"), resolve(ROOT, "src/workbench/index.ts")],
+  entrypoints: [
+    resolve(ROOT, "src/index.ts"),
+    resolve(ROOT, "src/workbench/index.ts"),
+    resolve(ROOT, "src/chart/index.ts"),
+  ],
   outdir: DIST,
   target: "browser",
   format: "esm",
@@ -29,11 +34,18 @@ const js = await Bun.build({
 });
 if (!js.success) {
   for (const log of js.logs) console.error(log);
-  throw new Error("build: bundling src/index.ts and src/workbench/index.ts failed");
+  throw new Error(
+    "build: bundling src/index.ts, src/workbench/index.ts and src/chart/index.ts failed"
+  );
 }
 
-if (/jsx-dev-runtime|jsxDEV/.test(readFileSync(resolve(DIST, "index.js"), "utf8"))) {
+const core = readFileSync(resolve(DIST, "index.js"), "utf8");
+if (/jsx-dev-runtime|jsxDEV/.test(core)) {
   throw new Error("build: dist/index.js uses the development JSX runtime (jsxDEV)");
+}
+// Apps without charts never load Recharts (design#179): only dist/chart/index.js may import it.
+if (/from\s*"recharts"/.test(core)) {
+  throw new Error("build: dist/index.js imports recharts; it belongs in src/chart/index.ts");
 }
 
 run(["bunx", "tsc", "-p", "tsconfig.build.json"]);
