@@ -3,10 +3,5 @@
   "winner": "workbench",
   "date": "2026-11-16",
   "rationale": "Owner pick: a scene-to-item tree, a framed canvas with its own viewport and an inspector holding every view setting and the item's facts suit working on one item at a time; the extra chrome is accepted, and phones get the panes as tabs.",
-  "considered": [
-    "index-dock",
-    "sidebar",
-    "top-bar",
-    "workbench"
-  ]
+  "considered": ["index-dock", "sidebar", "top-bar", "workbench"]
 }
