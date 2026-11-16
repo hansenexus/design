@@ -73,6 +73,7 @@ export const ITEM_SCENES: Record<string, Scene> = {
   slider: "controls",
   toggle: "controls",
   "toggle-group": "controls",
+  "kpi-card": "data",
 };
 
 export type LevelItem = { name: string; title: string; level: Level | undefined };

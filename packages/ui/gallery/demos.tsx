@@ -55,6 +55,7 @@ import {
   HansenexusWordmark,
   Input,
   Kbd,
+  KpiCard,
   LAYOUT_COPY,
   Label,
   MARK,
@@ -318,6 +319,18 @@ export const DEMOS: Record<string, () => ReactNode> = {
     <div className="flex gap-2">
       <Kbd>⌘K</Kbd>
       <Kbd>esc</Kbd>
+    </div>
+  ),
+  "kpi-card": () => (
+    <div className="max-w-72">
+      <KpiCard
+        label="Active lanes"
+        value="7"
+        delta="+2"
+        direction="up"
+        period="vs yesterday"
+        trend={[12, 14, 13, 17, 16, 19, 22, 21, 24, 27]}
+      />
     </div>
   ),
   menu: () => (
