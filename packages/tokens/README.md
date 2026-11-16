@@ -201,6 +201,10 @@ the same colour names in every theme.
   a terminal drawn on `surface.page` or `surface.card`, and only that. Green is lime; magenta and cyan are muted so
   lime stays the one accent. On light, `bright-*` is one step deeper, not lighter, so every colour
   keeps 4.5:1. Outside a terminal, use `status.*` for meaning.
+- `chart.series-1` … `chart.series-6` are the categorical hues of a chart (design#179): lime,
+  then muted sky, amber, plum, teal and coral, 3:1 on `surface.page`, `surface.card` and
+  `surface.raised`. They read the palette, not `terminal.*`, so a theme that aliases terminal
+  colours to status keeps its series apart. A series that means a state uses `status.*`.
 
 ## Checks
 
@@ -210,7 +214,7 @@ not a WCAG minimum, since a placeholder carries no information, but it must read
 4.5:1 for all 16 `terminal.*` colours on `surface.page` and `surface.card`; a 1.3:1 floor for
 `line.subtle` on `surface.card` and `rail.line` on `surface.rail`, again not a WCAG minimum, so a
 divider still divides; `rail.ink` and `rail.muted` are text and `rail.status-*` UI on
-`surface.rail`). It fails on a pair below AA and on a colour token
+`surface.rail`; 3:1 for `chart.series-*` on page, card and raised). It fails on a pair below AA and on a colour token
 that no rule covers and that is not explicitly exempt.
 
 ## Versioning

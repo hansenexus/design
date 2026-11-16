@@ -66,6 +66,7 @@ import {
   HansenexusWordmark,
   Input,
   Kbd,
+  KpiCard,
   LAYOUT_COPY,
   Label,
   MARK,
@@ -137,8 +138,10 @@ import {
   useDelayedVisibility,
   useMotionMs,
 } from "../src";
+import { ChartCard } from "./charts";
 import { Bell, More, Restart, Server } from "./icons";
 import { DemoShell } from "./shell";
+import { HOURS_BY_TRADE } from "./variants/chart-base/category";
 
 const TODAY = new Date(2026, 8, 14);
 const HOSTS = ["kran-01", "kran-02", "pegel"];
@@ -351,6 +354,18 @@ export const DEMOS: Record<string, () => ReactNode> = {
     <div className="flex gap-2">
       <Kbd>⌘K</Kbd>
       <Kbd>esc</Kbd>
+    </div>
+  ),
+  "kpi-card": () => (
+    <div className="max-w-72">
+      <KpiCard
+        label="Active lanes"
+        value="7"
+        delta="+2"
+        direction="up"
+        period="vs yesterday"
+        trend={[12, 14, 13, 17, 16, 19, 22, 21, 24, 27]}
+      />
     </div>
   ),
   menu: () => (
@@ -656,6 +671,7 @@ export const DEMOS: Record<string, () => ReactNode> = {
     />
   ),
   "data-table": () => <DataTable columns={COLUMNS} rows={ROWS} getRowId={(r) => r.id} />,
+  chart: () => <ChartCard spec={HOURS_BY_TRADE} height={160} />,
   sheet: () => (
     <Sheet>
       <SheetTrigger asChild>

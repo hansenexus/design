@@ -3,7 +3,7 @@ import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:f
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { build } from "../scripts/build";
-import { checkAll, ratio, TERMINAL } from "../scripts/contrast";
+import { CHART_SERIES, checkAll, ratio, TERMINAL } from "../scripts/contrast";
 import { allThemes, MODES, resolveTokens, TOKENS_DIR } from "../scripts/resolve";
 import { generateSwift, SWIFT_OUT } from "../scripts/swift";
 
@@ -89,6 +89,26 @@ describe("contrast", () => {
     expect(new Set(terminal.map((r) => r.kind))).toEqual(new Set(["text"]));
     expect(terminal).toHaveLength(16 * 2 * allThemes().length * 2);
     expect(terminal.every((r) => r.ratio >= 4.5)).toBe(true);
+  });
+
+  test("chart.series-1…6 are UI pairs on page, card and raised, every theme, both modes (design#179)", async () => {
+    const { results } = await checkAll();
+    const series = results.filter((r) => r.fg.startsWith("chart."));
+    expect(new Set(series.map((r) => r.fg))).toEqual(new Set(CHART_SERIES));
+    expect(new Set(series.map((r) => r.bg))).toEqual(
+      new Set(["surface.page", "surface.card", "surface.raised"])
+    );
+    expect(series).toHaveLength(6 * 3 * allThemes().length * 2);
+    expect(series.every((r) => r.kind === "ui" && r.ratio >= 3)).toBe(true);
+  });
+
+  test("chart series are six distinct colours, every theme, both modes", async () => {
+    for (const theme of allThemes()) {
+      for (const mode of MODES) {
+        const t = new Map((await resolveTokens(theme, mode)).map((x) => [x.path, x.value]));
+        expect(new Set(CHART_SERIES.map((k) => t.get(k))).size, `${theme}/${mode}`).toBe(6);
+      }
+    }
   });
 
   test("a terminal colour under 4.5:1 on surface.page fails the CLI", () => {
@@ -183,6 +203,24 @@ describe("build", () => {
     // Every other theme keeps the shared set.
     expect(mod.tokens.hansenexus.light.radius.md).toBe("10px");
     expect(mod.tokens.portal.light.surface.page).toBe("#f4f0e6");
+  });
+
+  test("chart series tokens reach CSS, Tailwind and TS (design#179)", async () => {
+    await built;
+    const css = readFileSync(join(dist, "tokens.css"), "utf8");
+    expect(css).toContain("--hn-chart-series-1:");
+    expect(css).toContain("--hn-chart-series-6:");
+    const tw = readFileSync(join(dist, "tailwind.css"), "utf8");
+    expect(tw).toContain("--color-hn-chart-series-1: var(--hn-chart-series-1);");
+    const mod = await import(join(dist, "index.js"));
+    expect(mod.tokens.hansenexus.dark.chart["series-2"]).toBe(
+      mod.tokens.hansenexus.dark.terminal.blue
+    );
+    // kommandant aliases terminal blue to status.busy; its series stay the palette hue.
+    expect(mod.tokens.kommandant.dark.chart["series-2"]).not.toBe(
+      mod.tokens.kommandant.dark.status.busy
+    );
+    expect(mod.vars.chart["series-3"]).toBe("var(--hn-chart-series-3)");
   });
 
   test("terminal tokens reach CSS, Tailwind and TS in both modes", async () => {

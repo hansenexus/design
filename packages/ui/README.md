@@ -6,7 +6,7 @@ colour follows `data-mode`, `data-theme` and `data-density` on an ancestor.
 
 Button, Badge, StatusBadge, Switch, Dialog, Menu, Tabs, Table, Meter, Sparkline, Kbd, Toast,
 Tooltip, Input, Select, RailItem. Small charts: StatusDot, UsageBar, RingGauge and Sparkline (line or
-area). For forms: Field, Label, FieldHelp, FieldError, Textarea,
+area), and KpiCard (one number with its trend). For forms: Field, Label, FieldHelp, FieldError, Textarea,
 Checkbox, RadioGroup and FormAlert. For layout: Card (CardHeader, CardTitle, CardDescription,
 CardBody, CardFooter, CardSkeleton), Alert and Banner, Avatar, Separator, Accordion. For dates and
 data: Popover, Calendar, DatePicker, Combobox and DataTable. Overlays and navigation: Sheet,
@@ -82,6 +82,25 @@ import { RingGauge, Sparkline, StatusDot, UsageBar } from "@hansenexus/ui";
 - **Sparkline** `area` adds a fading fill under the line; `min`/`max` fix the scale (values outside
   are capped); `stretch` fills the container's width with a crisp stroke.
 - The UsageBar fill and the RingGauge arc animate over `duration.base`, not under reduced motion.
+
+### KPI card
+
+```tsx
+import { KpiCard, KpiCardSkeleton } from "@hansenexus/ui";
+
+<KpiCard label="Median merge time" value="38 min" delta="−12%" direction="down" good="down"
+  period="vs last week" trend={mergeTimes} />
+<KpiCardSkeleton label="Loading merge time" />   {/* sparkline={false} without a trend slot */}
+```
+
+- The shadcn dashboard-01 section card (decided in the kpi-card vote, design#187): label top left,
+  the delta as a badge top right, the value large, the period and a small Sparkline on a footer rule.
+- **Tone** comes from `direction` against `good` (default `up`): ok, crit, or muted when flat; the
+  arrow carries the direction, so colour is never alone. `kpiTone()` gives the tone for your own
+  markup.
+- **Spoken delta.** The badge reads "up 12% vs last week" (`locale="de"`: "gestiegen um …");
+  `kpiDeltaLabel()` builds it. Without `delta` there is no badge, without `period` and `trend` no
+  footer.
 
 ### Loading
 
@@ -279,6 +298,50 @@ import { Combobox, DataTable, DatePicker, Field, Input } from "@hansenexus/ui";
   `filterOptions`, `nextOptionIndex`) are exported for server-side use and tests.
 - **Copy.** `STATE_COPY[locale].date`, `.combobox` and `.table`; `{query}` and `{row}` are filled
   by `fillCopy`.
+
+### Charts
+
+The chart base (design#179, the vote's `categorical`) on Recharts v3. The core entry carries the
+Recharts-free half, so an app without charts never loads it; `@hansenexus/ui/chart` adds
+`ChartTooltip` and `ChartLegend` (Recharts' own `Tooltip` and `Legend`, shadcn's names) and needs
+`recharts` (an optional peer, `^3`).
+
+```tsx
+import { type ChartConfig, ChartContainer, ChartLegendContent, ChartTooltipContent, chartColor } from "@hansenexus/ui";
+import { ChartTooltip } from "@hansenexus/ui/chart";
+import { Bar, BarChart, ResponsiveContainer, XAxis } from "recharts";
+
+const config = {
+  carpentry: { label: "Carpentry" },          // chart.series-1
+  roofing: { label: "Roofing" },              // chart.series-2
+  failed: { label: "Failed", tone: "crit" },  // status.crit, takes no series hue
+} satisfies ChartConfig;
+
+<ChartContainer config={config}>
+  <ResponsiveContainer height={200}>
+    <BarChart data={weeks}>
+      <XAxis dataKey="week" />
+      <ChartTooltip content={<ChartTooltipContent unit="h" />} />
+      {Object.keys(config).map((k) => <Bar key={k} dataKey={k} stackId="t" fill={chartColor(k)} />)}
+    </BarChart>
+  </ResponsiveContainer>
+  <ChartLegendContent />
+</ChartContainer>
+```
+
+- **ChartConfig** maps a series key (a data field, or a slice name for a pie) to its label and,
+  only when the series means a state, a `tone` (`ok`, `busy`, `warn`, `crit`). Untoned series take
+  `chart.series-1` … `6` in config order (lime, sky, amber, plum, teal, coral; a seventh wraps);
+  a toned one takes its `status.*` colour. Never a raw colour.
+- **ChartContainer** sets `--chart-<key>` per series and hands the config to the tooltip and
+  legend inside. Marks say `chartColor(key)` (`var(--chart-<key>)`); a key with characters outside
+  `[\w-]` is slugged the same way on both sides.
+- **ChartTooltipContent** is the floating card on `surface.raised`: the x label, then a swatch,
+  label and value per series. `unit` is appended, `formatValue` replaces the formatting,
+  `seriesBy="name"` reads a pie's slice name (and drops the heading), `hideLabel` drops it too.
+- **ChartLegendContent** is one centred, wrapping row of square swatches in config order; `hide`
+  leaves series out. Swatches are `aria-hidden`: the label carries the name, so colour is never the
+  only cue. Keep amber and coral series away from warn and crit status UI, or tone the series.
 
 ### Overlays and navigation
 

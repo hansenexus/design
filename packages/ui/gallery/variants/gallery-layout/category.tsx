@@ -50,6 +50,7 @@ export const GROUPS: SceneGroup[] = [
       { id: "forms", label: "Forms", items: 11 },
       { id: "controls", label: "Controls", items: 9 },
       { id: "data", label: "Data", items: 7 },
+      { id: "charts", label: "Charts", items: 1 },
       { id: "loading", label: "Loading", items: 6 },
       { id: "states", label: "States", items: 8 },
       { id: "navigation", label: "Navigation", items: 5 },

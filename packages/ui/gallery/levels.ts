@@ -64,6 +64,7 @@ export const ITEM_SCENES: Record<string, Scene> = {
   "date-picker": "data",
   combobox: "data",
   "data-table": "data",
+  chart: "charts",
   sheet: "overlays",
   breadcrumb: "navigation",
   pagination: "navigation",
@@ -74,6 +75,7 @@ export const ITEM_SCENES: Record<string, Scene> = {
   slider: "controls",
   toggle: "controls",
   "toggle-group": "controls",
+  "kpi-card": "data",
 };
 
 export type LevelItem = { name: string; title: string; level: Level | undefined };

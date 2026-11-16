@@ -1,5 +1,5 @@
-// The data scene: DatePicker and Calendar, Combobox in each list state and DataTable in each
-// state of the contract, German and English side by side.
+// The data scene: KpiCard (design#187), DatePicker and Calendar, Combobox in each list state and
+// DataTable in each state of the contract, German and English side by side.
 // Screenshot baselines are taken from this page (screenshots/kit.spec.ts). Every date is fixed
 // (TODAY), so the baselines never depend on the day they are taken.
 // Names are an invented estate: no real hostnames, IPs or people in a public repo.
@@ -18,6 +18,9 @@ import {
   EmptyState,
   Field,
   Input,
+  KpiCard,
+  type KpiCardProps,
+  KpiCardSkeleton,
   StatusBadge,
   type StatusBadgeProps,
 } from "../src";
@@ -170,6 +173,86 @@ function ComboStage({ title, children }: { title: string; children: ReactNode })
   );
 }
 
+type Kpi = Omit<KpiCardProps, "className">;
+
+/** kommandant: the estate cockpit's top row, rising, flat, falling-and-good, rising-and-bad. */
+const ESTATE: Kpi[] = [
+  {
+    label: "Active lanes",
+    value: "7",
+    delta: "+2",
+    direction: "up",
+    period: "vs yesterday",
+    trend: [12, 14, 13, 17, 16, 19, 22, 21, 24, 27],
+  },
+  {
+    label: "CI pass rate",
+    value: "96.4%",
+    delta: "+0.1%",
+    direction: "flat",
+    period: "vs last week",
+    trend: [96, 95.8, 96.2, 96.1, 95.9, 96.3, 96.2, 96.4, 96.3, 96.4],
+  },
+  {
+    label: "Median merge time",
+    value: "38 min",
+    delta: "−12%",
+    direction: "down",
+    good: "down",
+    period: "vs last week",
+    trend: [52, 49, 50, 46, 44, 45, 41, 39, 40, 38],
+  },
+  {
+    label: "Open incidents",
+    value: "3",
+    delta: "+2",
+    direction: "up",
+    good: "down",
+    period: "vs last 24 h",
+    trend: [1, 1, 2, 1, 1, 2, 1, 2, 3, 3],
+  },
+];
+
+/** fachwerk: the craft business's month at a glance; the middle card has no trend. */
+const MONTH: Kpi[] = [
+  {
+    label: "Umsatz Oktober",
+    value: "48.230 €",
+    delta: "+8,1 %",
+    direction: "up",
+    period: "ggü. September",
+    trend: [31, 34, 33, 38, 36, 41, 40, 44, 46, 48],
+    locale: "de",
+  },
+  {
+    label: "Offene Angebote",
+    value: "14",
+    delta: "−3",
+    direction: "down",
+    period: "seit Montag",
+    locale: "de",
+  },
+  {
+    label: "Überfällige Rechnungen",
+    value: "6.940 €",
+    delta: "+1.210 €",
+    direction: "up",
+    good: "down",
+    period: "ggü. Vormonat",
+    trend: [3.1, 3.4, 3.2, 4.0, 4.4, 4.9, 5.2, 5.6, 6.1, 6.9],
+    locale: "de",
+  },
+];
+
+const LONG: Kpi = {
+  label: "Mean time between failures across the whole crane fleet",
+  value: "1,284.6 h",
+  delta: "+212.4 h",
+  direction: "up",
+  period: "vs the previous quarter",
+  trend: [12, 14, 13, 17, 16, 19, 22, 21, 24, 27],
+};
+
 /** Open comboboxes stay below their input in the full-page screenshots. */
 const OPEN = { open: true, avoidCollisions: false } as const;
 
@@ -185,6 +268,30 @@ export function Data() {
         </h1>
       </header>
       <div className="grid gap-x-8 gap-y-10 lg:grid-cols-2">
+        <Spec title="KpiCard: dashboard row, up, flat, down-and-good, up-and-bad" wide>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(200px,100%),1fr))] gap-3">
+            {ESTATE.map((kpi) => (
+              <KpiCard key={String(kpi.label)} {...kpi} />
+            ))}
+          </div>
+        </Spec>
+        <Spec title="KpiCard: month at a glance (de), one without a trend">
+          <div className="flex flex-col gap-3">
+            {MONTH.map((kpi) => (
+              <KpiCard key={String(kpi.label)} {...kpi} />
+            ))}
+          </div>
+        </Spec>
+        <Spec title="KpiCard: long label and value, narrow (180 px), loading">
+          <div className="flex flex-col gap-3">
+            <KpiCard {...LONG} />
+            <div className="w-[180px]">
+              <KpiCard {...(ESTATE[2] ?? LONG)} />
+            </div>
+            <KpiCardSkeleton label="Loading active lanes" />
+            <KpiCardSkeleton sparkline={false} locale="de" />
+          </div>
+        </Spec>
         <Spec title="Calendar: single (de), weekends and past days off">
           <Card>
             <Calendar

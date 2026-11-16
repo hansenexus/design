@@ -120,6 +120,7 @@ import {
   useDelayedVisibility,
 } from "../src";
 import { AlertDialogScene } from "./alert-dialog-scene";
+import { Charts } from "./charts";
 import { Workbench } from "./chrome";
 import { Controls } from "./controls";
 import { Data } from "./data";
@@ -1176,6 +1177,8 @@ function Scenes({ scene }: { scene: Scene }) {
       return <Layout />;
     case "data":
       return <Data />;
+    case "charts":
+      return <Charts />;
     case "overlays":
       return <Overlays />;
     case "navigation":
