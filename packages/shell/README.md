@@ -40,7 +40,9 @@ Below 1024 px the context pane is not drawn. A narrow app shows that detail as a
 its own. `contextOpen`/`defaultContextOpen` (default `true`)/`onContextOpenChange` control it, and
 `ShellContextToggle` toggles it.
 
-Give the shell the height it should fill, e.g. `className="h-dvh"` or a full-height parent.
+Give the shell a parent with the height it should fill, e.g. `<div className="h-dvh">`. Its root is
+`h-full`, and a height in `className` does not override that: Tailwind v4 emits `h-full` after
+`h-dvh`, so the shell would take its content's height and main would never scroll.
 
 Inset, gap, column widths, corner and seam are the `shell.*` recipe tokens (design#152,
 `@hansenexus/tokens` README, Recipes). The defaults float three cards apart; a flush pack such as
@@ -69,7 +71,6 @@ export function App() {
   const caps = { infra: fleetConfigured, desktop: inTauri };
   return (
     <Shell
-      className="h-dvh"
       nav={
         <ShellNav
           items={NAV}
