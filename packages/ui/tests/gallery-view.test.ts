@@ -7,6 +7,7 @@ import {
   compareThemes,
   DEFAULT_VIEW,
   frameQuery,
+  groupOf,
   installCommand,
   LOOP,
   LOOP_HOLD_MS,
@@ -17,6 +18,9 @@ import {
   motionVariables,
   readCompare,
   readView,
+  SCENE_GROUPS,
+  SCENE_LABELS,
+  SCENES,
   VIEW_OPTIONS,
   viewAttributes,
   writeView,
@@ -244,5 +248,20 @@ describe("pack switcher and compare (design#149)", () => {
     expect(q.get("matrix")).toBeNull();
     expect(q.get("scene")).toBe("screens");
     expect(q.get("screen")).toBe("example/machines");
+  });
+});
+
+describe("workbench tree (design#162)", () => {
+  test("every scene sits in exactly one group", () => {
+    const grouped = SCENE_GROUPS.flatMap((g) => g.scenes);
+    expect([...grouped].sort()).toEqual([...SCENES].sort());
+    expect(new Set(grouped).size).toBe(grouped.length);
+    for (const scene of SCENES) expect(groupOf(scene)?.scenes).toContain(scene);
+  });
+
+  test("every scene has a label, and group ids are unique", () => {
+    for (const scene of SCENES) expect(SCENE_LABELS[scene]).toBeTruthy();
+    const ids = SCENE_GROUPS.map((g) => g.id);
+    expect(new Set(ids).size).toBe(ids.length);
   });
 });

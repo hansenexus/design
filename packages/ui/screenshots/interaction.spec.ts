@@ -1,9 +1,29 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 import { BUILD_THEMES } from "../gallery/themes";
 import { SCENES } from "../gallery/view";
 
 // Keyboard and ARIA behaviour of the overlay and navigation set, driven through the live
 // triggers of the gallery's overlays and navigation scenes. No pixel baselines here.
+
+/**
+ * Show a workbench pane (design#162) before using it. Below 768 px the panes are tabs. From 768 px
+ * the tree and canvas always show and the inspector starts closed: an overlay below 1536 px, a
+ * column from there.
+ */
+async function openPane(page: Page, name: "Scenes" | "Canvas" | "Inspect") {
+  const width = page.viewportSize()?.width ?? 1280;
+  if (width < 768) {
+    await page
+      .getByRole("navigation", { name: "Panes" })
+      .getByRole("button", { name, exact: true })
+      .click();
+    return;
+  }
+  const toggle = page.locator('button[aria-label="Inspector"]');
+  await toggle.waitFor();
+  const open = (await toggle.getAttribute("aria-pressed")) === "true";
+  if (name === "Inspect" ? !open : name === "Canvas" && width < 1536 && open) await toggle.click();
+}
 
 test("command palette: shortcut, filter, arrow keys, Enter selects and closes", async ({
   page,
@@ -82,24 +102,93 @@ test("pagination: aria-current moves only after the page loaded", async ({ page 
   await expect(nav.getByRole("button", { name: "Next" })).toBeDisabled();
 });
 
-test("scene nav: every scene linked, the current one marked, links resolve, bare hides it", async ({
+test("scene tree: every scene linked, the current one marked, links resolve, bare hides it", async ({
   page,
 }) => {
   await page.goto("/gallery/?scene=states");
+  await openPane(page, "Scenes");
   const nav = page.getByRole("navigation", { name: "Gallery scenes" });
-  await expect(nav.getByRole("link")).toHaveCount(SCENES.length);
-  await expect(nav.locator('[aria-current="page"]')).toHaveText("states");
-  await expect(nav.getByRole("link", { name: "kit", exact: true })).toHaveAttribute("href", "./");
-  await nav.getByRole("link", { name: "forms", exact: true }).click();
+  const scene = (id: string) => nav.locator(`[data-scene="${id}"]`);
+  await expect(nav.locator("[data-scene]")).toHaveCount(SCENES.length);
+  await expect(nav.locator('[data-scene][aria-current="page"]')).toHaveAttribute(
+    "data-scene",
+    "states"
+  );
+  await expect(scene("kit")).toHaveAttribute("href", "./");
+  await scene("forms").click();
   await expect(page).toHaveURL(/\/gallery\/\?scene=forms$/);
-  await expect(nav.locator('[aria-current="page"]')).toHaveText("forms");
-  await nav.getByRole("link", { name: "kit", exact: true }).click();
+  // A link loads the page anew; on a phone that lands on the canvas tab.
+  await openPane(page, "Scenes");
+  await expect(nav.locator('[data-scene][aria-current="page"]')).toHaveAttribute(
+    "data-scene",
+    "forms"
+  );
+  // The open scene lists its registry items; an item link opens the item page.
+  await nav.locator('[data-item="checkbox"]').click();
+  await expect(page).toHaveURL(/\/gallery\/\?item=checkbox$/);
+  await openPane(page, "Scenes");
+  await expect(nav.locator('[data-item="checkbox"]')).toHaveAttribute("aria-current", "page");
+  await scene("kit").click();
   await expect(page).toHaveURL(/\/gallery\/$/);
-  await expect(nav.locator('[aria-current="page"]')).toHaveText("kit");
+  await openPane(page, "Scenes");
+  await expect(nav.locator('[data-scene][aria-current="page"]')).toHaveAttribute(
+    "data-scene",
+    "kit"
+  );
 
   await page.goto("/gallery/?scene=states&bare=1");
   await expect(page.locator('[role="progressbar"]')).toHaveCount(3);
   await expect(nav).toHaveCount(0);
+});
+
+test("scene tree: the filter keeps matching scenes and items, and says when nothing matches", async ({
+  page,
+}) => {
+  await page.goto("/gallery/?scene=forms");
+  await openPane(page, "Scenes");
+  const nav = page.getByRole("navigation", { name: "Gallery scenes" });
+  const filter = page.getByLabel("Filter scenes and items");
+  await filter.fill("badge");
+  await expect(nav.locator("[data-scene]")).toHaveCount(1);
+  await expect(nav.locator('[data-item="status-badge"]')).toBeVisible();
+  await filter.fill("zzz");
+  await expect(nav.locator("[data-scene]")).toHaveCount(0);
+  await expect(nav).toContainText("Nothing matches");
+});
+
+test("workbench: the inspector toggles, and the panes stay usable over a modal dialog", async ({
+  page,
+}) => {
+  // From 1536 px the inspector is a column and starts open; below it overlays the canvas.
+  await page.setViewportSize({ width: 1600, height: 900 });
+  // The dialog scene holds a modal open, which hides the rest of the page from the ARIA tree,
+  // so the chrome is found by its attributes here.
+  await page.goto("/gallery/?scene=dialog");
+  const inspector = page.locator('aside[aria-label="Inspector"]');
+  const toggle = page.locator('button[aria-label="Inspector"]');
+  await expect(inspector).toBeVisible();
+  await toggle.click();
+  await expect(inspector).toBeHidden();
+  await toggle.click();
+  await expect(inspector).toBeVisible();
+  // The tree still takes the click over the modal.
+  await page.locator('[data-workbench] [data-scene="menu"]').click();
+  await expect(page).toHaveURL(/\?scene=menu$/);
+});
+
+test("workbench: below 768 px the panes are tabs", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/gallery/?scene=kit");
+  const panes = page.getByRole("navigation", { name: "Panes" });
+  const tree = page.getByRole("complementary", { name: "Scenes and items" });
+  const inspector = page.getByRole("complementary", { name: "Inspector" });
+  await expect(tree).toBeHidden();
+  await expect(inspector).toBeHidden();
+  await panes.getByRole("button", { name: "Scenes" }).click();
+  await expect(tree).toBeVisible();
+  await panes.getByRole("button", { name: "Inspect" }).click();
+  await expect(tree).toBeHidden();
+  await expect(inspector.getByRole("toolbar", { name: "Gallery view" })).toBeVisible();
 });
 
 test("preview card: replay remounts, the Spinner waits its 200 ms again", async ({ page }) => {
@@ -113,6 +202,7 @@ test("preview card: replay remounts, the Spinner waits its 200 ms again", async 
 
 test("view toolbar: theme, density and mode land on <html> and in the query", async ({ page }) => {
   await page.goto("/gallery/?scene=loading");
+  await openPane(page, "Inspect");
   const toolbar = page.getByRole("toolbar", { name: "Gallery view" });
   await toolbar.getByLabel("Direction").selectOption("portal");
   await toolbar.getByLabel("Density").selectOption("touch");
@@ -122,17 +212,21 @@ test("view toolbar: theme, density and mode land on <html> and in the query", as
   await expect(html).toHaveAttribute("data-density", "touch");
   await expect(html).toHaveAttribute("data-mode", "light");
   await expect(page).toHaveURL(/theme=portal&density=touch&mode=light/);
-  await expect(page.getByRole("link", { name: "states" })).toHaveAttribute("href", /theme=portal/);
+  await expect(page.locator('[data-scene="states"]')).toHaveAttribute("href", /theme=portal/);
 });
 
 test("view toolbar: a fixed viewport renders the scene in an iframe of that width", async ({
   page,
-}) => {
+}, info) => {
+  test.skip(
+    info.project.name === "390",
+    "the viewport switch sits on the canvas toolbar, from 768 px"
+  );
   await page.goto("/gallery/?scene=loading");
   await page
-    .getByRole("toolbar", { name: "Gallery view" })
-    .getByLabel("Viewport")
-    .selectOption("390");
+    .getByRole("radiogroup", { name: "Viewport" })
+    .getByRole("radio", { name: "390", exact: true })
+    .click();
   const frame = page.locator("iframe");
   await expect(frame).toHaveAttribute("width", "390");
   const inner = page.frameLocator("iframe");
@@ -144,6 +238,7 @@ test("view toolbar: a fixed viewport renders the scene in an iframe of that widt
 
 test("compare: every card renders once per theme, side by side", async ({ page }) => {
   await page.goto("/gallery/?scene=loading");
+  await openPane(page, "Inspect");
   const toolbar = page.getByRole("toolbar", { name: "Gallery view" });
   await toolbar.locator("summary", { hasText: "Compare" }).click();
   await toolbar
@@ -158,9 +253,12 @@ test("compare: every card renders once per theme, side by side", async ({ page }
   await expect(panels).toHaveCount(BUILD_THEMES.length);
   for (const theme of BUILD_THEMES)
     await expect(card.locator(`[data-compare="${theme}"]`)).toHaveAttribute("data-theme", theme);
+  await openPane(page, "Canvas");
   // Side by side where they fit (260 px each); at phone width they stack.
   const [a, b] = [await panels.nth(0).boundingBox(), await panels.nth(1).boundingBox()];
-  const wide = (page.viewportSize()?.width ?? 0) >= 1280;
+  // The grid's own width decides, not the viewport's: two panels and the 12 px gap.
+  const grid = await panels.first().locator("..").boundingBox();
+  const wide = (grid?.width ?? 0) >= 2 * 260 + 12;
   expect(a && b && (wide ? Math.abs(a.y - b.y) < 1 && b.x > a.x : b.y > a.y)).toBe(true);
 });
 
@@ -168,6 +266,7 @@ test("pack switcher: a pack picks its first direction, its live copy is a direct
   page,
 }) => {
   await page.goto("/gallery/?scene=loading");
+  await openPane(page, "Inspect");
   const toolbar = page.getByRole("toolbar", { name: "Gallery view" });
   await toolbar.getByLabel("Pack").selectOption("fachwerk");
   const html = page.locator("html");
@@ -190,6 +289,7 @@ test("compare: a list of themes, the candidate next to its live copy (design#149
   page,
 }) => {
   await page.goto("/gallery/?scene=loading&theme=fachwerk");
+  await openPane(page, "Inspect");
   const toolbar = page.getByRole("toolbar", { name: "Gallery view" });
   await toolbar.locator("summary", { hasText: "Compare" }).click();
   const options = toolbar.getByRole("group", { name: "Compare with" });
@@ -209,8 +309,10 @@ test("matrix: an app screen per compared theme, light and dark at 1280 and 390 (
   await page.goto(
     "/gallery/?scene=screens&screen=example/machines&theme=fachwerk&compare=lexilink,fachwerk@live"
   );
+  await openPane(page, "Inspect");
   await page.getByRole("toolbar", { name: "Gallery view" }).getByLabel("Matrix").selectOption("on");
   await expect(page).toHaveURL(/matrix=on/);
+  await openPane(page, "Canvas");
   const matrix = page.locator("[data-matrix]");
   await expect(matrix).toHaveAttribute("data-matrix", "fachwerk,lexilink,fachwerk@live");
   await expect(matrix.locator("iframe")).toHaveCount(12);
@@ -244,6 +346,7 @@ test("speed and motion scale the motion variables at the root and on compare pan
       .evaluate((el, n) => getComputedStyle(el).getPropertyValue(n), name);
   expect(await read("html", "--hn-delay-pending")).toBe("800ms");
   expect(await read('[data-compare="portal"]', "--hn-spin-duration")).toBe("3200ms");
+  await openPane(page, "Inspect");
   await page
     .getByRole("toolbar", { name: "Gallery view" })
     .getByLabel("Motion")
@@ -266,6 +369,7 @@ test("the reduced-motion switch applies motion-reduce: styles whatever the OS sa
   const ring = page.locator('[data-preview="spinner"] svg[role="status"]').first();
   const animation = () => ring.evaluate((el) => getComputedStyle(el).animationName);
   expect(await animation()).toBe("hn-spin");
+  await openPane(page, "Inspect");
   const motion = page.getByRole("toolbar", { name: "Gallery view" }).getByLabel("Motion");
   await motion.selectOption("reduced");
   await expect(page.locator("html")).toHaveAttribute("data-reduced-motion", "");
@@ -323,6 +427,8 @@ test("scripted flow: plays in order, scrubs and replays", async ({ page }) => {
 });
 
 test("shell: the layout follows the shell's width, not the viewport's", async ({ page }, info) => {
+  // The wide card needs 1024 px of its own; at 1280 the scene tree leaves it less.
+  if (info.project.name === "1280") await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/gallery/?scene=shell");
   const [wide, phone] = [page.locator("[data-shell]").nth(0), page.locator("[data-shell]").nth(1)];
   const box = async (shell: typeof wide, panel: string) =>

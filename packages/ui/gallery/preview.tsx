@@ -202,8 +202,9 @@ export function themeLabel(theme: string, liveSource = "main"): string {
 }
 
 const SELECT =
-  "h-8 rounded-hn-sm border border-hn-line-strong bg-hn-surface-card px-2 font-hn-mono text-hn-ink-primary";
+  "h-8 w-[9.5rem] min-w-0 rounded-hn-sm border border-hn-line-strong bg-hn-surface-card px-2 font-hn-mono text-[12.5px] text-hn-ink-primary";
 
+/** One inspector row: the label on the left, its select on the right. */
 function Picker<T extends string>({
   label,
   value,
@@ -218,7 +219,7 @@ function Picker<T extends string>({
   onChange: (value: T) => void;
 }) {
   return (
-    <label className="flex items-center gap-2 text-hn-ink-muted">
+    <label className="flex min-h-9 items-center justify-between gap-3 text-hn-ink-muted">
       {label}
       <select value={value} onChange={(e) => onChange(e.target.value as T)} className={SELECT}>
         {options.map((v) => (
@@ -233,7 +234,8 @@ function Picker<T extends string>({
 
 /**
  * The themes to compare with (design#149), by pack: a checkbox each, the live copies included.
- * Ticking one makes compare a list; "every theme" is compare=on.
+ * Ticking one makes compare a list; "every theme" is compare=on. In the inspector the list opens
+ * in place under its row, so it never covers the canvas.
  */
 function CompareWith({
   view,
@@ -256,13 +258,19 @@ function CompareWith({
         ? picked.map((t) => themeLabel(t, liveSource)).join(", ")
         : "off";
   return (
-    <details className="relative text-hn-ink-muted">
-      <summary className="flex h-8 cursor-pointer items-center gap-2">
-        Compare <span className="font-hn-mono text-hn-ink-primary">{summary}</span>
+    <details className="group text-hn-ink-muted">
+      <summary className="flex min-h-9 cursor-pointer list-none items-center justify-between gap-3">
+        Compare{" "}
+        <span className="flex w-[9.5rem] min-w-0 items-center justify-between gap-1 rounded-hn-sm border border-hn-line-strong bg-hn-surface-card px-2 py-1.5 font-hn-mono text-[12.5px] text-hn-ink-primary">
+          <span className="truncate">{summary}</span>
+          <span aria-hidden="true" className="text-hn-ink-muted group-open:rotate-180">
+            ▾
+          </span>
+        </span>
       </summary>
       <fieldset
         aria-label="Compare with"
-        className="absolute left-0 z-[70] mt-1 flex min-w-64 flex-col gap-2 rounded-hn-md border border-hn-line-strong bg-hn-surface-card p-3 shadow-hn-overlay"
+        className="m-0 mt-1 mb-2 flex min-w-0 flex-col gap-2 rounded-hn-md border border-hn-line-subtle bg-hn-surface-card p-3"
       >
         <label className="flex items-center gap-2 text-hn-ink-primary">
           <input
@@ -294,10 +302,20 @@ function CompareWith({
   );
 }
 
+/** A small uppercase heading over a group of inspector rows. */
+export function InspectorHeading({ children }: { children: ReactNode }) {
+  return (
+    <h2 className="m-0 pb-1 font-hn-mono text-[10.5px] font-normal tracking-[0.08em] text-hn-ink-muted uppercase">
+      {children}
+    </h2>
+  );
+}
+
 /**
- * The view toolbar: pack and direction (the data-theme), density, mode, viewport, compare (a
- * checklist of themes), the matrix, speed and motion. A change rewrites the query and re-renders
- * every card.
+ * The view settings in the workbench's inspector (design#162): the theme (pack and direction,
+ * the data-theme), density and mode, then the review tools: compare (a checklist of themes), the
+ * matrix, speed and motion. The viewport sits on the canvas toolbar, next to the canvas it sizes.
+ * A change rewrites the query and re-renders every card.
  */
 export function ViewToolbar({
   view,
@@ -319,59 +337,59 @@ export function ViewToolbar({
     <div
       role="toolbar"
       aria-label="Gallery view"
-      className="relative z-[60] flex flex-wrap items-center gap-x-5 gap-y-2 border-b border-hn-line-subtle bg-hn-surface-band px-4 py-2.5 text-[13px] sm:px-10"
+      aria-orientation="vertical"
+      className="flex flex-col gap-5 text-[13px]"
     >
-      <Picker
-        label="Pack"
-        value={pack}
-        options={PACK_GROUPS.map((g) => g.pack)}
-        onChange={(p) => {
-          const first = PACK_GROUPS.find((g) => g.pack === p)?.directions[0];
-          if (first) onChange({ ...view, theme: first });
-        }}
-      />
-      <Picker
-        label="Direction"
-        value={view.theme}
-        options={group?.directions ?? [view.theme]}
-        name={(t) => themeLabel(t, liveSource)}
-        onChange={set("theme")}
-      />
-      <Picker
-        label="Density"
-        value={view.density}
-        options={VIEW_OPTIONS.density}
-        onChange={set("density")}
-      />
-      <Picker label="Mode" value={view.mode} options={VIEW_OPTIONS.mode} onChange={set("mode")} />
-      <Picker
-        label="Viewport"
-        value={view.viewport}
-        options={VIEW_OPTIONS.viewport}
-        name={(v) => (v === "auto" ? v : `${v} px`)}
-        onChange={set("viewport")}
-      />
-      <CompareWith view={view} liveSource={liveSource} onChange={onChange} />
-      <Picker
-        label="Matrix"
-        value={view.matrix}
-        options={VIEW_OPTIONS.matrix}
-        name={(v) => (v === "on" ? "light/dark × 390/1280" : v)}
-        onChange={set("matrix")}
-      />
-      <Picker
-        label="Speed"
-        value={view.speed}
-        options={VIEW_OPTIONS.speed}
-        name={(v) => `${v}x`}
-        onChange={set("speed")}
-      />
-      <Picker
-        label="Motion"
-        value={view.motion}
-        options={VIEW_OPTIONS.motion}
-        onChange={set("motion")}
-      />
+      <section className="flex flex-col">
+        <InspectorHeading>Theme</InspectorHeading>
+        <Picker
+          label="Pack"
+          value={pack}
+          options={PACK_GROUPS.map((g) => g.pack)}
+          onChange={(p) => {
+            const first = PACK_GROUPS.find((g) => g.pack === p)?.directions[0];
+            if (first) onChange({ ...view, theme: first });
+          }}
+        />
+        <Picker
+          label="Direction"
+          value={view.theme}
+          options={group?.directions ?? [view.theme]}
+          name={(t) => themeLabel(t, liveSource)}
+          onChange={set("theme")}
+        />
+        <Picker
+          label="Density"
+          value={view.density}
+          options={VIEW_OPTIONS.density}
+          onChange={set("density")}
+        />
+        <Picker label="Mode" value={view.mode} options={VIEW_OPTIONS.mode} onChange={set("mode")} />
+      </section>
+      <section className="flex flex-col">
+        <InspectorHeading>Review</InspectorHeading>
+        <CompareWith view={view} liveSource={liveSource} onChange={onChange} />
+        <Picker
+          label="Matrix"
+          value={view.matrix}
+          options={VIEW_OPTIONS.matrix}
+          name={(v) => (v === "on" ? "light/dark × 390/1280" : v)}
+          onChange={set("matrix")}
+        />
+        <Picker
+          label="Speed"
+          value={view.speed}
+          options={VIEW_OPTIONS.speed}
+          name={(v) => `${v}x`}
+          onChange={set("speed")}
+        />
+        <Picker
+          label="Motion"
+          value={view.motion}
+          options={VIEW_OPTIONS.motion}
+          onChange={set("motion")}
+        />
+      </section>
     </div>
   );
 }

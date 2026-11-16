@@ -5,7 +5,6 @@
 // Names are an invented estate: no real hostnames, IPs or people in a public repo.
 
 import { LIVE_PACKS, LIVE_SOURCE } from "virtual:live-packs";
-import { CATEGORIES } from "virtual:variants";
 import { NotFoundIllustration } from "@hansenexus/illustrations/404";
 import { EmptyIllustration } from "@hansenexus/illustrations/empty";
 import { ErrorIllustration } from "@hansenexus/illustrations/error";
@@ -30,7 +29,7 @@ import { TestIllustration } from "@hansenexus/illustrations/school/test";
 import { TimetableIllustration } from "@hansenexus/illustrations/school/timetable";
 import { VocabularyIllustration } from "@hansenexus/illustrations/school/vocabulary";
 import { SuccessIllustration } from "@hansenexus/illustrations/success";
-import { type ComponentType, Fragment, type ReactNode, StrictMode, useState } from "react";
+import { type ComponentType, type ReactNode, StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   Accordion,
@@ -120,29 +119,27 @@ import {
   TooltipTrigger,
   useDelayedVisibility,
 } from "../src";
+import { Workbench } from "./chrome";
 import { Controls } from "./controls";
 import { Data } from "./data";
 import { Bell, Check, Key, MapIcon, More, Restart, Server } from "./icons";
 import { ItemPage, isItem } from "./item";
-import { itemsByLevel, type Level } from "./levels";
 import { Matrix } from "./matrix";
 import { Motion } from "./motion-scene";
 import { Navigation } from "./navigation";
 import { Overlays } from "./overlays";
 import { packFor, registerLive } from "./packs";
-import { BareContext, PreviewCard, ViewProvider, ViewToolbar } from "./preview";
+import { BareContext, PreviewCard, ViewProvider } from "./preview";
 import { Screens } from "./screens";
 import { ShellScene } from "./shell";
 import {
   frameQuery,
-  itemHref,
   type LoopStatus,
   motionTokens,
   motionVariables,
   readView,
   SCENES,
   type Scene,
-  sceneHref,
   type View,
   viewAttributes,
   writeView,
@@ -1309,96 +1306,6 @@ function Scenes({ scene }: { scene: Scene }) {
 }
 
 /**
- * The top bar on every scene: one plain link per entry of SCENES, relative so the site works
- * behind any path (kit is ./, the rest ?scene=<name>), carrying the current view along. Wraps
- * onto more rows at phone width. It sits above the overlays' z-50 and takes pointer events back
- * from the body, so the modal dialog and select scenes can still be left by a click.
- */
-function SceneNav({ current, view }: { current: Scene | null; view: View }) {
-  return (
-    <nav
-      aria-label="Gallery scenes"
-      className="pointer-events-auto relative z-[60] flex flex-wrap items-baseline gap-x-4 gap-y-1.5 border-b border-hn-line-subtle bg-hn-surface-band px-4 py-3 text-sm sm:px-10"
-    >
-      {SCENES.map((s) => (
-        <a
-          key={s}
-          href={sceneHref(s, view)}
-          aria-current={s === current ? "page" : undefined}
-          className="text-hn-ink-primary aria-[current=page]:font-semibold"
-        >
-          {s}
-        </a>
-      ))}
-    </nav>
-  );
-}
-
-/** Open variant votes whose category sits at this level, e.g. the shell-layout templates (#63). */
-const openVotes = (level: Level) => CATEGORIES.filter((c) => c.spec.level === level && !c.decision);
-
-/**
- * The registry by atomic level (#58), lowest first: one row per level, each item linking to its
- * page with its blast radius (#59), plus the open votes at that level (#63). Collapsed by default
- * so the scene stays in view; the summary counts them.
- */
-function LevelNav({ view }: { view: View }) {
-  const groups = itemsByLevel();
-  return (
-    <nav
-      aria-label="Items by level"
-      className="pointer-events-auto relative z-[60] border-b border-hn-line-subtle bg-hn-surface-band px-4 py-2 text-[13px] sm:px-10"
-    >
-      <details>
-        <summary className="cursor-pointer text-hn-ink-muted">
-          Items by level:{" "}
-          {groups
-            .map(([level, items]) => {
-              const votes = openVotes(level).length;
-              return `${items.length} ${level}s${votes ? ` (${votes} open vote)` : ""}`;
-            })
-            .join(", ")}
-        </summary>
-        <dl className="m-0 mt-2 grid gap-y-2 sm:grid-cols-[8rem_1fr]">
-          {groups.map(([level, items]) => (
-            <Fragment key={level}>
-              <dt className="font-hn-mono text-hn-ink-muted">{level}s</dt>
-              <dd className="m-0 flex flex-wrap gap-x-3 gap-y-1">
-                {openVotes(level).map((c) => (
-                  <a
-                    key={c.id}
-                    href={`?${writeView(new URLSearchParams({ scene: "vote", category: c.id }), view)}`}
-                    title={`${c.spec.title}: open vote`}
-                    className="text-hn-ink-primary"
-                  >
-                    {c.spec.title} (vote)
-                  </a>
-                ))}
-                {items.length ? (
-                  items.map((item) => (
-                    <a
-                      key={item.name}
-                      href={itemHref(item.name, view)}
-                      aria-current={item.name === itemParam ? "page" : undefined}
-                      title={`${item.name}: what it uses and what uses it`}
-                      className="text-hn-ink-primary aria-[current=page]:font-semibold"
-                    >
-                      {item.title}
-                    </a>
-                  ))
-                ) : openVotes(level).length ? null : (
-                  <span className="text-hn-ink-muted">none yet</span>
-                )}
-              </dd>
-            </Fragment>
-          ))}
-        </dl>
-      </details>
-    </nav>
-  );
-}
-
-/**
  * Sets data-theme, data-mode, data-density and data-reduced-motion on <html>, where
  * @hansenexus/tokens reads them (the last one for motion-reduce:, #91), and
  * the motion variables scaled by speed and motion (#60) inline on it, where they win over the
@@ -1462,9 +1369,23 @@ function Gallery() {
   };
   return (
     <ViewProvider view={view}>
-      <SceneNav current={itemParam ? null : scene} view={view} />
-      <LevelNav view={view} />
-      <ViewToolbar view={view} onChange={change} liveSource={LIVE_SOURCE} />
+      <Workbench
+        view={view}
+        onChange={change}
+        scene={itemParam ? null : scene}
+        item={itemParam}
+        liveSource={LIVE_SOURCE}
+      >
+        <Canvas view={view} />
+      </Workbench>
+    </ViewProvider>
+  );
+}
+
+/** What the canvas shows: the matrix, the scene in the page, or the scene in a viewport frame. */
+function Canvas({ view }: { view: View }) {
+  return (
+    <>
       {view.matrix === "on" ? (
         <Matrix view={view} liveSource={LIVE_SOURCE} />
       ) : view.viewport === "auto" ? (
@@ -1475,11 +1396,11 @@ function Gallery() {
             title={`${itemParam ?? scene} at ${view.viewport} px`}
             src={`?${frameQuery(new URLSearchParams(location.search), view)}`}
             width={Number(view.viewport)}
-            className="mx-auto block h-[calc(100vh-10rem)] min-h-[480px] border border-hn-line-strong bg-hn-surface-page"
+            className="mx-auto block h-[calc(100dvh-6rem)] min-h-[480px] rounded-hn-lg border border-hn-line-strong bg-hn-surface-page shadow-hn-raised"
           />
         </div>
       )}
-    </ViewProvider>
+    </>
   );
 }
 

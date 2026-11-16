@@ -32,6 +32,60 @@ export const SCENES = [
 ] as const;
 export type Scene = (typeof SCENES)[number];
 
+/** A scene's name in the workbench tree (design#162). */
+export const SCENE_LABELS: Record<Scene, string> = {
+  kit: "Kit",
+  dialog: "Dialog",
+  menu: "Menu",
+  select: "Select",
+  tooltip: "Tooltip",
+  toast: "Toast",
+  brand: "Brand",
+  loading: "Loading",
+  states: "States",
+  illustrations: "Illustrations",
+  school: "School",
+  forms: "Forms",
+  layout: "Layout",
+  data: "Data",
+  overlays: "All overlays",
+  navigation: "Navigation",
+  controls: "Controls",
+  motion: "Motion",
+  shell: "Shell",
+  screens: "App screens",
+  vote: "Votes",
+};
+
+/**
+ * The scenes in the workbench tree's groups (design#162, decisions/gallery-layout.json). Every
+ * scene sits in exactly one group; tests/gallery-view.test.ts holds that.
+ */
+export const SCENE_GROUPS: { id: string; label: string; scenes: Scene[] }[] = [
+  {
+    id: "foundations",
+    label: "Foundations",
+    scenes: ["brand", "motion", "illustrations", "school"],
+  },
+  {
+    id: "components",
+    label: "Components",
+    scenes: ["kit", "forms", "controls", "data", "loading", "states", "navigation", "layout"],
+  },
+  {
+    id: "overlays",
+    label: "Overlays",
+    scenes: ["dialog", "menu", "select", "tooltip", "toast", "overlays"],
+  },
+  { id: "templates", label: "Templates", scenes: ["shell", "screens"] },
+  { id: "review", label: "Review", scenes: ["vote"] },
+];
+
+/** The group a scene sits in. */
+export function groupOf(scene: Scene): (typeof SCENE_GROUPS)[number] | undefined {
+  return SCENE_GROUPS.find((g) => g.scenes.includes(scene));
+}
+
 /** "auto" renders the scene in the page itself; a width renders it in an iframe of that width. */
 export const VIEWPORTS = ["auto", "390", "1280"] as const;
 export type Viewport = (typeof VIEWPORTS)[number];
