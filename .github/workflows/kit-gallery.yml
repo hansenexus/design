@@ -13,6 +13,18 @@ name: kit-gallery
 # self-hosted runner on a public repo would run fork pull requests on an estate host. ci.yml
 # makes the same choice.
 #
+# Per-PR previews (design#150): a pull request from this repository also pushes its image as
+# `kit-gallery:pr-<N>`; hn-infra's kit-previews pod (infrastructure/design) pulls every pr-* tag
+# and serves it at design.hansenexus.dev/pr/<N>/, behind the same Access app and access-proxy.
+# Closing the PR deletes the tag, and the pod drops the preview. Gated by the repository
+# variable KIT_PREVIEWS_ENABLED=true, so nothing is pushed before the pod exists.
+#
+# App screens from private repositories (design#148) are checked out with a read-only token of
+# the workbench GitHub App (variable WORKBENCH_APP_ID, secret WORKBENCH_APP_KEY; contents:read
+# on the app repositories only), never for a fork's pull request. Without the app the gallery
+# skips those apps and says so. The live theme packs (design#149) come from main's themes/,
+# extracted here because the image build has no .git.
+#
 # NEVER write GitHub's literal skip-ci marker (square brackets, "skip ci") in a PR description:
 # the squash commit takes the PR body as its message and GitHub then skips this workflow on main.
 
@@ -20,6 +32,7 @@ on:
   push:
     branches: [main]
   pull_request:
+    types: [opened, synchronize, reopened, closed]
     paths:
       - Dockerfile
       - kit-gallery.sws.toml
@@ -50,19 +63,61 @@ env:
 
 jobs:
   image:
+    if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
       # Push only from main, and only once the registry is wired up: an unset variable is a
       # deliberate "not yet" that reads clearly, an unset secret a baffling 401.
       PUSH: ${{ github.ref == 'refs/heads/main' && vars.HARBOR_PUSH_ENABLED == 'true' }}
+      # A pull request's preview: only from this repository (a fork has no secrets), only once
+      # hn-infra serves previews.
+      PREVIEW: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && vars.HARBOR_PUSH_ENABLED == 'true' && vars.KIT_PREVIEWS_ENABLED == 'true' }}
+      PR: ${{ github.event.pull_request.number }}
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+
+      # The live copy of every theme pack (design#149, packages/ui/scripts/live.ts) is main's
+      # themes/. The image has no .git, so it reads this extracted copy and its SOURCE label.
+      - name: Main's theme packs for the live copies
+        run: |
+          set -euo pipefail
+          live=workbench/.checkouts/_live
+          mkdir -p "$live"
+          git fetch -q --depth=1 origin main
+          git archive FETCH_HEAD themes | tar -x -C "$live"
+          echo "main $(git rev-parse --short FETCH_HEAD)" > "$live/SOURCE"
+          cat "$live/SOURCE"
+
+      # Private app screens (design#148): a read-only token of the workbench GitHub App, never
+      # for a fork. workbench-checkout.ts sends it as a header for the fetch only and removes
+      # .git, so the token reaches neither the disk nor the image.
+      - name: Workbench app token
+        id: app-token
+        if: vars.WORKBENCH_APP_ID != '' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          app-id: ${{ vars.WORKBENCH_APP_ID }}
+          private-key: ${{ secrets.WORKBENCH_APP_KEY }}
+          owner: hansenexus
+          repositories: fachwerk,hn-monorepo
+          permission-contents: read
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        if: steps.app-token.outcome == 'success'
+
+      - name: Check out the app screens
+        if: steps.app-token.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: bun packages/ui/scripts/workbench-checkout.ts
 
       - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
       - name: Log in to Harbor
-        if: env.PUSH == 'true'
+        if: env.PUSH == 'true' || env.PREVIEW == 'true'
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
         with:
           registry: ${{ env.REGISTRY }}
@@ -150,6 +205,15 @@ jobs:
         if: env.PUSH == 'true'
         run: docker push "$IMAGE:$GITHUB_SHA"
 
+      # The preview tag moves with the PR's head; hn-infra's kit-previews pod picks it up.
+      - name: Push the preview
+        if: env.PREVIEW == 'true'
+        run: |
+          set -euo pipefail
+          docker tag "$IMAGE:$GITHUB_SHA" "$IMAGE:pr-$PR"
+          docker push "$IMAGE:pr-$PR"
+          echo "Preview of ${GITHUB_SHA::12}: https://design.hansenexus.dev/pr/$PR/ (live within a few minutes)" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Note that nothing was pushed
         if: github.ref == 'refs/heads/main' && env.PUSH != 'true'
         run: |
@@ -157,3 +221,29 @@ jobs:
           push it. Needs the private Harbor project 'design', a push robot as the HARBOR_USERNAME / \
           HARBOR_PASSWORD secrets and the repository variable HARBOR_PUSH_ENABLED=true \
           (hn-infra infrastructure/design/README.md, bring-up step 1)."
+
+  # A closed pull request's preview goes: its pr-<N> tag is deleted in Harbor, and the
+  # kit-previews pod drops what it no longer finds. Harbor's retention and GC remove the image.
+  # The push robot needs delete on the design project; a missing tag is fine.
+  preview-cleanup:
+    if: >-
+      github.event_name == 'pull_request' && github.event.action == 'closed' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      vars.KIT_PREVIEWS_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Delete the pr tag
+        env:
+          HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          url="https://$REGISTRY/api/v2.0/projects/design/repositories/kit-gallery/artifacts/pr-$PR/tags/pr-$PR"
+          code=$(curl -sS -o /dev/null -w '%{http_code}' -u "$HARBOR_USERNAME:$HARBOR_PASSWORD" -X DELETE "$url")
+          echo "DELETE pr-$PR: $code"
+          case "$code" in
+            200|404) ;;
+            *) echo "::error::deleting kit-gallery:pr-$PR answered $code"; exit 1 ;;
+          esac
