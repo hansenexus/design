@@ -128,13 +128,27 @@ them.
 | `motif.hatch` | `none` | `bg-(image:--hn-motif-hatch)`: progress and meter tracks |
 | `motif.brace`, `motif.cross` | `none` | pack skins |
 | `radius.*`, `size.*` (density) | | as before: the corner scale and the theme's density |
+| `shell.inset`, `shell.gap` | `12px` | `@hansenexus/shell`: the margin around and between its panels (design#152) |
+| `shell.seam` | `0px` | how far neighbouring panels overlap; a flush pack sets its `border.width`, so two borders become one beam |
+| `shell.rail`, `shell.context` | `208px`, `288px` | the nav and context column widths |
+| `shell.radius` | `radius.lg` | the panels' corner |
+| `shell.nav-inset`, `shell.nav-gap` | `12px`, `4px` | padding around and between nav rows |
+| `shell.nav-row`, `shell.nav-pad`, `shell.nav-radius` | `32px`, `12px`, `radius.sm` | a RailItem's height, inline padding and corner |
+| `shell.nav-divider` | `0px` | the rule under each nav row and between phone tabs |
+| `shell.brand-row` | `32px` | the brand row's height at the head of the rail |
 
 Control shape is a radius, so a square pack sets the `control.*` radii to its sawn edge and a
 round one keeps the pills; `control.box` and `control.dot` follow `radius.sm` and `radius.pill`
 unless a theme sets them. A motif is a CSS `background-image` value and may read a colour
 variable (`var(--hn-line-strong)`): it resolves on the element that carries `data-theme` and
 `data-mode`. A flat pack sets each `elevation.*` to a transparent zero shadow. Swift gets
-`HNBorder`, `HNElevation` and `HNControl`; `border.style` and `motif.*` are web only.
+`HNBorder`, `HNElevation`, `HNControl` and `HNShell`; `border.style` and `motif.*` are web only.
+
+The shell's colours are semantic colour tokens, per mode: `panel.main` (the main panel's ground,
+`surface.card`), and `nav.active`, `nav.active-ink`, `nav.active-icon`, `nav.active-meta`,
+`nav.tab`, `nav.tab-ink` (the active rail row and phone tab, aliasing `surface.raised`,
+`ink.primary`, `action.text`, `ink.muted`, `surface.card`, `action.text`). Contrast CI checks each
+ink on its fill.
 
 ## lexilink
 

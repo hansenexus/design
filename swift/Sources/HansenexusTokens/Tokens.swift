@@ -76,6 +76,26 @@ public struct HNColors: Sendable, Equatable {
     public let subtle: HNRGBA
   }
 
+  public struct Nav: Sendable, Equatable {
+    /// Fill of the active rail row
+    public let active: HNRGBA
+    /// Icon of the active rail row
+    public let activeIcon: HNRGBA
+    /// Text of the active rail row
+    public let activeInk: HNRGBA
+    /// Trailing meta (a count, a Kbd) of the active rail row
+    public let activeMeta: HNRGBA
+    /// Fill of the active phone tab
+    public let tab: HNRGBA
+    /// Text of the active phone tab
+    public let tabInk: HNRGBA
+  }
+
+  public struct Panel: Sendable, Equatable {
+    /// The main panel's fill
+    public let main: HNRGBA
+  }
+
   public struct Rail: Sendable, Equatable {
     /// Rail labels, active item
     public let ink: HNRGBA
@@ -152,6 +172,8 @@ public struct HNColors: Sendable, Equatable {
   public let focus: Focus
   public let ink: Ink
   public let line: Line
+  public let nav: Nav
+  public let panel: Panel
   public let rail: Rail
   public let skeleton: Skeleton
   public let status: Status
@@ -199,6 +221,17 @@ public struct HNColors: Sendable, Equatable {
     line: Line(
       strong: HNRGBA(0x8A8273),
       subtle: HNRGBA(0x3A352C)
+    ),
+    nav: Nav(
+      active: HNRGBA(0x2A2620),
+      activeIcon: HNRGBA(0x42C501),
+      activeInk: HNRGBA(0xF4F0E6),
+      activeMeta: HNRGBA(0xA39C8C),
+      tab: HNRGBA(0x201D18),
+      tabInk: HNRGBA(0x42C501)
+    ),
+    panel: Panel(
+      main: HNRGBA(0x201D18)
     ),
     rail: Rail(
       ink: HNRGBA(0xF4F0E6),
@@ -277,6 +310,17 @@ public struct HNColors: Sendable, Equatable {
       strong: HNRGBA(0x8A8273),
       subtle: HNRGBA(0xD8CFBD)
     ),
+    nav: Nav(
+      active: HNRGBA(0xECE7DC),
+      activeIcon: HNRGBA(0x2B7300),
+      activeInk: HNRGBA(0x16140F),
+      activeMeta: HNRGBA(0x6B6456),
+      tab: HNRGBA(0xFBF8F1),
+      tabInk: HNRGBA(0x2B7300)
+    ),
+    panel: Panel(
+      main: HNRGBA(0xFBF8F1)
+    ),
     rail: Rail(
       ink: HNRGBA(0xF4F0E6),
       line: HNRGBA(0x3A352C),
@@ -353,6 +397,17 @@ public struct HNColors: Sendable, Equatable {
     line: Line(
       strong: HNRGBA(0x746B56),
       subtle: HNRGBA(0x353125)
+    ),
+    nav: Nav(
+      active: HNRGBA(0x262218),
+      activeIcon: HNRGBA(0x8BE45F),
+      activeInk: HNRGBA(0xF4F0E6),
+      activeMeta: HNRGBA(0x9A927F),
+      tab: HNRGBA(0x1B1912),
+      tabInk: HNRGBA(0x8BE45F)
+    ),
+    panel: Panel(
+      main: HNRGBA(0x1B1912)
     ),
     rail: Rail(
       ink: HNRGBA(0xF4F0E6),
@@ -431,6 +486,17 @@ public struct HNColors: Sendable, Equatable {
       strong: HNRGBA(0x8A8273),
       subtle: HNRGBA(0xD8CFBD)
     ),
+    nav: Nav(
+      active: HNRGBA(0xECE7DC),
+      activeIcon: HNRGBA(0x2B7300),
+      activeInk: HNRGBA(0x16140F),
+      activeMeta: HNRGBA(0x6B6456),
+      tab: HNRGBA(0xFBF8F1),
+      tabInk: HNRGBA(0x2B7300)
+    ),
+    panel: Panel(
+      main: HNRGBA(0xFBF8F1)
+    ),
     rail: Rail(
       ink: HNRGBA(0xF4F0E6),
       line: HNRGBA(0x353125),
@@ -507,6 +573,17 @@ public struct HNColors: Sendable, Equatable {
     line: Line(
       strong: HNRGBA(0x8A8273),
       subtle: HNRGBA(0x3A352C)
+    ),
+    nav: Nav(
+      active: HNRGBA(0x2A2620),
+      activeIcon: HNRGBA(0x42C501),
+      activeInk: HNRGBA(0xF4F0E6),
+      activeMeta: HNRGBA(0xA39C8C),
+      tab: HNRGBA(0x201D18),
+      tabInk: HNRGBA(0x42C501)
+    ),
+    panel: Panel(
+      main: HNRGBA(0x201D18)
     ),
     rail: Rail(
       ink: HNRGBA(0xF4F0E6),
@@ -585,6 +662,17 @@ public struct HNColors: Sendable, Equatable {
       strong: HNRGBA(0x8A8273),
       subtle: HNRGBA(0xD8CFBD)
     ),
+    nav: Nav(
+      active: HNRGBA(0xECE7DC),
+      activeIcon: HNRGBA(0x2B7300),
+      activeInk: HNRGBA(0x16140F),
+      activeMeta: HNRGBA(0x6B6456),
+      tab: HNRGBA(0xFBF8F1),
+      tabInk: HNRGBA(0x2B7300)
+    ),
+    panel: Panel(
+      main: HNRGBA(0xFBF8F1)
+    ),
     rail: Rail(
       ink: HNRGBA(0xF4F0E6),
       line: HNRGBA(0x3A352C),
@@ -662,6 +750,17 @@ public struct HNColors: Sendable, Equatable {
       strong: HNRGBA(0x8F8C85),
       subtle: HNRGBA(0x47413C)
     ),
+    nav: Nav(
+      active: HNRGBA(0x1C1712),
+      activeIcon: HNRGBA(0xEFEBE2),
+      activeInk: HNRGBA(0xEFEBE2),
+      activeMeta: HNRGBA(0x8F8C85),
+      tab: HNRGBA(0x1C1712),
+      tabInk: HNRGBA(0xEFEBE2)
+    ),
+    panel: Panel(
+      main: HNRGBA(0x1C1712)
+    ),
     rail: Rail(
       ink: HNRGBA(0xF4F0E6),
       line: HNRGBA(0x3A352C),
@@ -738,6 +837,17 @@ public struct HNColors: Sendable, Equatable {
     line: Line(
       strong: HNRGBA(0x070707),
       subtle: HNRGBA(0x070707)
+    ),
+    nav: Nav(
+      active: HNRGBA(0xFFFFFF),
+      activeIcon: HNRGBA(0x070707),
+      activeInk: HNRGBA(0x070707),
+      activeMeta: HNRGBA(0x717171),
+      tab: HNRGBA(0xFFFFFF),
+      tabInk: HNRGBA(0x070707)
+    ),
+    panel: Panel(
+      main: HNRGBA(0xFFFFFF)
     ),
     rail: Rail(
       ink: HNRGBA(0xF4F0E6),
@@ -936,6 +1046,73 @@ public struct HNRadius: Sendable, Equatable {
 public enum HNShadow {
   /// The one neutral lift. No coloured shadows, no glow.
   public static let lift: HNShadowValue = HNShadowValue(color: HNRGBA(0x000000, alpha: 0xB3), x: 0, y: 30, blur: 60, spread: -30)
+}
+
+/// The shell layout in points, the shell recipe: insets, gaps, column widths, rail rows.
+public struct HNShell: Sendable, Equatable {
+  public let brandRow: Double
+  public let context: Double
+  public let gap: Double
+  public let inset: Double
+  public let navDivider: Double
+  public let navGap: Double
+  public let navInset: Double
+  public let navPad: Double
+  public let navRadius: Double
+  public let navRow: Double
+  public let radius: Double
+  public let rail: Double
+  public let seam: Double
+
+  /// The hansenexus theme's values; `of(_:)` picks another theme's.
+  /// Height of the brand row at the head of the rail
+  public static let brandRow: Double = 32
+
+  /// Width of the context pane from 1024 px of shell width
+  public static let context: Double = 288
+
+  /// Space between panels
+  public static let gap: Double = 12
+
+  /// Space between the shell's edge and its panels
+  public static let inset: Double = 12
+
+  /// Line under the brand, each rail row and each phone tab, in line.subtle; 0 draws none
+  public static let navDivider: Double = 0
+
+  /// Space between rail rows
+  public static let navGap: Double = 4
+
+  /// Padding of the nav column, and the space under the brand
+  public static let navInset: Double = 12
+
+  /// Inline padding of a rail row
+  public static let navPad: Double = 12
+
+  /// Corner of a rail row
+  public static let navRadius: Double = 6
+
+  /// Height of a rail row (RailItem); never below size.target
+  public static let navRow: Double = 32
+
+  /// Corner of a panel
+  public static let radius: Double = 14
+
+  /// Width of the nav column from 768 px of shell width
+  public static let rail: Double = 208
+
+  /// How far neighbouring panels overlap: their border width for one shared line when gap is 0
+  public static let seam: Double = 0
+
+  /// The theme's own values.
+  public static func of(_ theme: HNTheme) -> HNShell {
+    switch theme {
+    case .hansenexus: return HNShell(brandRow: 32, context: 288, gap: 12, inset: 12, navDivider: 0, navGap: 4, navInset: 12, navPad: 12, navRadius: 6, navRow: 32, radius: 14, rail: 208, seam: 0)
+    case .kommandant: return HNShell(brandRow: 32, context: 288, gap: 12, inset: 12, navDivider: 0, navGap: 4, navInset: 12, navPad: 12, navRadius: 6, navRow: 32, radius: 14, rail: 208, seam: 0)
+    case .portal: return HNShell(brandRow: 32, context: 288, gap: 12, inset: 12, navDivider: 0, navGap: 4, navInset: 12, navPad: 12, navRadius: 6, navRow: 32, radius: 14, rail: 208, seam: 0)
+    case .lexilink: return HNShell(brandRow: 32, context: 288, gap: 12, inset: 12, navDivider: 0, navGap: 4, navInset: 12, navPad: 12, navRadius: 0, navRow: 32, radius: 0, rail: 208, seam: 0)
+    }
+  }
 }
 
 /// The shimmer sweep. Off under Reduce Motion.

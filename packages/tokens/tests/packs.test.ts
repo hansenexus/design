@@ -129,6 +129,27 @@ describe("recipes", () => {
     }
   });
 
+  test("shell defaults are the floating panels (design#152): inset, gap, no seam, core active nav", async () => {
+    for (const theme of CORE_THEMES) {
+      for (const mode of MODES) {
+        const t = new Map((await resolveTokens(theme, mode)).map((x) => [x.path, x.value]));
+        expect(t.get("shell.inset")).toBe("12px");
+        expect(t.get("shell.gap")).toBe("12px");
+        expect(t.get("shell.seam")).toBe("0px");
+        expect(t.get("shell.rail")).toBe("208px");
+        expect(t.get("shell.context")).toBe("288px");
+        expect(t.get("shell.nav-row")).toBe("32px");
+        expect(t.get("shell.nav-divider")).toBe("0px");
+        expect(t.get("shell.radius")).toBe(t.get("radius.lg"));
+        expect(t.get("shell.nav-radius")).toBe(t.get("radius.sm"));
+        expect(t.get("nav.active")).toBe(t.get("surface.raised"));
+        expect(t.get("nav.active-ink")).toBe(t.get("ink.primary"));
+        expect(t.get("nav.tab")).toBe(t.get("surface.card"));
+        expect(t.get("nav.tab-ink")).toBe(t.get("action.text"));
+      }
+    }
+  });
+
   test("control shape follows the theme's radius: lexilink's square corners square its boxes", async () => {
     const t = new Map((await resolveTokens("lexilink", "light")).map((x) => [x.path, x.value]));
     expect(t.get("control.box")).toBe("0px");

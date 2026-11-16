@@ -55,6 +55,11 @@ export type ShellProps = ShellSlots & {
    * The shell keeps the shortcut, the modal and the focus handling.
    */
   palette?: ShellPalette;
+  /**
+   * The page brings its own `<main>` landmark and padding (fachwerk's pages, design#152): the
+   * main panel is then a plain, unpadded `<div>`, so there is one main landmark, not two.
+   */
+  pageOwnsMain?: boolean;
   /** The ⌘K / Ctrl+K key; `false` for no shortcut (a second shell on the page). Default "k". */
   commandHotkey?: string | false;
   commandOpen?: boolean;
@@ -74,9 +79,12 @@ export type ShellProps = ShellSlots & {
   className?: string;
 };
 
-/** A panel: an opaque card, inset, the one neutral lift, no blur. */
+/**
+ * A panel: an opaque card, inset, the one neutral lift, no blur. Its corner is the shell.radius
+ * recipe (design#152), radius.lg unless a pack says otherwise.
+ */
 export const SHELL_PANEL =
-  "rounded-hn-lg border border-hn-line-subtle bg-hn-surface-card shadow-hn-panel";
+  "rounded-(--hn-shell-radius) border-(length:--hn-border-width) border-hn-line-subtle bg-hn-surface-card shadow-hn-panel";
 
 export type ShellState = {
   locale: StateLocale;
@@ -88,6 +96,8 @@ export type ShellState = {
   hasCommand: boolean;
   commandOpen: boolean;
   setCommandOpen: (open: boolean) => void;
+  /** The shell's root, where its overlays portal so they carry its data-theme. */
+  portal: HTMLElement | null;
 };
 
 const ShellContext = createContext<ShellState | null>(null);
@@ -97,6 +107,11 @@ export function useShell(): ShellState {
   const state = useContext(ShellContext);
   if (!state) throw new Error("useShell: not inside a <Shell>");
   return state;
+}
+
+/** The shell's state, or null outside a Shell (ShellNav mounted on its own). */
+export function useShellIfAny(): ShellState | null {
+  return useContext(ShellContext);
 }
 
 function useControllable(
@@ -133,6 +148,7 @@ function ShellBase({
   navLabel,
   contextLabel,
   commandLabel,
+  pageOwnsMain = false,
   className,
 }: ShellProps) {
   const copy = SHELL_COPY[locale];
@@ -147,6 +163,7 @@ function ShellBase({
     defaultContextOpen,
     onContextOpenChange
   );
+  const MainPanel = pageOwnsMain ? "div" : "main";
   const hasCommand = palette !== undefined || commands.length > 0;
   const hasContext = contextPane !== undefined && contextPane !== null;
   const showContext = hasContext && contextOpen;
@@ -171,8 +188,9 @@ function ShellBase({
       hasCommand,
       commandOpen,
       setCommandOpen,
+      portal: root,
     }),
-    [locale, hasContext, contextOpen, setContextOpen, hasCommand, commandOpen, setCommandOpen]
+    [locale, hasContext, contextOpen, setContextOpen, hasCommand, commandOpen, setCommandOpen, root]
   );
   const title = commandLabel ?? STATE_COPY[locale].command.label;
 
@@ -188,9 +206,13 @@ function ShellBase({
       >
         <div
           className={cx(
-            "flex h-full w-full flex-col gap-3 p-3",
-            "@3xl:grid @3xl:grid-cols-[13rem_minmax(0,1fr)] @3xl:grid-rows-[auto_minmax(0,1fr)]",
-            showContext && "@5xl:grid-cols-[13rem_minmax(0,1fr)_18rem]"
+            // Inset, gap, column widths and the seam are the shell recipe (design#152): the
+            // defaults float the panels, a flush pack sets inset and gap to 0 and the seam to its
+            // border width, so neighbours overlap onto one shared line.
+            "flex h-full w-full flex-col gap-(--hn-shell-gap) p-(--hn-shell-inset)",
+            "@3xl:grid @3xl:grid-cols-[var(--hn-shell-rail)_minmax(0,1fr)] @3xl:grid-rows-[auto_minmax(0,1fr)]",
+            showContext &&
+              "@5xl:grid-cols-[var(--hn-shell-rail)_minmax(0,1fr)_var(--hn-shell-context)]"
           )}
         >
           <nav
@@ -198,8 +220,8 @@ function ShellBase({
             data-shell-panel="nav"
             className={cx(
               SHELL_PANEL,
-              "relative order-3 h-14 shrink-0 overflow-hidden",
-              "@3xl:order-none @3xl:col-start-1 @3xl:row-span-2 @3xl:row-start-1 @3xl:h-auto @3xl:overflow-y-auto"
+              "relative order-3 -mt-(--hn-shell-seam) h-14 shrink-0 overflow-hidden",
+              "@3xl:order-none @3xl:col-start-1 @3xl:row-span-2 @3xl:row-start-1 @3xl:mt-0 @3xl:h-auto @3xl:overflow-y-auto"
             )}
           >
             {nav}
@@ -209,21 +231,23 @@ function ShellBase({
             className={cx(
               SHELL_PANEL,
               "relative order-1 flex min-h-12 shrink-0 items-center gap-3 px-3 py-2",
-              "@3xl:order-none @3xl:col-start-2 @3xl:row-start-1 @3xl:px-4"
+              "@3xl:order-none @3xl:col-start-2 @3xl:row-start-1 @3xl:-ml-(--hn-shell-seam) @3xl:px-4"
             )}
           >
             {header}
           </header>
-          <main
+          <MainPanel
             data-shell-panel="main"
             className={cx(
               SHELL_PANEL,
-              "relative order-2 min-h-0 flex-1 overflow-y-auto p-4",
-              "@3xl:order-none @3xl:col-start-2 @3xl:row-start-2 @3xl:px-8 @3xl:py-6"
+              // panel.main is surface.card unless a pack seats its pages on another ground.
+              "relative order-2 -mt-(--hn-shell-seam) min-h-0 flex-1 overflow-y-auto bg-hn-panel-main",
+              "@3xl:order-none @3xl:col-start-2 @3xl:row-start-2 @3xl:-ml-(--hn-shell-seam)",
+              !pageOwnsMain && "p-4 @3xl:px-8 @3xl:py-6"
             )}
           >
             {main}
-          </main>
+          </MainPanel>
           {showContext ? (
             <aside
               aria-label={contextLabel ?? copy.context}
@@ -231,7 +255,7 @@ function ShellBase({
               className={cx(
                 SHELL_PANEL,
                 "relative hidden min-h-0 overflow-y-auto p-5",
-                "@5xl:col-start-3 @5xl:row-span-2 @5xl:row-start-1 @5xl:block"
+                "@5xl:col-start-3 @5xl:row-span-2 @5xl:row-start-1 @5xl:-ml-(--hn-shell-seam) @5xl:block"
               )}
             >
               {contextPane}
@@ -357,7 +381,7 @@ export function ShellCommandTrigger({
         "inline-flex min-h-hn-target min-w-hn-target cursor-pointer items-center justify-center gap-2 rounded-hn-md text-hn-ink-muted",
         "hover:bg-hn-surface-raised hover:text-hn-ink-primary",
         focusRing,
-        "@3xl:h-8 @3xl:w-64 @3xl:justify-start @3xl:border @3xl:border-hn-line-subtle @3xl:bg-hn-surface-page @3xl:px-2.5",
+        "@3xl:h-8 @3xl:w-64 @3xl:justify-start @3xl:border-(length:--hn-border-width) @3xl:border-hn-line-subtle @3xl:bg-hn-surface-page @3xl:px-2.5",
         className
       )}
       {...props}
