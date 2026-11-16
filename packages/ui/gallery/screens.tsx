@@ -133,7 +133,24 @@ function ScreenPage({ screen, fixtureId }: { screen: AnyScreen; fixtureId: strin
   return (
     <>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-b border-hn-line-subtle bg-hn-surface-band px-4 py-2.5 text-[13px] sm:px-10">
-        <strong className="text-hn-ink-primary">{screen.title}</strong>
+        <label className="flex items-center gap-2 text-hn-ink-muted">
+          Screen
+          <select
+            value={screen.id}
+            onChange={(e) => location.assign(screenHref(view, e.target.value))}
+            className="h-8 rounded-hn-sm border border-hn-line-strong bg-hn-surface-card px-2 font-hn-mono text-hn-ink-primary"
+          >
+            {APPS.map((app) => (
+              <optgroup key={app.app} label={app.app}>
+                {app.screens.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.title}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+        </label>
         <Badge>{screen.level}</Badge>
         <Hint>{screen.id}</Hint>
         <nav aria-label="Fixtures" className="flex flex-wrap gap-x-3">

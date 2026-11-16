@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { GALLERY_THEMES } from "../gallery/themes";
+import { BUILD_THEMES } from "../gallery/themes";
 import { SCENES } from "../gallery/view";
 
 // Keyboard and ARIA behaviour of the overlay and navigation set, driven through the live
@@ -114,7 +114,7 @@ test("preview card: replay remounts, the Spinner waits its 200 ms again", async 
 test("view toolbar: theme, density and mode land on <html> and in the query", async ({ page }) => {
   await page.goto("/gallery/?scene=loading");
   const toolbar = page.getByRole("toolbar", { name: "Gallery view" });
-  await toolbar.getByLabel("Theme").selectOption("portal");
+  await toolbar.getByLabel("Direction").selectOption("portal");
   await toolbar.getByLabel("Density").selectOption("touch");
   await toolbar.getByLabel("Mode").selectOption("light");
   const html = page.locator("html");
@@ -144,22 +144,93 @@ test("view toolbar: a fixed viewport renders the scene in an iframe of that widt
 
 test("compare: every card renders once per theme, side by side", async ({ page }) => {
   await page.goto("/gallery/?scene=loading");
-  await page
-    .getByRole("toolbar", { name: "Gallery view" })
-    .getByLabel("Compare")
-    .selectOption("on");
+  const toolbar = page.getByRole("toolbar", { name: "Gallery view" });
+  await toolbar.getByText("Compare", { exact: false }).first().click();
+  await toolbar
+    .getByRole("group", { name: "Compare with" })
+    .getByLabel("every theme of this build")
+    .check();
   await expect(page).toHaveURL(/compare=on/);
   const card = page.locator('[data-preview="spinner"]');
   const panels = card.locator("[data-compare]");
-  // Every theme of the picker, the theme packs' directions included (design 143).
-  expect(GALLERY_THEMES).toEqual(["hansenexus", "kommandant", "portal", "lexilink", "fachwerk"]);
-  await expect(panels).toHaveCount(GALLERY_THEMES.length);
-  for (const theme of GALLERY_THEMES)
+  // Every theme of this build, the theme packs' directions included (design 143), no live copies.
+  expect(BUILD_THEMES).toEqual(["hansenexus", "kommandant", "portal", "lexilink", "fachwerk"]);
+  await expect(panels).toHaveCount(BUILD_THEMES.length);
+  for (const theme of BUILD_THEMES)
     await expect(card.locator(`[data-compare="${theme}"]`)).toHaveAttribute("data-theme", theme);
   // Side by side where they fit (260 px each); at phone width they stack.
   const [a, b] = [await panels.nth(0).boundingBox(), await panels.nth(1).boundingBox()];
   const wide = (page.viewportSize()?.width ?? 0) >= 1280;
   expect(a && b && (wide ? Math.abs(a.y - b.y) < 1 && b.x > a.x : b.y > a.y)).toBe(true);
+});
+
+test("pack switcher: a pack picks its first direction, its live copy is a direction (design#149)", async ({
+  page,
+}) => {
+  await page.goto("/gallery/?scene=loading");
+  const toolbar = page.getByRole("toolbar", { name: "Gallery view" });
+  await toolbar.getByLabel("Pack").selectOption("fachwerk");
+  const html = page.locator("html");
+  await expect(html).toHaveAttribute("data-theme", "fachwerk");
+  await expect(toolbar.getByLabel("Direction").locator("option")).toHaveText([
+    "fachwerk",
+    /^fachwerk \(live, .+\)$/,
+  ]);
+  await toolbar.getByLabel("Direction").selectOption("fachwerk@live");
+  await expect(html).toHaveAttribute("data-theme", "fachwerk@live");
+  await expect(page).toHaveURL(/theme=fachwerk%40live/);
+  // The live copy carries the pack's tokens.
+  const border = await page.evaluate(() =>
+    getComputedStyle(document.documentElement).getPropertyValue("--hn-border-width").trim()
+  );
+  expect(border).toBe("2px");
+});
+
+test("compare: a list of themes, the candidate next to its live copy (design#149)", async ({
+  page,
+}) => {
+  await page.goto("/gallery/?scene=loading&theme=fachwerk");
+  const toolbar = page.getByRole("toolbar", { name: "Gallery view" });
+  await toolbar.getByText("Compare", { exact: false }).first().click();
+  const options = toolbar.getByRole("group", { name: "Compare with" });
+  await expect(options.locator('[data-compare-option="fachwerk"]')).toBeDisabled();
+  await options.locator('[data-compare-option="fachwerk@live"]').check();
+  await options.locator('[data-compare-option="lexilink"]').check();
+  await expect(page).toHaveURL(/compare=fachwerk%40live%2Clexilink/);
+  const card = page.locator('[data-preview="spinner"]');
+  await expect(card.locator("[data-compare]")).toHaveCount(3);
+  for (const theme of ["fachwerk", "fachwerk@live", "lexilink"])
+    await expect(card.locator(`[data-compare="${theme}"]`)).toHaveAttribute("data-theme", theme);
+});
+
+test("matrix: an app screen per compared theme, light and dark at 1280 and 390 (design#149)", async ({
+  page,
+}) => {
+  await page.goto(
+    "/gallery/?scene=screens&screen=example/machines&theme=fachwerk&compare=lexilink,fachwerk@live"
+  );
+  await page.getByRole("toolbar", { name: "Gallery view" }).getByLabel("Matrix").selectOption("on");
+  await expect(page).toHaveURL(/matrix=on/);
+  const matrix = page.locator("[data-matrix]");
+  await expect(matrix).toHaveAttribute("data-matrix", "fachwerk,lexilink,fachwerk@live");
+  await expect(matrix.locator("iframe")).toHaveCount(12);
+  const cells = [
+    ["fachwerk", "light", 1280],
+    ["lexilink", "dark", 390],
+    ["fachwerk@live", "dark", 1280],
+  ] as const;
+  for (const [theme, mode, width] of cells) {
+    const frame = matrix.locator(
+      `[data-matrix-column="${theme}"] iframe[title="${theme}, ${mode}, ${width} px"]`
+    );
+    await expect(frame).toHaveAttribute("width", String(width));
+    await frame.scrollIntoViewIfNeeded();
+    const inner = frame.contentFrame();
+    await expect(inner.locator("html")).toHaveAttribute("data-theme", theme);
+    await expect(inner.locator("html")).toHaveAttribute("data-mode", mode);
+    await expect(inner.locator("[data-screen][data-ready]")).toBeVisible();
+    await expect(inner.getByRole("toolbar", { name: "Gallery view" })).toHaveCount(0);
+  }
 });
 
 test("speed and motion scale the motion variables at the root and on compare panels", async ({

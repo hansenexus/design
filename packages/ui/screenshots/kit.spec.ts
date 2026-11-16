@@ -185,6 +185,26 @@ for (const mode of MODES) {
       fullPage: true,
     });
   });
+
+  // An app screen of the workbench (design#148/#149), the example app's machines list: under the
+  // core default and under fachwerk, whose empty-state skin the "new" fixture reaches.
+  for (const [theme, fixture] of [
+    ["kommandant", "estate"],
+    ["fachwerk", "estate"],
+    ["fachwerk", "new"],
+  ] as const) {
+    test(`screen example-machines ${fixture} ${theme} ${mode}`, async ({ page }, info) => {
+      await page.goto(
+        `/gallery/?scene=screens&screen=example/machines&fixture=${fixture}&theme=${theme}&mode=${mode}&bare=1`
+      );
+      await page.evaluate(() => document.fonts.ready);
+      await expect(page.locator('[data-screen="example/machines"][data-ready]')).toBeVisible();
+      await expect(page).toHaveScreenshot(
+        `screen-example-machines-${fixture}-${theme}-${info.project.name}-${mode}.png`,
+        { fullPage: true }
+      );
+    });
+  }
 }
 
 test("layout: dismiss closes an alert, the accordion works from the keyboard", async ({ page }) => {
