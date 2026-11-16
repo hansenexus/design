@@ -1,6 +1,7 @@
 // Section card: the shadcn dashboard-01 section card. Label top left, the delta as a badge top
 // right, a large value, and a quiet footer line that spells out the trend and its period. The
 // sparkline, when there is a trend, sits small at the end of that footer line.
+// The winner of the vote (decisions/kpi-card.json); the kpi-card registry item builds on it (design issue 187).
 import { Badge, Card, cx, Skeleton, SkeletonGroup, Sparkline } from "../../../src";
 import {
   DeltaContent,
