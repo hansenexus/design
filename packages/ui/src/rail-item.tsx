@@ -29,10 +29,12 @@ export function RailItem({
       aria-current={active ? "page" : undefined}
       data-active={active || undefined}
       className={cx(
-        "group flex h-8 min-h-hn-target w-full items-center gap-2.5 rounded-hn-sm px-3 font-hn-sans text-sm no-underline",
+        // Height, corner and inline padding are the shell recipe (design#152), so a flush pack
+        // draws full-width cells without forking the atom.
+        "group flex h-(--hn-shell-nav-row) min-h-hn-target w-full items-center gap-2.5 rounded-(--hn-shell-nav-radius) px-(--hn-shell-nav-pad) font-hn-sans text-sm no-underline",
         "transition-colors duration-(--hn-duration-fast) motion-reduce:transition-none",
         active
-          ? "bg-hn-surface-raised font-semibold text-hn-ink-primary"
+          ? "bg-hn-nav-active font-semibold text-hn-nav-active-ink"
           : "font-medium text-hn-ink-body hover:bg-hn-surface-card hover:text-hn-ink-primary",
         focusRing,
         className
@@ -44,7 +46,7 @@ export function RailItem({
           aria-hidden="true"
           className={cx(
             "flex shrink-0 [&_svg]:size-[17px]",
-            active ? "text-hn-action-text" : "text-hn-ink-muted group-hover:text-hn-ink-body"
+            active ? "text-hn-nav-active-icon" : "text-hn-ink-muted group-hover:text-hn-ink-body"
           )}
         >
           {icon}
@@ -56,7 +58,12 @@ export function RailItem({
         <span className="min-w-0 truncate">{children}</span>
       )}
       {trailing ? (
-        <span className="ml-auto shrink-0 font-hn-mono text-[11.5px] text-hn-ink-muted">
+        <span
+          className={cx(
+            "ml-auto shrink-0 font-hn-mono text-[11.5px]",
+            active ? "text-hn-nav-active-meta" : "text-hn-ink-muted"
+          )}
+        >
           {trailing}
         </span>
       ) : null}

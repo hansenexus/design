@@ -140,5 +140,20 @@
       "$value": "{palette.fachwerk.night-terracotta}",
       "$description": "The ring is brick (fachwerk --ring)"
     }
+  },
+  "panel": {
+    "$type": "color",
+    "$description": "Pages sit on the plaster wall; their Gefache are the cards (fachwerk's content column is bg-background).",
+    "main": { "$value": "{surface.page}" }
+  },
+  "nav": {
+    "$type": "color",
+    "$description": "The active rail row and phone tab are a brick cell, as the fachwerk rail draws them (RAIL_ACTIVE, TAB_ACTIVE).",
+    "active": { "$value": "{action.primary}" },
+    "active-ink": { "$value": "{action.primary-ink}" },
+    "active-icon": { "$value": "{action.primary-ink}" },
+    "active-meta": { "$value": "{action.primary-ink}" },
+    "tab": { "$value": "{action.primary}" },
+    "tab-ink": { "$value": "{action.primary-ink}" }
   }
 }

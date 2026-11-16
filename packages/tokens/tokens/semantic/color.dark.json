@@ -100,5 +100,23 @@
     },
     "ink": { "$value": "{palette.warm.900}", "$description": "Flat ink mark; the app icon ground" },
     "paper": { "$value": "{palette.warm.50}", "$description": "Flat paper mark on ink" }
+  },
+  "panel": {
+    "$type": "color",
+    "$description": "The ground of the shell's main panel (design#152): a card by default; a pack whose pages lay their own cards on a page ground points it at surface.page.",
+    "main": { "$value": "{surface.card}", "$description": "The main panel's fill" }
+  },
+  "nav": {
+    "$type": "color",
+    "$description": "The shell's active nav cells (design#152). The defaults alias the core; a pack points them at its own pair, e.g. a solid action.primary cell.",
+    "active": { "$value": "{surface.raised}", "$description": "Fill of the active rail row" },
+    "active-ink": { "$value": "{ink.primary}", "$description": "Text of the active rail row" },
+    "active-icon": { "$value": "{action.text}", "$description": "Icon of the active rail row" },
+    "active-meta": {
+      "$value": "{ink.muted}",
+      "$description": "Trailing meta (a count, a Kbd) of the active rail row"
+    },
+    "tab": { "$value": "{surface.card}", "$description": "Fill of the active phone tab" },
+    "tab-ink": { "$value": "{action.text}", "$description": "Text of the active phone tab" }
   }
 }

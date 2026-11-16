@@ -40,5 +40,43 @@
     },
     "brace": { "$value": "none", "$description": "One diagonal across a square cell" },
     "cross": { "$value": "none", "$description": "Both diagonals: the X of a cell" }
+  },
+  "shell": {
+    "$type": "dimension",
+    "$description": "Recipe (design#152): the shell's layout. The defaults are the floating panels of the shell-layout vote; a flush pack sets inset and gap to 0 and seam to its border width, so neighbouring panels share one line.",
+    "inset": { "$value": "12px", "$description": "Space between the shell's edge and its panels" },
+    "gap": { "$value": "12px", "$description": "Space between panels" },
+    "seam": {
+      "$value": "0px",
+      "$description": "How far neighbouring panels overlap: their border width for one shared line when gap is 0"
+    },
+    "rail": {
+      "$value": "208px",
+      "$description": "Width of the nav column from 768 px of shell width"
+    },
+    "context": {
+      "$value": "288px",
+      "$description": "Width of the context pane from 1024 px of shell width"
+    },
+    "radius": { "$value": "{radius.lg}", "$description": "Corner of a panel" },
+    "nav-inset": {
+      "$value": "12px",
+      "$description": "Padding of the nav column, and the space under the brand"
+    },
+    "nav-gap": { "$value": "4px", "$description": "Space between rail rows" },
+    "nav-row": {
+      "$value": "32px",
+      "$description": "Height of a rail row (RailItem); never below size.target"
+    },
+    "nav-pad": { "$value": "12px", "$description": "Inline padding of a rail row" },
+    "nav-radius": { "$value": "{radius.sm}", "$description": "Corner of a rail row" },
+    "nav-divider": {
+      "$value": "0px",
+      "$description": "Line under the brand, each rail row and each phone tab, in line.subtle; 0 draws none"
+    },
+    "brand-row": {
+      "$value": "32px",
+      "$description": "Height of the brand row at the head of the rail"
+    }
   }
 }
