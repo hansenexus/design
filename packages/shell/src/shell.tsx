@@ -226,7 +226,11 @@ function ShellBase({
             data-shell-panel="nav"
             className={cx(
               SHELL_PANEL,
-              "relative order-3 -mt-(--hn-shell-seam) h-14 shrink-0 overflow-hidden",
+              // `sticky` with no inset renders like `relative` here (the grid never scrolls), but
+              // it marks the rail, the tab bar and the header as fixed chrome for overlays that
+              // dodge the host's fixed and sticky elements, such as the @hansenexus/hud pill.
+              // Without it the pill parks over main's last row (fachwerk#286 e2e, 2026-11-16).
+              "sticky order-3 -mt-(--hn-shell-seam) h-14 shrink-0 overflow-hidden",
               "@3xl:order-none @3xl:col-start-1 @3xl:row-span-2 @3xl:row-start-1 @3xl:mt-0 @3xl:h-auto @3xl:overflow-y-auto"
             )}
           >
@@ -236,7 +240,7 @@ function ShellBase({
             data-shell-panel="header"
             className={cx(
               SHELL_PANEL,
-              "relative order-1 flex min-h-12 shrink-0 items-center gap-3 px-3 py-2",
+              "sticky order-1 flex min-h-12 shrink-0 items-center gap-3 px-3 py-2",
               "@3xl:order-none @3xl:col-start-2 @3xl:row-start-1 @3xl:-ml-(--hn-shell-seam) @3xl:px-4"
             )}
           >

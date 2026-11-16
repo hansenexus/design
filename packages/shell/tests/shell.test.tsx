@@ -152,6 +152,12 @@ describe("slots", () => {
     const mainTag = html.match(/<main data-shell-panel="main"[^>]*>/)?.[0] ?? "";
     expect(mainTag).toContain("bg-hn-panel-main");
     expect(mainTag).not.toContain("bg-hn-surface-card");
+    // fachwerk#286: rail/tab bar and header are sticky, so the dev HUD pill dodges them.
+    const navTag = html.match(/<nav aria-label="App" data-shell-panel="nav"[^>]*>/)?.[0] ?? "";
+    const headerTag = html.match(/<header data-shell-panel="header"[^>]*>/)?.[0] ?? "";
+    expect(navTag).toMatch(/\bsticky\b/);
+    expect(headerTag).toMatch(/\bsticky\b/);
+    expect(mainTag).not.toMatch(/\bsticky\b/);
   });
 
   test("the shell is the template slot of a theme pack (design#143)", () => {
