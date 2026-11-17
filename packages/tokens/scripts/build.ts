@@ -3,6 +3,7 @@
 // Run: bun scripts/build.ts
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { type MotionSet, resolveMotionSets } from "./motion-sets";
 import {
   DEFAULT_MODE,
   DEFAULT_THEME,
@@ -95,7 +96,11 @@ function themeBlocks(base: Modes, own: Modes, theme: string): string[] {
   ];
 }
 
-export function renderCss(all: Resolved, densities: Record<string, ResolvedToken[]>): string {
+export function renderCss(
+  all: Resolved,
+  densities: Record<string, ResolvedToken[]>,
+  sets: MotionSet[] = []
+): string {
   const def = all[DEFAULT_THEME];
   const out = [HEADER, ""];
   out.push(`/* Theme ${DEFAULT_THEME} is the default; set data-theme on <html> to switch. */`);
@@ -116,6 +121,10 @@ export function renderCss(all: Resolved, densities: Record<string, ResolvedToken
   }
   out.push("/* Density overrides the theme's choice. */");
   for (const d of DENSITIES) out.push(block(`[data-density="${d}"]`, densities[d] ?? []));
+  if (sets.length) {
+    out.push("/* Motion sets: data-motion swaps every motion token, on <html> or a subtree. */");
+    for (const set of sets) out.push(block(`[data-motion="${set.id}"]`, set.tokens));
+  }
   return `${out.filter(Boolean).join("\n").trimEnd()}\n`;
 }
 
@@ -341,7 +350,25 @@ function tsVar(t: ResolvedToken): string | Tree {
   return { size: size ?? "", lineHeight: lineHeight ?? "", weight: weight ?? "" };
 }
 
-export function renderTs(all: Resolved, densities: Record<string, ResolvedToken[]>) {
+/** One set as the TS constants carry it: ms in the shape of `ms`, easings by group, the CSS. */
+function motionSetValue(set: MotionSet) {
+  const durations = set.tokens.filter((t) => t.type === "duration");
+  return {
+    label: set.label,
+    description: set.description,
+    ms: numbers(toTree(durations, (t) => String(parseDuration(t.value)))),
+    easing: Object.fromEntries(
+      set.tokens.filter((t) => t.type === "cubicBezier").map((t) => [t.path.split(".")[0], t.raw])
+    ),
+    vars: Object.fromEntries(set.tokens.map((t) => [t.cssVar, t.value])),
+  };
+}
+
+export function renderTs(
+  all: Resolved,
+  densities: Record<string, ResolvedToken[]>,
+  sets: MotionSet[] = []
+) {
   const values: Record<string, Record<string, Tree>> = {};
   for (const theme of THEMES) {
     values[theme] = {};
@@ -370,6 +397,16 @@ export function renderTs(all: Resolved, densities: Record<string, ResolvedToken[
     ["vars", "CSS variable references that follow the active theme, mode and density.", vars],
     ["density", "Row height and minimum target per density.", density],
     ["ms", "Every duration in milliseconds, for timers, e.g. ms.delay.pending = 200.", numbers(ms)],
+    [
+      "motionSetIds",
+      "Motion set ids, the values of data-motion, in the order the gallery offers them.",
+      sets.map((s) => s.id),
+    ],
+    [
+      "motionSets",
+      "Each motion set: label, ms (the shape of `ms`), easing by group, and its CSS variables.",
+      Object.fromEntries(sets.map((s) => [s.id, motionSetValue(s)])),
+    ],
   ];
   const js = [
     HEADER,
@@ -386,6 +423,7 @@ export function renderTs(all: Resolved, densities: Record<string, ResolvedToken[
     "export type Theme = (typeof themes)[number];",
     "export type Mode = (typeof modes)[number];",
     "export type Density = (typeof densities)[number];",
+    "export type MotionSetId = (typeof motionSetIds)[number];",
     "",
   ].join("\n");
   return { js, dts };
@@ -394,10 +432,11 @@ export function renderTs(all: Resolved, densities: Record<string, ResolvedToken[
 export async function build(tokensDir?: string, dist = DIST) {
   const all = await resolveAll(tokensDir);
   const densities = await resolveDensities(tokensDir);
+  const sets = await resolveMotionSets(tokensDir, all[DEFAULT_THEME][DEFAULT_MODE]);
   mkdirSync(dist, { recursive: true });
-  writeFileSync(resolve(dist, "tokens.css"), renderCss(all, densities));
+  writeFileSync(resolve(dist, "tokens.css"), renderCss(all, densities, sets));
   writeFileSync(resolve(dist, "tailwind.css"), renderTailwind(all));
-  const { js, dts } = renderTs(all, densities);
+  const { js, dts } = renderTs(all, densities, sets);
   writeFileSync(resolve(dist, "index.js"), js);
   writeFileSync(resolve(dist, "index.d.ts"), dts);
   const noRaw = (key: string, v: unknown) => (key === "raw" ? undefined : v);

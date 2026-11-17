@@ -393,14 +393,52 @@ test("auto-loop: the QueryState card cycles loading, empty, error and success", 
 
 test("motion scene: every token group with a curve and a demo that replays", async ({ page }) => {
   await page.goto("/gallery/?scene=motion");
-  for (const group of ["delay", "min-visible", "pulse", "shimmer", "spin", "duration"])
+  const groups = ["delay", "min-visible", "pulse", "shimmer", "spin", "enter", "exit"];
+  for (const group of [...groups, "stagger", "emphasis", "duration"])
     await expect(page.locator(`[data-group="${group}"] [data-curve]`)).toHaveCount(1);
-  await expect(page.locator("[data-token]")).toHaveCount(8);
+  await expect(page.locator("[data-token]")).toHaveCount(12);
   const card = page.locator('[data-preview="tokens"]').filter({ hasText: "pulse" });
   await expect(card.locator("[data-demo]")).toHaveAttribute("data-moved", "true");
   await card.getByRole("button", { name: /^Replay/ }).click();
   await expect(card.locator("[data-run]")).toHaveAttribute("data-run", "1");
   await expect(card.locator("[data-demo]")).toHaveAttribute("data-moved", "true");
+});
+
+test("motion set: the picker sets data-motion and the query, the scene and compare follow (design#221)", async ({
+  page,
+}) => {
+  await page.goto("/gallery/?scene=motion");
+  const read = (selector: string, name: string) =>
+    page
+      .locator(selector)
+      .first()
+      .evaluate((el, n) => getComputedStyle(el).getPropertyValue(n), name);
+  await expect(page.locator("html")).toHaveAttribute("data-motion", "default");
+  expect(await read("html", "--hn-duration-base")).toBe("200ms");
+  await openPane(page, "Inspect");
+  await page
+    .getByRole("toolbar", { name: "Gallery view" })
+    .getByLabel("Animation set")
+    .selectOption("calm");
+  await expect(page).toHaveURL(/motionSet=calm/);
+  await expect(page.locator("html")).toHaveAttribute("data-motion", "calm");
+  expect(await read("html", "--hn-duration-base")).toBe("300ms");
+  expect(await read("html", "--hn-enter-easing")).toBe("cubic-bezier(0.25, 0.1, 0.25, 1)");
+  await openPane(page, "Canvas");
+  await expect(page.locator("[data-active-set]")).toHaveAttribute("data-active-set", "calm");
+  const compare = page.locator("[data-motion-compare]");
+  await expect(compare.locator('[data-compare-set="calm"]')).toHaveCount(1);
+  await compare.getByLabel("Compare with").selectOption("snappy");
+  expect(await read('[data-compare-set="snappy"]', "--hn-enter-duration")).toBe("140ms");
+  expect(await read('[data-compare-set="calm"]', "--hn-enter-duration")).toBe("320ms");
+  await expect(page.locator('[data-choreo-row="kran-01"]').first()).toHaveAttribute(
+    "data-shown",
+    "true"
+  );
+  // Linked: a fresh load of the query lands on the same set.
+  await page.goto("/gallery/?scene=motion&motionSet=snappy&speed=0.5");
+  await expect(page.locator("html")).toHaveAttribute("data-motion", "snappy");
+  expect(await read("html", "--hn-duration-base")).toBe("280ms");
 });
 
 test("scripted flow: plays in order, scrubs and replays", async ({ page }) => {

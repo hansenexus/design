@@ -63,6 +63,7 @@ describe("gallery view (#57)", () => {
       theme: "kommandant",
       mode: "dark",
       density: null,
+      motion: "default",
       reducedMotion: null,
     });
     expect(viewAttributes({ ...DEFAULT_VIEW, density: "compact" }).density).toBe("compact");

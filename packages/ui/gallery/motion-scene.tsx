@@ -2,10 +2,13 @@
 // object that travels over the token's duration, one preview card per group so Replay plays it
 // again, and the scripted flows as a timeline that plays, pauses, scrubs and replays.
 // The demos read the CSS variables, which the gallery root scales by speed and zeroes under
-// reduced motion, so the toolbar applies here as everywhere else.
+// reduced motion, so the toolbar applies here as everywhere else. The active motion set
+// (design#221) gives the values; the choreography card plays enter, stagger, exit and emphasis,
+// and the compare card plays two sets side by side, each under its own data-motion.
 // Names are an invented estate: no real hostnames, IPs or people in a public repo.
 
-import { type ReactNode, useContext, useEffect, useRef, useState } from "react";
+import { motionSetIds, motionSets } from "@hansenexus/tokens";
+import { type CSSProperties, type ReactNode, useContext, useEffect, useRef, useState } from "react";
 import {
   Button,
   Command,
@@ -17,23 +20,26 @@ import {
   SheetHeader,
   SheetTitle,
   StatusBadge,
+  useChoreography,
 } from "../src";
 import { Server } from "./icons";
 import {
   bezierCss,
   bezierPath,
-  FLOWS,
+  CHOREO_ROWS,
+  choreoTransition,
   type Flow,
   flowMarks,
   flowPace,
+  flowsFor,
   LINEAR,
   type MotionGroup,
   motionScene,
   type PaletteSheetState,
   stepAt,
 } from "./motion";
-import { PreviewCard, ViewContext } from "./preview";
-import { motionScale } from "./view";
+import { motionSetLabel, PreviewCard, ViewContext, ViewProvider } from "./preview";
+import { activeMotionSet, motionScale, motionVariables } from "./view";
 
 const CURVE = 96;
 
@@ -162,7 +168,7 @@ const noFocus = (e: Event) => e.preventDefault();
 function PaletteSheetStage({ state }: { state: PaletteSheetState }) {
   const [el, setEl] = useState<HTMLElement | null>(null);
   const enter =
-    "transition-[opacity,translate] duration-(--hn-duration-base) motion-reduce:transition-none";
+    "transition-[opacity,translate] duration-(--hn-enter-duration) ease-hn-enter motion-reduce:transition-none";
   return (
     <div
       ref={setEl}
@@ -318,8 +324,138 @@ function FlowPlayer<S>({ flow, stage }: { flow: Flow<S>; stage: (state: S) => Re
   );
 }
 
+/** Runs `fn` on the frame after mount (two frames, so the start state paints first). */
+function useAfterMount(fn: () => void) {
+  const ref = useRef(fn);
+  ref.current = fn;
+  useEffect(() => {
+    let inner = 0;
+    const outer = requestAnimationFrame(() => {
+      inner = requestAnimationFrame(() => ref.current());
+    });
+    return () => {
+      cancelAnimationFrame(outer);
+      cancelAnimationFrame(inner);
+    };
+  }, []);
+}
+
+/**
+ * The choreography (design#221): the rows enter one after another, stagger.step apart, the first
+ * takes the emphasis once they are in, and Exit sends them all out together. Replay remounts it.
+ */
+function Choreography() {
+  const beats = useChoreography();
+  const [shown, setShown] = useState(false);
+  const [emphasis, setEmphasis] = useState(false);
+  useAfterMount(() => setShown(true));
+  useEffect(() => {
+    if (!emphasis) return;
+    const t = setTimeout(() => setEmphasis(false), beats.emphasis.ms);
+    return () => clearTimeout(t);
+  }, [emphasis, beats.emphasis.ms]);
+  return (
+    <div data-choreography="" className="flex flex-col gap-3">
+      <div className="flex flex-wrap gap-2">
+        <Button variant="secondary" onClick={() => setShown(!shown)}>
+          {shown ? "Exit" : "Enter"}
+        </Button>
+        <Button variant="ghost" disabled={!shown} onClick={() => setEmphasis(true)}>
+          Emphasis
+        </Button>
+        <span className="ml-auto self-center font-hn-mono text-[12px] text-hn-ink-muted">
+          enter {beats.enter.ms} · stagger {beats.stagger.ms} · exit {beats.exit.ms} · emphasis{" "}
+          {beats.emphasis.ms} ms
+        </span>
+      </div>
+      <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
+        {CHOREO_ROWS.map((row, i) => (
+          <li
+            key={row}
+            data-choreo-row={row}
+            data-shown={shown || undefined}
+            className="flex items-center gap-2 rounded-hn-sm border border-hn-line-subtle bg-hn-surface-card px-3 py-2 text-sm motion-reduce:transition-none"
+            style={{
+              opacity: shown ? 1 : 0,
+              translate: shown ? "0 0" : "0 0.5rem",
+              scale: emphasis && i === 0 ? "1.04" : "1",
+              transition: choreoTransition(i, shown),
+            }}
+          >
+            <Server />
+            <span className="font-hn-mono text-hn-ink-primary">{row}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/**
+ * One side of the compare card: its content under motion set `set`, as data-motion gives it to
+ * CSS and a ViewProvider to the timers, at the toolbar's speed and reduced motion.
+ */
+function SetPanel({ set, children }: { set: string; children: ReactNode }) {
+  const view = useContext(ViewContext);
+  const own = { ...view, motionSet: set };
+  return (
+    <div
+      data-motion={set}
+      data-compare-set={set}
+      className="flex min-w-0 flex-col gap-3 rounded-hn-lg border border-hn-line-subtle bg-hn-surface-page p-4"
+      style={motionVariables(own) as CSSProperties}
+    >
+      <span className="text-sm font-semibold text-hn-ink-primary">{motionSetLabel(set, view)}</span>
+      <ViewProvider view={own}>{children}</ViewProvider>
+    </div>
+  );
+}
+
+/** The set the compare card starts against: the first set that is not the active one. */
+export function otherSet(active: string): string {
+  return motionSetIds.find((id) => id !== active) ?? active;
+}
+
+/** Two motion sets side by side: the active one and a picked one, each playing the choreography. */
+function MotionCompare({ active }: { active: string }) {
+  const [other, setOther] = useState(() => otherSet(active));
+  return (
+    <div data-motion-compare="" className="flex flex-col gap-3">
+      <label className="flex items-center gap-3 text-sm text-hn-ink-muted">
+        Compare with
+        <select
+          value={other}
+          onChange={(e) => setOther(e.target.value)}
+          className="rounded-hn-sm border border-hn-line-strong bg-hn-surface-card px-2 py-1 text-hn-ink-primary"
+        >
+          {motionSetIds.map((id) => (
+            <option key={id} value={id}>
+              {motionSets[id].label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {(
+          [
+            ["active", active],
+            ["other", other],
+          ] as const
+        ).map(([side, set]) => (
+          <SetPanel key={`${side}-${set}`} set={set}>
+            <Choreography />
+          </SetPanel>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function Motion() {
-  const groups = motionScene();
+  const view = useContext(ViewContext);
+  const set = activeMotionSet(view);
+  const info = motionSets[set as keyof typeof motionSets];
+  const groups = motionScene(set);
   return (
     <main className="mx-auto flex max-w-[1280px] flex-col gap-10 px-4 py-10 sm:px-10">
       <header className="flex flex-col gap-2">
@@ -332,6 +468,12 @@ export function Motion() {
           the curve, and a block that crosses its track over the duration. Replay plays a card
           again; speed and motion in the toolbar scale every duration.
         </p>
+        <p data-active-set={set} className="m-0 max-w-[65ch] text-sm text-hn-ink-body">
+          <span className="font-semibold text-hn-ink-primary">
+            Motion set: {motionSetLabel(view.motionSet, view)}.
+          </span>{" "}
+          {info?.description} Pick another under Animation set in the toolbar (?motionSet=).
+        </p>
       </header>
       <div className="grid gap-x-8 gap-y-10 lg:grid-cols-2">
         {groups.map((group) => (
@@ -339,7 +481,13 @@ export function Motion() {
             <TokenGroup group={group} />
           </PreviewCard>
         ))}
-        {FLOWS.map((flow) => (
+        <PreviewCard title="Choreography: enter, stagger, exit, emphasis" item="motion">
+          <Choreography />
+        </PreviewCard>
+        <PreviewCard title="Compare motion sets" item="motion">
+          <MotionCompare key={set} active={set} />
+        </PreviewCard>
+        {flowsFor(set).map((flow) => (
           <PreviewCard key={flow.id} title={flow.title} item="command" wide>
             <FlowPlayer flow={flow} stage={(state) => <PaletteSheetStage state={state} />} />
           </PreviewCard>

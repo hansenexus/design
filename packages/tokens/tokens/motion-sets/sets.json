@@ -1,0 +1,4 @@
+{
+  "$description": "The motion sets, in the order the gallery offers them. A set is <id>.json in this folder plus its id here; the first is the default.",
+  "sets": ["default", "calm", "snappy"]
+}
