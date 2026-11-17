@@ -14,6 +14,8 @@ export const EXEMPT: Record<string, string> = {
   "scripts/ratchet.ts": "the ratchet's own patterns",
   "scripts/ratchet.test.ts": "fixtures that must trip the ratchet",
   "packages/ui/tests/ui.test.tsx": "a probe proving Tailwind's palette cannot compile",
+  "packages/ui/tests/editor.test.ts":
+    "fixtures of the live editor (design#151), which writes colour values into the packs' tokens",
   "bun.lock": "integrity hashes, not colours",
   "brand/assets/":
     "logo files carry literal fills; generated from brand.* tokens, checked by scripts/brand.test.ts",

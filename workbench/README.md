@@ -222,3 +222,34 @@ the project shows unscanned, with the variable to set. The result is build data
 cd packages/ui
 WORKBENCH_KOMMANDANT=$HOME/repos/kommandant WORKBENCH_HN_MONOREPO=$HOME/repos/hn-monorepo bun scripts/projects.ts
 ```
+## Live editor (design#151)
+
+The inspector's **Editor** section edits the current pack direction (ruling point 5: it may change
+everything). Core themes and `@live` copies are read-only there.
+
+- **Tokens and recipes**: every token of the direction but typography, recipes first (border,
+  elevation, control, motif, radius, size, shell, font). A value is CSS-like text (`3px`,
+  `0px 1px 2px 0px <colour>`, `"IBM Plex Mono", monospace`) or a whole `{reference}` to a primitive,
+  the direction's palette or another token. An edit goes where the pack sets the token:
+  `tokens.json` for both modes, `tokens.<mode>.json` for the current one (colours the pack
+  inherits default to per mode).
+- **Skins by level**: each slot of `@hansenexus/ui` (molecules, organisms, the shell template)
+  draws the direction's own skin, the default, or another pack's skin for that slot; "all default"
+  clears a level.
+- The draft draws at once on the canvas, the viewport iframe, compare panels and matrix cells of
+  that theme (it lives in `localStorage`, `gallery/edit.ts`), and survives a reload until discarded.
+
+**Write back.** On the local server (`bun run gallery -- --serve`) the button POSTs the draft to
+`/api/edit`: `scripts/edit.ts` writes it into `themes/<app>/<direction>/` as minimal text edits
+(only the edited values change), copies a borrowed skin and its `./` helpers into the pack (a
+pack never imports another), deletes a dropped skin's file, wires a direction's first skins into
+its `index.ts`, runs biome over the files, and reports the direction's contrast. A draft that does
+not resolve is undone. Commit in the lane and open the PR; contrast CI and the screenshot
+baselines gate it. On the hosted gallery the button opens a prefilled issue with the draft and the
+command an agent runs:
+
+```sh
+cd packages/ui && bun run edit apply draft.json --pr   # --pr: commit, push, gh pr create (a new editor/<theme>-<stamp> branch when on main)
+```
+
+**Copy draft** puts the same JSON on the clipboard.
