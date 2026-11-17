@@ -2,10 +2,19 @@
 // active illustration set, the theme pack's default (pack.json "illustrations") until the view's
 // ?illustrations=<set> overrides it, at 128 and 48 px in ink.muted as the EmptyState/ErrorState
 // slot draws them. With compare on, every set follows side by side, a column each.
+// The animated motifs (design#223) play below the still grid, timed by the active motion set
+// (the view's "Animation set", ?motionSet=) through the data-motion the page root carries, and
+// still under reduced motion. They stay out of the bare render, so the screenshot baselines,
+// which cannot hold a moving frame, keep showing the still grid alone.
+import { AnimatedIllustration } from "@hansenexus/illustrations/animated";
+import { recipeFor } from "@hansenexus/illustrations/animations";
 import { motifPath, SETS, type SetId, STATE_MOTIFS, setFor } from "@hansenexus/illustrations/sets";
 import { STATE_ILLUSTRATIONS, useIllustrationSet } from "@hansenexus/illustrations/state";
-import { useContext } from "react";
-import { ViewContext } from "./preview";
+import { useContext, useState } from "react";
+import { Button } from "../src";
+import { Restart } from "./icons";
+import { BareContext, motionSetLabel, ViewContext } from "./preview";
+import { activeMotionSet } from "./view";
 
 /** One set's eight states, each at two sizes, as the school scene's grid draws its motifs. */
 function StateGrid({ set }: { set: SetId }) {
@@ -28,6 +37,63 @@ function StateGrid({ set }: { set: SetId }) {
         );
       })}
     </div>
+  );
+}
+
+/**
+ * One set's eight states, animated under the active motion set. Replay remounts them, so the
+ * entrance and the one-shots play again. Under reduced motion they are the still motifs.
+ */
+function AnimatedGrid({ set }: { set: SetId }) {
+  const view = useContext(ViewContext);
+  const [run, setRun] = useState(0);
+  const def = setFor(set);
+  const reduced = view.motion === "reduced";
+  return (
+    <section
+      aria-label="Animated"
+      data-animated-set={set}
+      data-motion-set={activeMotionSet(view)}
+      className="flex flex-col gap-4"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-col gap-1">
+          <h2 className="m-0 text-base font-semibold text-hn-ink-body">Animated</h2>
+          <p className="m-0 text-sm text-hn-ink-muted">
+            Animation set{" "}
+            <span className="font-semibold">{motionSetLabel(view.motionSet, view)}</span>
+            {reduced ? " · reduced motion, the still motifs" : ""}
+          </p>
+        </div>
+        <Button variant="ghost" onClick={() => setRun((n) => n + 1)} aria-label="Replay animated">
+          <Restart />
+          Replay
+        </Button>
+      </div>
+      <div key={run} className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {STATE_MOTIFS.map((state) => {
+          const id = motifPath(def, state);
+          return (
+            <figure
+              key={id}
+              data-animated-motif={id}
+              className="m-0 flex flex-col items-center gap-3 rounded-hn-lg border border-hn-line-subtle bg-hn-surface-card p-4 text-hn-ink-muted"
+            >
+              <AnimatedIllustration
+                set={set}
+                state={state}
+                reducedMotion={reduced || undefined}
+                width={128}
+                height={96}
+              />
+              <figcaption className="font-hn-mono text-[13px] text-hn-ink-body">
+                {id} · {recipeFor(set, state).play}
+              </figcaption>
+            </figure>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
@@ -89,6 +155,7 @@ function SetCompare() {
 
 export function Illustrations() {
   const view = useContext(ViewContext);
+  const bare = useContext(BareContext);
   const set = useIllustrationSet();
   const def = setFor(set);
   return (
@@ -107,6 +174,7 @@ export function Illustrations() {
         </p>
       </header>
       <StateGrid set={set} />
+      {bare ? null : <AnimatedGrid set={set} />}
       {view.compare === "off" ? null : <SetCompare />}
     </main>
   );
