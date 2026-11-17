@@ -15,6 +15,7 @@ import {
   validateScreens,
 } from "../src/workbench";
 import { BareContext, ViewContext } from "./preview";
+import { projectApp } from "./projects";
 import { type View, writeView } from "./view";
 
 /** Every screen of every bundled app, with its app. */
@@ -185,10 +186,14 @@ function ScreenPage({ screen, fixtureId }: { screen: AnyScreen; fixtureId: strin
 /** Every bundled app with its screens and fixtures, the skipped apps with the reason. */
 function ScreenIndex() {
   const view = useContext(ViewContext);
+  // A picked project that offers screens narrows the index to its app (design#222).
+  const only = projectApp(view);
+  const apps = only ? APPS.filter((a) => a.app === only) : APPS;
+  const skipped = only ? SKIPPED.filter((s) => s.app === only) : SKIPPED;
   return (
     <main className="flex flex-col gap-8 px-4 py-8 sm:px-10">
       <h1 className="m-0 font-hn-display text-2xl text-hn-ink-primary">App screens</h1>
-      {APPS.map((app) => {
+      {apps.map((app) => {
         const groups = new Map<string, AnyScreen[]>();
         for (const s of app.screens)
           groups.set(s.group ?? "", [...(groups.get(s.group ?? "") ?? []), s]);
@@ -222,7 +227,7 @@ function ScreenIndex() {
           </section>
         );
       })}
-      {SKIPPED.map((s) => (
+      {skipped.map((s) => (
         <section key={s.app} data-skipped={s.app} className="flex flex-col gap-1">
           <h2 className="m-0 font-hn-mono text-sm text-hn-ink-muted">
             {s.app} (not in this build)
