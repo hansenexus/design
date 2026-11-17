@@ -22,7 +22,8 @@ test("picking a project switches the pack and writes ?project=", async ({ page }
   await page.getByLabel("Project", { exact: true }).selectOption("fachwerk");
   await expect(page.locator("html")).toHaveAttribute("data-theme", "fachwerk");
   await expect(page).toHaveURL(/[?&]project=fachwerk/);
-  await expect(page).toHaveURL(/[?&]theme=fachwerk/);
+  // The project's theme is the default under it, so ?project= is the whole link.
+  await expect(page).not.toHaveURL(/[?&]theme=/);
   // The link holds: a reload comes back in the same pack with the project picked.
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "fachwerk");
