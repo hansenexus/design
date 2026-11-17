@@ -5,13 +5,9 @@
 // Names are an invented estate: no real hostnames, IPs or people in a public repo.
 
 import { LIVE_PACKS, LIVE_SOURCE } from "virtual:live-packs";
-import { NotFoundIllustration } from "@hansenexus/illustrations/404";
 import { EmptyIllustration } from "@hansenexus/illustrations/empty";
 import { ErrorIllustration } from "@hansenexus/illustrations/error";
-import { MaintenanceIllustration } from "@hansenexus/illustrations/maintenance";
-import { NoPermissionIllustration } from "@hansenexus/illustrations/no-permission";
 import { NoResultsIllustration } from "@hansenexus/illustrations/no-results";
-import { OfflineIllustration } from "@hansenexus/illustrations/offline";
 import { SchoolNotFoundIllustration } from "@hansenexus/illustrations/school/404";
 import { ClassIllustration } from "@hansenexus/illustrations/school/class";
 import { SchoolEmptyIllustration } from "@hansenexus/illustrations/school/empty";
@@ -28,8 +24,8 @@ import { SchoolSuccessIllustration } from "@hansenexus/illustrations/school/succ
 import { TestIllustration } from "@hansenexus/illustrations/school/test";
 import { TimetableIllustration } from "@hansenexus/illustrations/school/timetable";
 import { VocabularyIllustration } from "@hansenexus/illustrations/school/vocabulary";
-import { SuccessIllustration } from "@hansenexus/illustrations/success";
-import { type ComponentType, type ReactNode, StrictMode, useState } from "react";
+import { IllustrationSetProvider } from "@hansenexus/illustrations/state";
+import { type ComponentType, type ReactNode, StrictMode, useContext, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   Accordion,
@@ -125,16 +121,18 @@ import { Workbench } from "./chrome";
 import { Controls } from "./controls";
 import { Data } from "./data";
 import { Bell, Check, Key, MapIcon, More, Restart, Server } from "./icons";
+import { Illustrations } from "./illustrations-scene";
 import { ItemPage, isItem } from "./item";
 import { Matrix } from "./matrix";
 import { Motion } from "./motion-scene";
 import { Navigation } from "./navigation";
 import { Overlays } from "./overlays";
-import { packFor, registerLive } from "./packs";
-import { BareContext, PreviewCard, ViewProvider } from "./preview";
+import { packFor, packIllustrations, registerLive } from "./packs";
+import { BareContext, PreviewCard, ViewContext, ViewProvider } from "./preview";
 import { Screens } from "./screens";
 import { ShellScene } from "./shell";
 import {
+  activeIllustrationSet,
   frameQuery,
   type LoopStatus,
   motionTokens,
@@ -685,18 +683,6 @@ function States() {
 
 type MotifList = [string, ComponentType<{ width?: number; height?: number }>][];
 
-/** The eight @hansenexus/illustrations motifs, by import path. */
-const MOTIFS: MotifList = [
-  ["empty", EmptyIllustration],
-  ["no-results", NoResultsIllustration],
-  ["error", ErrorIllustration],
-  ["404", NotFoundIllustration],
-  ["offline", OfflineIllustration],
-  ["no-permission", NoPermissionIllustration],
-  ["success", SuccessIllustration],
-  ["maintenance", MaintenanceIllustration],
-];
-
 /** The school family (design#132, design#134): the eight states drawn for school, then the domain spots. */
 const SCHOOL_STATES: MotifList = [
   ["school/empty", SchoolEmptyIllustration],
@@ -739,24 +725,6 @@ function MotifGrid({ motifs, sizes = [128, 48] }: { motifs: MotifList; sizes?: [
         </figure>
       ))}
     </div>
-  );
-}
-
-/**
- * The illustrations scene: every motif at its 160 px default and at 48 px, in ink.muted as the
- * EmptyState/ErrorState slot draws it. Colour comes only from currentColor and the tokens.
- */
-function Illustrations() {
-  return (
-    <main className="mx-auto flex max-w-[1280px] flex-col gap-10 px-4 py-10 sm:px-10">
-      <header className="flex flex-col gap-2">
-        <span className="text-sm font-semibold text-hn-ink-muted">@hansenexus/illustrations</span>
-        <h1 className="m-0 font-hn-display text-[32px] leading-tight font-semibold tracking-[-0.02em] sm:text-[44px]">
-          State illustrations
-        </h1>
-      </header>
-      <MotifGrid motifs={MOTIFS} />
-    </main>
   );
 }
 
@@ -1356,11 +1324,17 @@ function Page() {
   return itemParam ? <ItemPage name={itemParam} /> : <Scenes scene={scene} />;
 }
 
-/** The scene under the current theme's pack, so its skins render (design#143). */
+/**
+ * The scene under the current theme's pack, so its skins render (design#143), and its
+ * illustration set: the pack's default, or the view's ?illustrations= (design#220).
+ */
 function PackedPage({ theme }: { theme: string }) {
+  const view = useContext(ViewContext);
   return (
     <ThemePack pack={packFor(theme)}>
-      <Page />
+      <IllustrationSetProvider set={activeIllustrationSet(view, packIllustrations(theme))}>
+        <Page />
+      </IllustrationSetProvider>
     </ThemePack>
   );
 }

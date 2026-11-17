@@ -2,6 +2,7 @@
 // speed, motion) and the pack compare of design#149 (compare as a list of themes, the matrix),
 // read from and written to the query so a view can be linked. Pure functions, so
 // tests/gallery-view.test.ts covers them without a DOM.
+import { SET_IDS } from "@hansenexus/illustrations/sets";
 import { type Density, densities, type Mode, modes } from "@hansenexus/tokens";
 import { motionMs } from "../src/motion";
 import { BUILD_THEMES, GALLERY_THEMES } from "./themes";
@@ -134,6 +135,20 @@ export const MATRIX_ROWS = [
 /** "auto" leaves data-density unset, so the theme's own density applies. */
 export type DensityChoice = Density | "auto";
 
+/**
+ * The illustration set (design#220): "auto" follows the theme pack's default (pack.json
+ * "illustrations"), a set id of @hansenexus/illustrations/sets overrides it under any pack.
+ */
+export const ILLUSTRATION_CHOICES: readonly string[] = ["auto", ...SET_IDS];
+
+/** The set the view draws: its own choice, or the pack's default under "auto". */
+export function activeIllustrationSet(
+  view: Pick<View, "illustrations">,
+  packDefault: string
+): string {
+  return view.illustrations === "auto" ? packDefault : view.illustrations;
+}
+
 export interface View {
   /** A data-theme: a tokens theme or a theme-pack direction (gallery/packs.ts). */
   theme: string;
@@ -144,6 +159,8 @@ export interface View {
   matrix: Matrix;
   speed: Speed;
   motion: Motion;
+  /** "auto" (the pack's default) or a set id: ILLUSTRATION_CHOICES. */
+  illustrations: string;
 }
 
 /** Matches index.html: kommandant, dark. */
@@ -156,6 +173,7 @@ export const DEFAULT_VIEW: View = {
   matrix: "off",
   speed: "1",
   motion: "full",
+  illustrations: "auto",
 };
 
 export const VIEW_OPTIONS = {
@@ -166,6 +184,7 @@ export const VIEW_OPTIONS = {
   matrix: MATRICES,
   speed: SPEEDS,
   motion: MOTIONS,
+  illustrations: ILLUSTRATION_CHOICES,
 } as const;
 
 const KEYS = [
@@ -177,6 +196,7 @@ const KEYS = [
   "matrix",
   "speed",
   "motion",
+  "illustrations",
 ] as const;
 
 function pick<T extends string>(list: readonly T[], value: string | null, fallback: T): T {
@@ -212,6 +232,11 @@ export function readView(query: URLSearchParams): View {
     matrix: pick(VIEW_OPTIONS.matrix, query.get("matrix"), DEFAULT_VIEW.matrix),
     speed: pick(VIEW_OPTIONS.speed, query.get("speed"), DEFAULT_VIEW.speed),
     motion: pick(VIEW_OPTIONS.motion, query.get("motion"), DEFAULT_VIEW.motion),
+    illustrations: pick(
+      VIEW_OPTIONS.illustrations,
+      query.get("illustrations"),
+      DEFAULT_VIEW.illustrations
+    ),
   };
 }
 

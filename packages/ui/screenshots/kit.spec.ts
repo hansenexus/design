@@ -49,6 +49,17 @@ for (const mode of MODES) {
     });
   });
 
+  // The same scene in the school set, picked in the view under the default theme (design#220).
+  test(`illustrations school ${mode}`, async ({ page }, info) => {
+    await page.goto(`/gallery/?scene=illustrations&illustrations=school&mode=${mode}&bare=1`);
+    await page.evaluate(() => document.fonts.ready);
+    await expect(page.locator('[data-illustration-set="school"]')).toBeVisible();
+    await expect(page.locator("[data-motif] svg")).toHaveCount(16);
+    await expect(page).toHaveScreenshot(`illustrations-school-${info.project.name}-${mode}.png`, {
+      fullPage: true,
+    });
+  });
+
   test(`school ${mode}`, async ({ page }, info) => {
     await page.goto(`/gallery/?scene=school&mode=${mode}&bare=1`);
     await page.evaluate(() => document.fonts.ready);

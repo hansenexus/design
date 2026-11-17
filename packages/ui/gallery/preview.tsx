@@ -19,7 +19,7 @@ import {
 import { Badge, Button, MotionProvider, ThemePack } from "../src";
 import { Check, Restart } from "./icons";
 import { levelOf } from "./levels";
-import { packFor } from "./packs";
+import { packFor, packIllustrations } from "./packs";
 import { BUILD_THEMES, LIVE, PACK_GROUPS, packOf } from "./themes";
 import {
   comparedThemes,
@@ -365,6 +365,13 @@ export function ViewToolbar({
           onChange={set("density")}
         />
         <Picker label="Mode" value={view.mode} options={VIEW_OPTIONS.mode} onChange={set("mode")} />
+        <Picker
+          label="Illustrations"
+          value={view.illustrations}
+          options={VIEW_OPTIONS.illustrations}
+          name={(s) => (s === "auto" ? `auto (${packIllustrations(view.theme)})` : s)}
+          onChange={set("illustrations")}
+        />
       </section>
       <section className="flex flex-col">
         <InspectorHeading>Review</InspectorHeading>

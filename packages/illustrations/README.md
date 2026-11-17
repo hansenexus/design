@@ -94,6 +94,50 @@ with each edge horizontal, vertical or at 45°, at least one brace, exactly one 
 bun add @hansenexus/illustrations @hansenexus/tokens react
 ```
 
+## Sets (design#220)
+
+The families are **illustration sets**, an axis of their own beside the theme pack: a set is a
+family of motifs in one style that draws at least the eight state motifs. The registry is
+`src/sets.ts`, shipped as `@hansenexus/illustrations/sets`: data only (id, label, description,
+folder, the motifs it covers), no React, so a gallery view or a build script lists the sets
+without loading a motif.
+
+| Set | Folder | Motifs | Default of |
+| --- | --- | --- | --- |
+| `estate` (the default) | `src/` | the eight states | the estate tools, `themes/lexilink` |
+| `school` (Fachwerk) | `src/school/` | the eight states, eight domain spots | `themes/fachwerk` |
+
+A theme pack names its default set in `pack.json` (`"illustrations": "school"`, see
+`themes/README.md`). An app renders "the state motif X of the active set" without an import path:
+
+```tsx
+import { IllustrationSetProvider, StateIllustration } from "@hansenexus/illustrations/state";
+
+// "school": themes/fachwerk/pack.json's "illustrations"
+<IllustrationSetProvider set="school">
+  <EmptyState illustration={<StateIllustration state="empty" />} />
+  <StateIllustration state="error" set="estate" width={48} height={36} /> {/* one set, explicitly */}
+</IllustrationSetProvider>
+```
+
+`./state` bundles the eight states of every set; the import paths per motif stay, for an app
+that ships only the motifs it draws. In the gallery the set is a view setting:
+`?scene=illustrations&illustrations=school` (linkable; "auto" follows the pack's default), and
+with compare on, the scene lists every set side by side.
+
+### Adding a set
+
+1. One folder, `src/<set>/`, with one `<motif>.tsx` per motif, each exporting its component: at
+   least the eight states (`empty`, `no-results`, `error`, `404`, `offline`, `no-permission`,
+   `success`, `maintenance`), any spots after them.
+2. One entry in `SETS` in `src/sets.ts`: `{ id, label, description, folder: "<set>", motifs }`.
+
+From that entry the build bundles the folder, the tests hold its motifs to the rules above, and
+the gallery offers it in the Illustrations picker. The checks then name the two places that
+spell it out by hand: its row in `STATE_ILLUSTRATIONS` (`src/state.tsx`, a type error until it
+is there) and its `exports` paths in `package.json` (the "one export path per motif" test lists
+the missing ones).
+
 ## Use
 
 One import path per motif and no index, so a page ships only the motifs it draws.
@@ -124,7 +168,7 @@ import { ErrorIllustration } from "@hansenexus/illustrations/error";
   in every recipe (none in `gefach-mono`), and the school rules above hold for every recipe.
 - At most 3 KB gzip each: the rendered SVG, the source and the built `dist/<motif>.js`.
 - One file and one `exports` path per motif (`src/<id>.tsx`, `src/school/<id>.tsx`); no barrel.
-  The registry is `scripts/motifs.ts`.
+  The registry is `src/sets.ts`, which `scripts/motifs.ts` reads for the build and the tests.
 
 Look at them in the kit gallery (`packages/ui`): `bun run gallery -- --serve`, then
 `http://127.0.0.1:4410/gallery/?scene=illustrations`, the school family at `?scene=school` and
