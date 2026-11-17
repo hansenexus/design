@@ -5,8 +5,9 @@
 // JS and CSS carry a content hash in their names (main.<hash>.js), so an edge cache that keeps
 // .js and .css for hours never serves a stale bundle after a deploy (#50). The site also carries
 // the built shadcn registry (dist/r from `bun run build`) at r/, so the registry is served next to
-// the gallery at design.hansenexus.dev/r/{name}.json (#65). The registry's dependency graph
-// (scripts/graph.ts) is built here too, as `virtual:graph` and gallery/dist/graph.json (#59).
+// the gallery at design.ts.hansenexus.dev/r/{name}.json (#65; mesh-only since issue 237). The
+// registry's dependency graph (scripts/graph.ts) is built here too, as `virtual:graph` and
+// gallery/dist/graph.json (#59).
 // The local server also takes the vote board's Decide control: POST /api/decide runs decide()
 // from scripts/variants.ts in this checkout and rebuilds the bundle (#76); the static site has
 // no such route, there the control opens a prefilled issue (gallery/decide.ts).

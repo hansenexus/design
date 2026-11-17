@@ -480,25 +480,24 @@ skill in hansenexus/skills) reads the stamps in a consumer repo and lists each o
 an (inert) directive rather than a comment because `shadcn add` drops a file's leading comments.
 
 **Hosted.** The kit-gallery image serves `dist/r` next to the gallery, at
-`https://design.hansenexus.dev/r/{name}.json` (`no-cache`), behind Cloudflare Access. The shadcn CLI
-authenticates with an Access service token as headers; shadcn expands `${VAR}` from the
-environment, so the token stays out of `components.json` (the `/design` skill fills the variables
-from 1Password). The entry is `REGISTRIES` in `scripts/registry.ts`, and the build writes it to
+`https://design.ts.hansenexus.dev/r/{name}.json` (`no-cache`), on the Headscale mesh only (#237,
+hn-infra#768): the Ingress admits 100.64.0.0/10 and nothing else, so there are no credentials and
+no headers. Run the shadcn CLI on a mesh device (mac-mini, hn-air, hn-desk, hn-agent); no CI job
+reads `/r`. The entry is `REGISTRIES` in `scripts/registry.ts`, and the build writes it to
 `dist/r/components.json` (served at `/r/components.json`), so a consumer copies it verbatim:
 
 ```json
 {
   "registries": {
     "@hansenexus": {
-      "url": "https://design.hansenexus.dev/r/{name}.json",
-      "headers": {
-        "CF-Access-Client-Id": "${HN_REGISTRY_CLIENT_ID}",
-        "CF-Access-Client-Secret": "${HN_REGISTRY_CLIENT_SECRET}"
-      }
+      "url": "https://design.ts.hansenexus.dev/r/{name}.json"
     }
   }
 }
 ```
+
+A consumer that still has the old `design.hansenexus.dev` entry with `CF-Access-Client-*` headers
+replaces it with this one.
 
 ```sh
 bunx shadcn@latest add @hansenexus/button @hansenexus/status-badge
@@ -506,13 +505,14 @@ bunx shadcn@latest add @hansenexus/button @hansenexus/status-badge
 
 **Outdated.** `scripts/outdated.ts` is the check behind `/design outdated`: it finds every stamped
 file under a consumer repo, reads the registry from the repo's `components.json` (or the default
-above), fetches `/r/registry.json` with the same headers and lists each block whose stamp is behind
-`meta.version`, with the registry version next to it. Exit 1 when something is behind, 2 when a
-header variable is unset (named, never printed) or the fetch fails.
+above), fetches `/r/registry.json` (with the entry's headers, if a consumer set any) and lists each
+block whose stamp is behind `meta.version`, with the registry version next to it. Exit 1 when
+something is behind, 2 when a header variable is unset (named, never printed) or the fetch fails
+(e.g. off the mesh).
 
 ```sh
-HN_REGISTRY_CLIENT_ID=… HN_REGISTRY_CLIENT_SECRET=… bun run outdated -- ~/repos/some-app
-bun run outdated -- ~/repos/some-app --registry dist/r      # against a local build, no token
+bun run outdated -- ~/repos/some-app                         # on a mesh device
+bun run outdated -- ~/repos/some-app --registry dist/r      # against a local build
 bun run outdated -- ~/repos/some-app --json                  # every block with its state
 ```
 

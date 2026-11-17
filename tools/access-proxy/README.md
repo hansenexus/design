@@ -1,6 +1,7 @@
 # access-proxy
 
-Origin-side access check for the design images. Two modes, picked by `ACCESS_MODE`:
+Origin-side access check for the design images. Three modes, picked by `ACCESS_MODE`; any other
+value refuses to start:
 
 - `cf-access` (default, #47): the Cloudflare Access JWT, for the kit gallery here and the Lotse
   gallery in hansenexus/design-ops. Cloudflare Access fronts `design.hansenexus.dev`, but the
@@ -8,12 +9,15 @@ Origin-side access check for the design images. Two modes, picked by `ACCESS_MOD
 - `licence` (#92): a per-customer licence key, for the Lotse shadcn registry in
   hansenexus/design-ops (design-ops#5). The shadcn CLI cannot pass Cloudflare Access; it sends
   `Authorization: Bearer ${LOTSE_LICENCE_KEY}` from the buyer's `components.json`.
+- `mesh` (#237): no check, for the kit gallery, PR previews and the `@hansenexus` registry at
+  `design.ts.hansenexus.dev`, which leave Cloudflare Access (hn-infra#768). The Ingress admits
+  only the Headscale mesh (`ipAllowList` 100.64.0.0/10); that allow-list is the boundary.
 
-Common to both:
+Common to all:
 
 - Listens on `:8080` and forwards to static-web-server on `127.0.0.1:8081`.
-- Only `GET`/`HEAD /health` (static-web-server's health endpoint, used by the Deployment probes)
-  passes unchecked.
+- In `cf-access` and `licence`, only `GET`/`HEAD /health` (static-web-server's health endpoint,
+  used by the Deployment probes) passes unchecked.
 - A refused request gets an empty body; the reason goes to the log only. The `Authorization`
   header is never forwarded, so a key cannot reach the upstream's logs.
 - Starts static-web-server as its child (`access-proxy -- /static-web-server`), setting
@@ -60,6 +64,17 @@ key="lotse_$(openssl rand -base64 32 | tr '+/' '-_' | tr -d '=')"
 printf '%s %s\n' "<customer-id>" "$(printf '%s' "$key" | shasum -a 256 | cut -d' ' -f1)"
 ```
 
+## `mesh`
+
+- Every request is forwarded; nothing is logged per request. The `Authorization` header is still
+  stripped and static-web-server still listens on loopback only.
+- Needs no other env and no outbound network; `CF_ACCESS_*` and `LICENCE_KEYS_FILE` are ignored.
+- Use it only behind an Ingress that admits nothing outside the mesh. A pod reachable from
+  outside the mesh (a public Ingress, a NodePort, the load balancer without the allow-list
+  middleware) is open to everyone in this mode.
+- The value must be exactly `mesh` (blanks trimmed); `Mesh`, `open`, `none` and the like refuse
+  to start.
+
 ## Use in an image
 
 `registry.hansenexus.dev/design/access-proxy:<sha>` (`.github/workflows/access-proxy.yml`, every
@@ -77,6 +92,8 @@ ENTRYPOINT ["/usr/local/bin/access-proxy", "--", "/static-web-server"]
 
 The Deployment must probe `/health`, not `/`: `/` needs a token. For licence mode add
 `ENV ACCESS_MODE=licence LICENCE_KEYS_FILE=/etc/licences/keys` and mount the keys Secret there.
+For mesh mode set `ACCESS_MODE=mesh` on the Deployment (hn-infra `infrastructure/design`), not in
+the image, so the image's default stays fail-closed.
 
 ## Develop
 
