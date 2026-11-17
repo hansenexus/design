@@ -19,7 +19,10 @@
       "$value": "1600ms",
       "$description": "One skeleton pulse, base to highlight and back"
     },
-    "easing": { "$type": "cubicBezier", "$value": [0.4, 0, 0.6, 1] }
+    "easing": {
+      "$type": "cubicBezier",
+      "$value": [0.4, 0, 0.6, 1]
+    }
   },
   "shimmer": {
     "duration": {
@@ -27,10 +30,64 @@
       "$value": "1800ms",
       "$description": "One shimmer sweep across a skeleton"
     },
-    "easing": { "$type": "cubicBezier", "$value": [0.4, 0, 0.2, 1] }
+    "easing": {
+      "$type": "cubicBezier",
+      "$value": [0.4, 0, 0.2, 1]
+    }
   },
   "spin": {
-    "duration": { "$type": "duration", "$value": "800ms", "$description": "One spinner turn" },
-    "easing": { "$type": "cubicBezier", "$value": [0, 0, 1, 1], "$description": "Linear" }
+    "duration": {
+      "$type": "duration",
+      "$value": "800ms",
+      "$description": "One spinner turn"
+    },
+    "easing": {
+      "$type": "cubicBezier",
+      "$value": [0, 0, 1, 1],
+      "$description": "Linear"
+    }
+  },
+  "enter": {
+    "duration": {
+      "$type": "duration",
+      "$value": "200ms",
+      "$description": "Choreography: something arrives, a panel, a sheet, a row"
+    },
+    "easing": {
+      "$type": "cubicBezier",
+      "$value": [0, 0, 0.2, 1],
+      "$description": "Decelerate: arrives fast, settles"
+    }
+  },
+  "exit": {
+    "duration": {
+      "$type": "duration",
+      "$value": "150ms",
+      "$description": "Choreography: something leaves; shorter than enter"
+    },
+    "easing": {
+      "$type": "cubicBezier",
+      "$value": [0.4, 0, 1, 1],
+      "$description": "Accelerate: eases off, then goes"
+    }
+  },
+  "stagger": {
+    "step": {
+      "$type": "duration",
+      "$value": "40ms",
+      "$description": "Choreography: between siblings that enter one after another"
+    }
+  },
+  "emphasis": {
+    "duration": {
+      "$type": "duration",
+      "$value": "320ms",
+      "$description": "Choreography: one element draws the eye, a changed value, a fresh row"
+    },
+    "easing": {
+      "$type": "cubicBezier",
+      "$value": [0.2, 0, 0, 1],
+      "$description": "Out to the peak and back"
+    }
   }
 }

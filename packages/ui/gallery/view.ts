@@ -1,12 +1,13 @@
 // The gallery view: theme, density, mode and viewport, plus the review tools of #60 (compare,
 // speed, motion) and the pack compare of design#149 (compare as a list of themes, the matrix),
-// read from and written to the query so a view can be linked. Pure functions, so
+// read from and written to the query so a view can be linked. The motion set of design#221
+// (motionSet) follows the pack's default until the query names one. Pure functions, so
 // tests/gallery-view.test.ts covers them without a DOM.
 import { SET_IDS } from "@hansenexus/illustrations/sets";
-import { type Density, densities, type Mode, modes } from "@hansenexus/tokens";
+import { type Density, densities, type Mode, modes, motionSetIds } from "@hansenexus/tokens";
 import { motionMs } from "../src/motion";
 import { readProject } from "./projects";
-import { BUILD_THEMES, GALLERY_THEMES } from "./themes";
+import { BUILD_THEMES, GALLERY_THEMES, packMotion } from "./themes";
 
 /** The gallery scenes, one page each: kit is ./, the rest ?scene=<name>. */
 export const SCENES = [
@@ -117,6 +118,13 @@ export const MOTIONS = ["full", "reduced"] as const;
 export type Motion = (typeof MOTIONS)[number];
 
 /**
+ * The motion set (design#221): "auto" follows the pack's default (pack.json `motion`, else
+ * "default"), any other value is a set id of @hansenexus/tokens.
+ */
+export const MOTION_SETS: readonly string[] = ["auto", ...motionSetIds];
+export type MotionSetChoice = string;
+
+/**
  * What the current theme is compared with: "off", "on" (every theme of this build, the
  * preview cards' panels of #60), or a comma list of themes (design#149), e.g.
  * "fachwerk@live,lexilink". The query keeps it as written.
@@ -162,6 +170,7 @@ export interface View {
   matrix: Matrix;
   speed: Speed;
   motion: Motion;
+  motionSet: MotionSetChoice;
   /** "auto" (the pack's default) or a set id: ILLUSTRATION_CHOICES. */
   illustrations: string;
   /** The picked project of workbench/projects.json (design#222), "" for none. */
@@ -178,6 +187,7 @@ export const DEFAULT_VIEW: View = {
   matrix: "off",
   speed: "1",
   motion: "full",
+  motionSet: "auto",
   illustrations: "auto",
   project: "",
 };
@@ -190,6 +200,7 @@ export const VIEW_OPTIONS = {
   matrix: MATRICES,
   speed: SPEEDS,
   motion: MOTIONS,
+  motionSet: MOTION_SETS,
   illustrations: ILLUSTRATION_CHOICES,
 } as const;
 
@@ -202,6 +213,7 @@ const KEYS = [
   "matrix",
   "speed",
   "motion",
+  "motionSet",
   "illustrations",
   "project",
 ] as const;
@@ -239,6 +251,7 @@ export function readView(query: URLSearchParams): View {
     matrix: pick(VIEW_OPTIONS.matrix, query.get("matrix"), DEFAULT_VIEW.matrix),
     speed: pick(VIEW_OPTIONS.speed, query.get("speed"), DEFAULT_VIEW.speed),
     motion: pick(VIEW_OPTIONS.motion, query.get("motion"), DEFAULT_VIEW.motion),
+    motionSet: pick(VIEW_OPTIONS.motionSet, query.get("motionSet"), DEFAULT_VIEW.motionSet),
     illustrations: pick(
       VIEW_OPTIONS.illustrations,
       query.get("illustrations"),
@@ -305,17 +318,25 @@ export function matrixQuery(
   return next;
 }
 
+/** The motion set in play: the view's, or for "auto" the pack's default, else "default". */
+export function activeMotionSet(view: Partial<Pick<View, "theme" | "motionSet">>): string {
+  if (view.motionSet && view.motionSet !== "auto") return view.motionSet;
+  return (view.theme && packMotion(view.theme)) || "default";
+}
+
 /**
- * The attributes @hansenexus/tokens reads: data-theme, data-mode, data-density, and
- * data-reduced-motion, which its motion-reduce: variant matches whatever the OS says (#91).
+ * The attributes @hansenexus/tokens reads: data-theme, data-mode, data-density, data-motion
+ * (the motion set, design#221), and data-reduced-motion, which its motion-reduce: variant
+ * matches whatever the OS says (#91).
  */
 export function viewAttributes(
   view: View
-): Record<"theme" | "mode" | "density" | "reducedMotion", string | null> {
+): Record<"theme" | "mode" | "density" | "motion" | "reducedMotion", string | null> {
   return {
     theme: view.theme,
     mode: view.mode,
     density: view.density === "auto" ? null : view.density,
+    motion: activeMotionSet(view),
     reducedMotion: view.motion === "reduced" ? "" : null,
   };
 }
@@ -330,22 +351,30 @@ export function motionScale(view: Pick<View, "speed" | "motion">): number {
   return view.motion === "reduced" ? 0 : 1 / Number(view.speed);
 }
 
-/** Every duration token as [css variable, ms] at `scale`, from motionMs of @hansenexus/ui. */
-export function motionTokens(scale = 1): [string, number][] {
-  return Object.entries(motionMs(scale)).flatMap(([group, values]) =>
+/**
+ * Every duration token as [css variable, ms] at `scale`, from motionMs of @hansenexus/ui, in the
+ * motion set `set` (the default without one).
+ */
+export function motionTokens(scale = 1, set?: string): [string, number][] {
+  return Object.entries(motionMs(scale, set)).flatMap(([group, values]) =>
     Object.entries(values).map(([key, value]): [string, number] => [`--hn-${group}-${key}`, value])
   );
 }
 
+/** What the motion variables and timings depend on; theme and motionSet pick the set. */
+type MotionView = Pick<View, "speed" | "motion"> & Partial<Pick<View, "theme" | "motionSet">>;
+
 /**
- * The motion variables to set at the gallery root: each duration token times motionScale. Empty
- * at the default scale, so the tokens' own values apply and the screenshot baselines hold.
- * Component code is untouched; it reads the variables.
+ * The motion variables to set at the gallery root: each duration token of the active motion set
+ * times motionScale. Empty at the default scale, so data-motion's values apply and the
+ * screenshot baselines hold. Component code is untouched; it reads the variables.
  */
-export function motionVariables(view: Pick<View, "speed" | "motion">): Record<string, string> {
+export function motionVariables(view: MotionView): Record<string, string> {
   const scale = motionScale(view);
   if (scale === 1) return {};
-  return Object.fromEntries(motionTokens(scale).map(([name, value]) => [name, `${value}ms`]));
+  return Object.fromEntries(
+    motionTokens(scale, activeMotionSet(view)).map(([name, value]) => [name, `${value}ms`])
+  );
 }
 
 /** QueryState's statuses in the order the auto-loop shows them; "data" is the success state. */
@@ -361,10 +390,11 @@ export const LOOP_HOLD_MS = 2000;
  * LOOP_HOLD_MS. The loop runs at 1 / speed; reduced motion zeroes the indicator's delay and
  * minimum, not the loop, so every state still stays on screen long enough to read.
  */
-export function loopTimings(view: Pick<View, "speed" | "motion">) {
+export function loopTimings(view: MotionView) {
   const pace = 1 / Number(view.speed);
-  const ms = motionMs();
-  const scaled = motionMs(motionScale(view));
+  const set = activeMotionSet(view);
+  const ms = motionMs(1, set);
+  const scaled = motionMs(motionScale(view), set);
   const delayMs = scaled.delay.pending;
   const minVisibleMs = scaled["min-visible"].pending;
   return {

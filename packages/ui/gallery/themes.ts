@@ -9,6 +9,13 @@ import { themes } from "@hansenexus/tokens";
 /** The theme packs under themes/, by app. */
 export const PACK_APPS: readonly string[] = ["lexilink", "fachwerk"];
 
+/**
+ * Each pack's default motion set (design#221), the `motion` of its pack.json, by app; a pack
+ * without one is not listed. Kept here rather than imported, so the Playwright specs load no
+ * JSON; tests/gallery-motion-sets.test.tsx holds it to every pack.json.
+ */
+export const PACK_MOTION: Record<string, string> = {};
+
 /** The pack directions @hansenexus/tokens does not bundle, by data-theme. */
 export const PACK_THEMES: readonly string[] = ["fachwerk"];
 
@@ -19,6 +26,11 @@ export const LIVE = "@live";
 export function packOf(theme: string): string {
   const id = theme.endsWith(LIVE) ? theme.slice(0, -LIVE.length) : theme;
   return PACK_APPS.find((app) => id === app || id.startsWith(`${app}-`)) ?? "core";
+}
+
+/** The default motion set of the pack `theme` belongs to (pack.json `motion`), if it names one. */
+export function packMotion(theme: string): string | undefined {
+  return PACK_MOTION[packOf(theme)];
 }
 
 /** Every pack direction, bundled in the tokens or not: lexilink, fachwerk. */

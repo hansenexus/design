@@ -426,7 +426,7 @@
       "name": "motion",
       "type": "registry:ui",
       "title": "MotionProvider",
-      "description": "The motion tokens in ms for timers, scaled by a MotionProvider: slower playback, or 0 under reduced motion.",
+      "description": "The motion tokens in ms for timers, scaled by a MotionProvider: slower playback, or 0 under reduced motion; a motion set's values (data-motion) and its choreography (enter, exit, stagger, emphasis).",
       "meta": { "level": "atom" },
       "dependencies": ["@hansenexus/tokens"],
       "registryDependencies": ["@hansenexus/tokens"],

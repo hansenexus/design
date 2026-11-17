@@ -1,0 +1,22 @@
+{
+  "label": "Calm",
+  "description": "Longer, softer motion for reading-heavy apps: everything takes about half as long again, enters glide, emphasis does not overshoot.",
+  "values": {
+    "duration.fast": "180ms",
+    "duration.base": "300ms",
+    "duration.slow": "480ms",
+    "delay.pending": "250ms",
+    "min-visible.pending": "500ms",
+    "pulse.duration": "2400ms",
+    "pulse.easing": [0.45, 0, 0.55, 1],
+    "shimmer.duration": "2600ms",
+    "spin.duration": "1100ms",
+    "enter.duration": "320ms",
+    "enter.easing": [0.25, 0.1, 0.25, 1],
+    "exit.duration": "240ms",
+    "exit.easing": [0.42, 0, 1, 1],
+    "stagger.step": "70ms",
+    "emphasis.duration": "480ms",
+    "emphasis.easing": [0.45, 0, 0.55, 1]
+  }
+}

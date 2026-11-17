@@ -65,12 +65,13 @@ for the OS bar width).
 ## TypeScript
 
 ```ts
-import { tokens, vars, density, ms } from "@hansenexus/tokens";
+import { tokens, vars, density, ms, motionSets } from "@hansenexus/tokens";
 
 tokens.kommandant.dark.status.crit; // "#ff6b5e", for charts and canvas
 vars.surface.page; // "var(--hn-surface-page)", follows the active mode
 density.touch.target; // "44px"
 ms.delay.pending; // 200, every duration in milliseconds for timers
+motionSets.calm.ms.duration.base; // 300, the same shape per motion set; motionSetIds lists them
 tokens.kommandant.dark.text.meta; // { size: "11px", lineHeight: "16px", weight: "400" }
 vars.text.body.size; // "var(--hn-text-body)"
 ```
@@ -102,8 +103,10 @@ is a gap to raise here, not an arbitrary `text-[Npx]`.
   same names; `scale.json` holds space, radius, fonts, durations, focus and the one lift shadow; `type.json`
   the type scale;
   `motion.json` holds the loading timings: `delay.pending` (200 ms before a spinner or pending
-  indicator shows), `min-visible.pending` (400 ms it then stays), and duration plus easing for
-  `pulse`, `shimmer` and `spin`.
+  indicator shows), `min-visible.pending` (400 ms it then stays), duration plus easing for
+  `pulse`, `shimmer` and `spin`, and the choreography: `enter`, `exit` and `emphasis` (duration
+  plus easing) and `stagger.step` (the wait between siblings that enter one after another).
+- `tokens/motion-sets/`: the motion sets (design#221, [below](#motion-sets)).
 - `tokens/semantic/recipe.json`: the recipes, how a theme draws rather than which colour
   (below).
 - `tokens/themes/`: the core themes (hansenexus, kommandant, portal), per product, the density
@@ -116,6 +119,30 @@ is a gap to raise here, not an arbitrary `text-[Npx]`.
   override any core token and add none: every direction resolves exactly the core's names.
   Packs ship as `@hansenexus/theme-<app>`; lexilink is still bundled here too (`BUNDLED_PACKS`
   in `scripts/resolve.ts`) until it adopts its pack.
+
+## Motion sets
+
+A motion set (design#221) is an id, a label and values for the motion tokens: every duration
+and easing of `semantic/motion.json` (the choreography included) and the transition durations
+of `semantic/scale.json`. `tokens.css` redeclares every motion variable per set under
+`[data-motion="<id>"]`, so a set swaps without a rebuild, on `<html>` or any subtree, the way
+`data-theme` swaps a theme. Reduced motion keeps winning over every set: `motion-reduce:`
+switches transitions off whatever the variables say.
+
+| Set | Character |
+| --- | --- |
+| `default` | the tokens as they are |
+| `calm` | about half as long again, gliding enters, no overshoot |
+| `snappy` | about two thirds as long, hard landings, a small overshoot on emphasis |
+
+Adding a set is one file plus one registry line: `tokens/motion-sets/<id>.json` with a `label`,
+a `description` and `values` (token path to value, `"180ms"` for a duration, four numbers for
+an easing; a token left out keeps the default), and the id in `tokens/motion-sets/sets.json`.
+The build refuses an unknown path, a value of the wrong type, a file without its registry line
+and the reverse (`scripts/motion-sets.ts`). Timers read a set through `motionMs(scale, set)` or
+`<MotionProvider set>` of `@hansenexus/ui`, which also gives `useChoreography()`. A theme pack
+names its default set in `pack.json` (`motion`, [themes/README.md](../../themes/README.md)).
+Swift gets the default set's tokens only.
 
 ## Recipes
 

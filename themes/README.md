@@ -6,7 +6,7 @@ The core stays in `packages/`: `@hansenexus/tokens`, `@hansenexus/ui`, `@hansene
 
 ```
 themes/<app>/                @hansenexus/theme-<app>
-  pack.json                 { "app": "<app>", "default": "<direction>", "illustrations": "<set>" }
+  pack.json                 { "app": "<app>", "default": "<direction>", "illustrations"?: "<set>", "motion"?: "<set>" }
   package.json              the npm package, built by scripts/theme-build.ts
   index.ts                  one ThemePackDefinition per direction, and `directions`
   <direction>/
@@ -35,6 +35,13 @@ themes/<app>/                @hansenexus/theme-<app>
   imports from `@hansenexus/ui` count as the item that exports them, `@hansenexus/shell` as a
   template, `./<file>` as that sibling skin (`bun run ratchet`, `scripts/levels.ts`). Skins are
   not exempt from the raw-colour ratchet.
+- **Motion.** `pack.json` may name the app's default motion set (design#221), an id of
+  `packages/tokens/tokens/motion-sets/sets.json` such as `calm` or `snappy`; without one the
+  pack uses `default`. A set is not part of `theme.css`: the app sets `data-motion="<set>"` on
+  `<html>` next to `data-theme` and passes the same id to `<MotionProvider set>` for its timers.
+  The build refuses a set that does not exist. The gallery follows the pack's default until its
+  Animation set picker (`?motionSet=`) names another. A pack never overrides the motion tokens
+  themselves: a set is how motion changes.
 - **Illustrations.** Illustration sets are an axis of their own (design#220): a pack names its
   default set in `pack.json`'s optional `"illustrations"`, an id of
   `@hansenexus/illustrations/sets`; without one the app gets the `estate` set. The app hands it to
