@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { packThemes } from "../../tokens/scripts/resolve";
 import {
+  coreReach,
   DEFAULT_SKIN,
   type Draft,
   draftCss,
@@ -22,11 +23,15 @@ import {
 import {
   applyDraft,
   authoredText,
+  coreTarget,
   dtcgValue,
+  editorCatalog,
   editorTheme,
   parseSkinsIndex,
   prCommands,
   renderSkinsIndex,
+  tokenFile,
+  wornBy,
 } from "../scripts/edit";
 import { serve } from "../scripts/gallery";
 import { dropLeafText, setLeafText } from "../scripts/json-text";
@@ -302,8 +307,8 @@ describe("the catalog and applyDraft (scripts/edit.ts)", () => {
     await expect(
       applyDraft(setToken(emptyDraft("fachwerk"), "all", "no.such", "1px"), { packsDir })
     ).rejects.toThrow(/not a token fachwerk can set/);
-    await expect(applyDraft(emptyDraft("kommandant"), { packsDir })).rejects.toThrow(
-      /not a pack direction/
+    await expect(applyDraft(emptyDraft("nope"), { packsDir })).rejects.toThrow(
+      /neither a core theme nor a pack direction/
     );
   });
 
@@ -417,5 +422,133 @@ describe("POST /api/edit on the local server (design#151)", () => {
       contrast: [],
     });
     expect(rebuilds).toBe(1);
+  });
+});
+
+// Core themes (design#233): hansenexus, kommandant and portal, written into packages/tokens.
+
+/** A repo-shaped temp copy: packages/tokens/tokens and workbench/projects.json. */
+function coreCopy(): { repo: string; tokensDir: string } {
+  const repo = realpathSync(mkdtempSync(join(tmpdir(), "design-edit-core-")));
+  const tokensDir = join(repo, "packages/tokens/tokens");
+  cpSync(join(REPO, "packages/tokens/tokens"), tokensDir, { recursive: true });
+  cpSync(join(REPO, "workbench/projects.json"), join(repo, "workbench/projects.json"));
+  return { repo, tokensDir };
+}
+
+describe("core themes in the editor (design#233)", () => {
+  test("the catalog offers the core themes first, each worn by its projects", async () => {
+    const catalog = await editorCatalog();
+    expect(catalog.slice(0, 3).map((t) => t.id)).toEqual(["hansenexus", "kommandant", "portal"]);
+    expect(catalog.find((t) => t.id === "fachwerk")?.core).toBeUndefined();
+    const kommandant = catalog.find((t) => t.id === "kommandant");
+    expect(kommandant?.core?.wornBy).toEqual(["kommandant (hansenexus/kommandant)"]);
+    expect(wornBy("hansenexus")).toEqual([
+      "hansenexus site (hansenexus/hn-monorepo/apps/hansenexus)",
+    ]);
+  });
+
+  test("a core theme's catalog: scope from tokens/themes/<theme>[.<mode>].json", async () => {
+    const theme = await editorTheme(coreTarget("kommandant"));
+    const by = (path: string) => theme.tokens.find((t) => t.path === path);
+    expect(theme.core).toBeDefined();
+    expect(by("size.row")).toMatchObject({
+      scope: "all",
+      authored: { dark: "{density.compact.row}" },
+    });
+    expect(by("surface.page")).toMatchObject({
+      scope: "mode",
+      authored: { dark: "{palette.leitstand.page}" },
+    });
+    expect(theme.refs.dark["palette.leitstand.page"]).toMatch(/^#[0-9a-f]{6}$/);
+    expect(tokenFile(coreTarget("portal", "/t"), "all")).toBe("/t/themes/portal.json");
+    expect(tokenFile(coreTarget("portal", "/t"), "light")).toBe("/t/themes/portal.light.json");
+  });
+
+  test("core tokens land in the core sources as one-line diffs, and resolve", async () => {
+    const { repo, tokensDir } = coreCopy();
+    const themes = join(tokensDir, "themes");
+    const before = readFileSync(join(themes, "kommandant.dark.json"), "utf8");
+    let d: Draft = emptyDraft("kommandant");
+    d = setToken(d, "all", "size.row", "{density.comfortable.row}");
+    d = setToken(d, "dark", "surface.page", "#0b0d0e");
+    const result = await applyDraft(d, { tokensDir, repo, format: false });
+    expect(result.files).toEqual([
+      "packages/tokens/tokens/themes/kommandant.dark.json",
+      "packages/tokens/tokens/themes/kommandant.json",
+    ]);
+    expect(result.core?.wornBy).toEqual(["kommandant (hansenexus/kommandant)"]);
+    const after = readFileSync(join(themes, "kommandant.dark.json"), "utf8");
+    const changed = after.split("\n").filter((l, i) => l !== before.split("\n")[i]);
+    expect(changed).toHaveLength(1);
+    expect(JSON.parse(after).surface.page.$value).toBe("#0b0d0e");
+    expect(JSON.parse(readFileSync(join(themes, "kommandant.json"), "utf8")).size.row.$value).toBe(
+      "{density.comfortable.row}"
+    );
+
+    // hansenexus has no per-mode file yet: a dark colour edit starts one.
+    const hn = await applyDraft(
+      setToken(emptyDraft("hansenexus"), "dark", "surface.page", "#101010"),
+      {
+        tokensDir,
+        repo,
+        format: false,
+      }
+    );
+    expect(hn.files).toEqual(["packages/tokens/tokens/themes/hansenexus.dark.json"]);
+    expect(
+      JSON.parse(readFileSync(join(themes, "hansenexus.dark.json"), "utf8")).surface.page.$value
+    ).toBe("#101010");
+  });
+
+  test("a core draft holds tokens only and is undone when it does not resolve", async () => {
+    const { repo, tokensDir } = coreCopy();
+    const file = join(tokensDir, "themes/portal.json");
+    const before = readFileSync(file, "utf8");
+    await expect(
+      applyDraft(setSkin(emptyDraft("portal"), "card.header", "fachwerk"), { tokensDir, repo })
+    ).rejects.toThrow(/core themes carry no skins/);
+    await expect(
+      applyDraft(setToken(emptyDraft("portal"), "all", "size.row", "{no.such}"), {
+        tokensDir,
+        repo,
+        format: false,
+      })
+    ).rejects.toThrow(/undone/);
+    expect(readFileSync(file, "utf8")).toBe(before);
+  });
+
+  test("a core PR and issue name the core change and who wears it", () => {
+    const result = {
+      theme: "hansenexus",
+      files: ["packages/tokens/tokens/themes/hansenexus.dark.json"],
+      contrast: [],
+      core: { wornBy: ["hansenexus site (hansenexus/hn-monorepo/apps/hansenexus)"] },
+    };
+    const cmds = prCommands(result, "main", "202611170900");
+    expect(cmds[0]).toEqual(["git", "switch", "-c", "editor/hansenexus-202611170900"]);
+    expect(cmds[2]).toEqual([
+      "git",
+      "commit",
+      "-m",
+      "feat(tokens): live-editor draft for core theme hansenexus",
+    ]);
+    const body = cmds[4]?.[cmds[4].length - 1] ?? "";
+    expect(body).toContain("**Core change.**");
+    expect(body).toContain("- hansenexus site (hansenexus/hn-monorepo/apps/hansenexus)");
+    expect(body).toContain("default theme");
+    expect(body).toContain("The editor releases nothing");
+
+    const theme = { id: "kommandant", core: { wornBy: ["kommandant (hansenexus/kommandant)"] } };
+    expect(coreReach(theme)).toContain("Worn by: kommandant (hansenexus/kommandant).");
+    const d = setToken(emptyDraft("kommandant"), "all", "size.row", "40px");
+    const issue = editIssueBody(d, theme);
+    expect(issue).toContain("core theme (packages/tokens)");
+    expect(issue).toContain(coreReach(theme));
+    expect(new URL(editIssueUrl(d, theme)).searchParams.get("title")).toBe(
+      "edit core theme kommandant: 1 change from the live editor"
+    );
+    // A pack's issue is unchanged.
+    expect(editIssueBody(d)).not.toContain("Core change");
   });
 });

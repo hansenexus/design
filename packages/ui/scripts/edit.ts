@@ -1,5 +1,6 @@
 // The live editor's files side (design#151): what the editor may change, as `virtual:editor`, and
-// writing a draft (gallery/edit.ts) back into a pack direction under themes/:
+// writing a draft (gallery/edit.ts) back into a pack direction under themes/ or, since design#233,
+// into a core theme of packages/tokens (tokens/themes/<theme>.json and <theme>.<mode>.json):
 // - token and recipe values into tokens.json (both modes) or tokens.<mode>.json, as DTCG;
 // - the skin of each slot: the direction's skins/index.ts regenerated, a skin borrowed from
 //   another pack copied in with its ./ helpers (a pack never imports another pack), a dropped
@@ -7,6 +8,9 @@
 // The written files are run through biome, and the direction is resolved and checked for contrast
 // (the same rules as `bun run contrast`): a draft that does not resolve is undone, a contrast
 // failure is reported and left to contrast CI on the PR, as are the screenshot baselines.
+// A core edit also regenerates the committed Swift tokens (swift/Sources/HansenexusTokens) and the
+// tokens' dist/, names itself a core change and lists the projects that wear the theme; core
+// themes carry no skins, so a core draft holds token edits only. Nothing here releases.
 // The local gallery server calls applyDraft() (POST /api/edit, scripts/gallery.ts); an agent runs
 // the CLI with the draft from the hosted gallery's issue.
 //
@@ -16,8 +20,11 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import type { BunPlugin } from "bun";
+import { build as buildTokens } from "../../tokens/scripts/build";
 import { checkSet } from "../../tokens/scripts/contrast";
 import {
+  CORE_THEMES,
+  DEFAULT_THEME,
   MODES,
   PACKS_DIR,
   type PackTheme,
@@ -26,6 +33,7 @@ import {
   resolveTokens,
   TOKENS_DIR,
 } from "../../tokens/scripts/resolve";
+import { generateSwift, SWIFT_OUT } from "../../tokens/scripts/swift";
 import {
   DEFAULT_SKIN,
   type Draft,
@@ -35,6 +43,7 @@ import {
   valueProblem,
 } from "../gallery/edit";
 import { dropLeafText, setLeafText } from "./json-text";
+import { readProjectsManifest } from "./projects";
 import { REPO } from "./workbench";
 
 type Mode = (typeof MODES)[number];
@@ -149,13 +158,49 @@ function flatten(tree: unknown, prefix = "", out: Record<string, unknown> = {}) 
   return out;
 }
 
+// ── Core themes (design#233) ────────────────────────────────────────────────────────────────
+
+/** A theme the editor writes: a pack direction, or (core) a core theme of packages/tokens. */
+export type EditTarget = PackTheme & { core?: boolean };
+
+/** Whether `theme` is one of @hansenexus/tokens' own themes. */
+export const isCoreTheme = (theme: string) => (CORE_THEMES as readonly string[]).includes(theme);
+
+/** A core theme as an edit target: its sources are tokens/themes/<theme>[.<mode>].json. */
+export function coreTarget(theme: string, tokensDir = TOKENS_DIR): EditTarget {
+  return {
+    id: theme,
+    app: "core",
+    direction: theme,
+    dir: join(tokensDir, "themes"),
+    isDefault: theme === DEFAULT_THEME,
+    core: true,
+  };
+}
+
+/** The file an edit of `scope` goes to: tokens.json / tokens.<mode>.json, or the core theme's. */
+export function tokenFile(target: EditTarget, scope: string): string {
+  if (target.core) {
+    return join(target.dir, scope === "all" ? `${target.id}.json` : `${target.id}.${scope}.json`);
+  }
+  return join(target.dir, scope === "all" ? "tokens.json" : `tokens.${scope}.json`);
+}
+
+/** The projects of workbench/projects.json that wear `theme`, as "label (repo/path)". */
+export function wornBy(theme: string, repo = REPO): string[] {
+  if (!existsSync(join(repo, "workbench/projects.json"))) return [];
+  return Object.values(readProjectsManifest(repo).projects)
+    .filter((p) => p.theme === theme)
+    .map((p) => `${p.label} (${p.repo}${p.path ? `/${p.path}` : ""})`);
+}
+
 /** The primitives a value may reference (core primitives and the direction's palette), resolved. */
-function primitiveRefs(pack: PackTheme, tokensDir: string): Record<string, string> {
+function primitiveRefs(pack: EditTarget, tokensDir: string): Record<string, string> {
   const raw: Record<string, unknown> = {};
   for (const f of ["color.json", "density.json"]) {
     flatten(readJson(join(tokensDir, "primitives", f)), "", raw);
   }
-  flatten(readJson(join(pack.dir, "palette.json")), "", raw);
+  if (!pack.core) flatten(readJson(join(pack.dir, "palette.json")), "", raw);
   const out: Record<string, string> = {};
   for (const [k, v] of Object.entries(raw)) out[k] = authoredText(v);
   for (let i = 0; i < 4; i++) {
@@ -167,17 +212,18 @@ function primitiveRefs(pack: PackTheme, tokensDir: string): Record<string, strin
   return out;
 }
 
-/** One pack direction as the editor sees it: every token but typography, both modes. */
+/** One pack direction or core theme as the editor sees it: every token but typography, both modes. */
 export async function editorTheme(
-  pack: PackTheme,
+  pack: EditTarget,
   tokensDir = TOKENS_DIR,
-  packsDir = PACKS_DIR
+  packsDir = PACKS_DIR,
+  repo = REPO
 ): Promise<EditorTheme> {
   const resolved = {} as Record<Mode, ResolvedToken[]>;
   for (const m of MODES) resolved[m] = await resolveTokens(pack.id, m, tokensDir, packsDir);
-  const base = readJson(join(pack.dir, "tokens.json"));
+  const base = readJson(tokenFile(pack, "all"));
   const modeFile = {} as Record<Mode, Json>;
-  for (const m of MODES) modeFile[m] = readJson(join(pack.dir, `tokens.${m}.json`));
+  for (const m of MODES) modeFile[m] = readJson(tokenFile(pack, m));
   const light = new Map(resolved.light.map((t) => [t.path, t]));
   const primitives = primitiveRefs(pack, tokensDir);
   const refs = {} as Record<Mode, Record<string, string>>;
@@ -204,12 +250,20 @@ export async function editorTheme(
         value: { dark: t.value, light: l.value },
       };
     });
-  return { id: pack.id, app: pack.app, direction: pack.direction, tokens, refs };
+  return {
+    id: pack.id,
+    app: pack.app,
+    direction: pack.direction,
+    tokens,
+    refs,
+    ...(pack.core ? { core: { wornBy: wornBy(pack.id, repo) } } : {}),
+  };
 }
 
-/** Every pack direction under `packsDir`, for `virtual:editor`. */
+/** The core themes, then every pack direction under `packsDir`, for `virtual:editor`. */
 export async function editorCatalog(tokensDir = TOKENS_DIR, packsDir = PACKS_DIR) {
-  return Promise.all(packThemes(packsDir).map((p) => editorTheme(p, tokensDir, packsDir)));
+  const targets = [...CORE_THEMES.map((t) => coreTarget(t, tokensDir)), ...packThemes(packsDir)];
+  return Promise.all(targets.map((p) => editorTheme(p, tokensDir, packsDir)));
 }
 
 /** `virtual:editor`: EDITOR_THEMES, the catalog the editor panel offers. */
@@ -389,6 +443,8 @@ export type ApplyResult = {
   files: string[];
   /** Contrast failures and errors of the direction after the edit (bun run contrast's rules). */
   contrast: string[];
+  /** Set for a core theme (design#233): the projects of workbench/projects.json that wear it. */
+  core?: { wornBy: string[] };
 };
 
 export type ApplyOptions = {
@@ -398,22 +454,34 @@ export type ApplyOptions = {
   repo?: string;
   /** Run biome format over the written files (off in the tests' temp copies). */
   format?: boolean;
+  /**
+   * After a core edit, regenerate the committed Swift tokens and the tokens' dist/ (design#233).
+   * On by default only when writing this checkout's packages/tokens.
+   */
+  regenerate?: boolean;
 };
 
 /** Writes a draft into its pack direction. A draft that does not resolve is undone and throws. */
 export async function applyDraft(input: unknown, options: ApplyOptions = {}): Promise<ApplyResult> {
   const { tokensDir = TOKENS_DIR, packsDir = PACKS_DIR, repo = REPO, format = true } = options;
+  const regenerate = options.regenerate ?? tokensDir === TOKENS_DIR;
   const draft = readDraft(input);
   if (typeof draft === "string") throw new Error(`edit: ${draft}`);
-  const pack = packThemes(packsDir).find((p) => p.id === draft.theme);
+  const pack: EditTarget | undefined = isCoreTheme(draft.theme)
+    ? coreTarget(draft.theme, tokensDir)
+    : packThemes(packsDir).find((p) => p.id === draft.theme);
   if (!pack) {
-    throw new Error(`edit: ${draft.theme} is not a pack direction; the editor writes only packs`);
+    throw new Error(`edit: ${draft.theme} is neither a core theme nor a pack direction`);
   }
-  const theme = await editorTheme(pack, tokensDir, packsDir);
+  if (pack.core && Object.keys(draft.skins).length) {
+    throw new Error(
+      `edit: ${draft.theme} is a core theme; core themes carry no skins (every slot renders the default), so skins are edited in a pack`
+    );
+  }
+  const theme = await editorTheme(pack, tokensDir, packsDir, repo);
   const types = new Map(theme.tokens.map((t) => [t.path, t]));
 
-  const fileOf = (scope: string) =>
-    join(pack.dir, scope === "all" ? "tokens.json" : `tokens.${scope}.json`);
+  const fileOf = (scope: string) => tokenFile(pack, scope);
   // Edited as text (scripts/json-text.ts): only the edited values change in the diff.
   const texts: Record<string, string> = {};
   const dirty = new Set<string>();
@@ -496,6 +564,16 @@ export async function applyDraft(input: unknown, options: ApplyOptions = {}): Pr
       Bun.spawnSync([biome, "format", "--write", ...present], { cwd: repo, stdout: "ignore" });
     }
   }
+  if (pack.core && regenerate && present.length) {
+    // The tokens' dist/ (ignored by git) so the gallery reloads the edit from the files, and the
+    // committed Swift tokens, whose staleness the tokens' tests fail on.
+    await buildTokens(tokensDir);
+    const swift = await generateSwift(tokensDir);
+    if (!existsSync(SWIFT_OUT) || readFileSync(SWIFT_OUT, "utf8") !== swift) {
+      writeFileSync(SWIFT_OUT, swift);
+      files.push(SWIFT_OUT);
+    }
+  }
   const contrast: string[] = [];
   for (const m of MODES) {
     const set = checkSet(pack.id, m, await resolveTokens(pack.id, m, tokensDir, packsDir));
@@ -506,17 +584,43 @@ export async function applyDraft(input: unknown, options: ApplyOptions = {}): Pr
       );
     }
   }
-  return { theme: pack.id, files: files.map((f) => relative(repo, f)).sort(), contrast };
+  return {
+    theme: pack.id,
+    files: files.map((f) => relative(repo, f)).sort(),
+    contrast,
+    ...(theme.core ? { core: theme.core } : {}),
+  };
 }
 
 // ── The pull request ────────────────────────────────────────────────────────────────────────
+
+/** The head of a core edit's PR body (design#233): what a core change reaches, and who wears it. */
+export function coreNotice(theme: string, worn: readonly string[]): string[] {
+  return [
+    `**Core change.** \`${theme}\` is a core theme of \`@hansenexus/tokens\`: this edit reaches every consumer on the next \`@hansenexus/tokens\` / \`@hansenexus/ui\` release. The editor releases nothing; the release stays the owner's tag step.`,
+    ...(theme === DEFAULT_THEME
+      ? [
+          "",
+          `\`${theme}\` is the default theme (\`:root\`): every other theme's and every pack's CSS is written as its difference from it, so the \`@hansenexus/theme-<app>\` packages pick the change up on their next build too.`,
+        ]
+      : []),
+    "",
+    "Projects of `workbench/projects.json` that wear it:",
+    "",
+    ...(worn.length ? worn.map((p) => `- ${p}`) : ["- none listed"]),
+    "",
+  ];
+}
 
 /** The commands --pr runs, in order (pure, so the tests read them). */
 export function prCommands(result: ApplyResult, branch: string, stamp: string): string[][] {
   const app = packThemes().find((p) => p.id === result.theme)?.app ?? result.theme;
   const onDefault = ["main", "master"].includes(branch);
-  const title = `feat(theme-${app}): live-editor draft for ${result.theme}`;
+  const title = result.core
+    ? `feat(tokens): live-editor draft for core theme ${result.theme}`
+    : `feat(theme-${app}): live-editor draft for ${result.theme}`;
   const body = [
+    ...(result.core ? coreNotice(result.theme, result.core.wornBy) : []),
     `The gallery's live editor (design#151) wrote these files for \`${result.theme}\`:`,
     "",
     ...result.files.map((f) => `- \`${f}\``),
