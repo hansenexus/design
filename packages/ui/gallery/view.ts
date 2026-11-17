@@ -4,6 +4,7 @@
 // tests/gallery-view.test.ts covers them without a DOM.
 import { type Density, densities, type Mode, modes } from "@hansenexus/tokens";
 import { motionMs } from "../src/motion";
+import { readProject } from "./projects";
 import { BUILD_THEMES, GALLERY_THEMES } from "./themes";
 
 /** The gallery scenes, one page each: kit is ./, the rest ?scene=<name>. */
@@ -30,6 +31,7 @@ export const SCENES = [
   "motion",
   "shell",
   "screens",
+  "projects",
   "vote",
 ] as const;
 export type Scene = (typeof SCENES)[number];
@@ -58,6 +60,7 @@ export const SCENE_LABELS: Record<Scene, string> = {
   motion: "Motion",
   shell: "Shell",
   screens: "App screens",
+  projects: "Projects",
   vote: "Votes",
 };
 
@@ -91,7 +94,7 @@ export const SCENE_GROUPS: { id: string; label: string; scenes: Scene[] }[] = [
     label: "Overlays",
     scenes: ["dialog", "alert-dialog", "menu", "select", "tooltip", "toast", "overlays"],
   },
-  { id: "templates", label: "Templates", scenes: ["shell", "screens"] },
+  { id: "templates", label: "Templates", scenes: ["shell", "screens", "projects"] },
   { id: "review", label: "Review", scenes: ["vote"] },
 ];
 
@@ -144,6 +147,8 @@ export interface View {
   matrix: Matrix;
   speed: Speed;
   motion: Motion;
+  /** The picked project of workbench/projects.json (design#222), "" for none. */
+  project: string;
 }
 
 /** Matches index.html: kommandant, dark. */
@@ -156,6 +161,7 @@ export const DEFAULT_VIEW: View = {
   matrix: "off",
   speed: "1",
   motion: "full",
+  project: "",
 };
 
 export const VIEW_OPTIONS = {
@@ -177,6 +183,7 @@ const KEYS = [
   "matrix",
   "speed",
   "motion",
+  "project",
 ] as const;
 
 function pick<T extends string>(list: readonly T[], value: string | null, fallback: T): T {
@@ -212,6 +219,7 @@ export function readView(query: URLSearchParams): View {
     matrix: pick(VIEW_OPTIONS.matrix, query.get("matrix"), DEFAULT_VIEW.matrix),
     speed: pick(VIEW_OPTIONS.speed, query.get("speed"), DEFAULT_VIEW.speed),
     motion: pick(VIEW_OPTIONS.motion, query.get("motion"), DEFAULT_VIEW.motion),
+    project: readProject(query.get("project")),
   };
 }
 

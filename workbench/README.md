@@ -162,3 +162,57 @@ http://127.0.0.1:4410/gallery/?scene=screens&screen=example/machines&theme=fachw
 Owner steps, once: create the GitHub App and set its variable and secret; give the Harbor push
 robot delete on the `design` project; merge the hn-infra change; then set
 `KIT_PREVIEWS_ENABLED=true`.
+
+## Projects (design#222)
+
+`projects.json` lists the projects around the design system: who consumes it, who offers a theme
+pack, who offers screens. The gallery's **Projects** scene (`?scene=projects`) shows who consumes
+which `@hansenexus/*` package at which range, and the **Project** picker at the top of the tree
+picks one: its theme, and in the screens scene only its app's screens, in one step, as
+`?project=<id>`.
+
+### Register a project
+
+Add an entry under `projects`, keyed by a kebab-case id, and open a PR:
+
+```json
+"fachwerk": {
+  "label": "fachwerk",
+  "repo": "hansenexus/fachwerk",
+  "roles": ["consumer", "offers-pack"],
+  "theme": "fachwerk"
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `label` | the name the gallery shows |
+| `repo` | `owner/name` on GitHub |
+| `path` | the project's folder inside `repo`, when it shares one (`apps/lexilink` in hn-monorepo) |
+| `roles` | `consumer`, `offers-pack`, `offers-screens` (one or more) |
+| `theme` | the data-theme it wears, picked with the project; `offers-pack` needs one from its pack under `themes/` |
+| `app` | its key in `apps.json`; goes together with `offers-screens` |
+| `illustrations`, `motion` | its illustration set and motion set, once those axes exist (optional) |
+
+`bun test tests/projects.test.ts` (in `packages/ui`) holds the schema; the gallery build fails on
+a broken entry. **The repository is public:** an entry holds names and roles only, nothing from a
+private repository beyond its name.
+
+### The scan
+
+At gallery build (`scripts/projects.ts`, also `bun scripts/projects.ts` on its own) each project
+with a local checkout is scanned: every `package.json` under it (or under `path`), outside
+`node_modules` and build output, for the packages this repository publishes. It records package
+and range (a `catalog:` range resolved through the checkout's catalogs) and whether the range is
+behind: it does not admit the version this repository's `package.json` carries, i.e. the last
+release. Other `@hansenexus/*` packages are not this system's and are left out.
+
+The checkout is found as an app's: `WORKBENCH_<PROJECT>` or `WORKBENCH_<REPO NAME>` (an absolute
+checkout of the repository; `path` applies inside it), else `.checkouts/<project>`. Without one
+the project shows unscanned, with the variable to set. The result is build data
+(`gallery/dist/projects.json`, `virtual:projects`), never committed.
+
+```sh
+cd packages/ui
+WORKBENCH_KOMMANDANT=$HOME/repos/kommandant WORKBENCH_HN_MONOREPO=$HOME/repos/hn-monorepo bun scripts/projects.ts
+```
