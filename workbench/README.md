@@ -61,7 +61,7 @@ gallery shows them on the screens index, and an app can run it in its own tests.
 - **Realistic fixtures**, in volume and content, with invented names: the owner could not judge a
   synthetic mockup (kommandant#783).
 - **Imports**: relative files inside the screen folders, `react`, `react-dom`, `@hansenexus/*`,
-  `radix-ui`, and the aliases of the app's `apps.json` entry. The gallery build fails on anything
+  `radix-ui`, and the aliases and `allow` list of the app's `apps.json` entry. The gallery build fails on anything
   else (`packages/ui/scripts/workbench.ts`); vendor what a screen needs into its folders. The
   allowed packages resolve to the gallery's own copies: one React, one skin context.
 - **No theme of its own.** Never set `data-theme` or `data-mode`, never mount `<ThemePack>`: the
@@ -80,8 +80,12 @@ gallery shows them on the screens index, and an app can run it in its own tests.
       "repo": "hansenexus/fachwerk",
       "ref": "<commit sha>",
       "entry": "packages/screens/src/index.ts",
-      "aliases": { "@fachwerk/brand": "packages/ui/src/brand" },
-      "css": "packages/screens/src/screens.css"
+      "aliases": {
+        "@fachwerk/ui": "packages/ui",
+        "@fachwerk/module-quiz": "packages/modules/quiz"
+      },
+      "allow": ["next-intl", "clsx"],
+      "css": "packages/ui/src/styles/utilities.css"
     }
   }
 }
@@ -92,8 +96,9 @@ gallery shows them on the screens index, and an app can run it in its own tests.
 | `path` | an app in this repository: its folder, repo-relative |
 | `repo`, `ref` | an app elsewhere: `owner/name` and the commit the gallery bundles |
 | `entry` | the screens entry, relative to the app's root (`path`, or the checkout) |
-| `aliases` | bare specifiers the screens import from the app's own packages, root-relative; their files keep the same rules |
-| `css` | a stylesheet beyond the Tailwind utilities (optional) |
+| `aliases` | bare specifiers the screens import from the app's own packages, root-relative; their files keep the same rules. An alias that names a package folder resolves through its `exports["."]` (Bun resolves a bare folder by its index file only) |
+| `allow` | further npm packages the app's screens may import, exact names (subpaths included); they resolve to the gallery's copies, so `packages/ui` lists each as a devDependency at the app's locked version (optional) |
+| `css` | a stylesheet beyond the Tailwind utilities, `@utility` blocks only, no theme (optional) |
 
 The screen folders are the entry's folder and the alias targets.
 

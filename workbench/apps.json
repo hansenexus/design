@@ -1,6 +1,21 @@
 {
   "$comment": "The apps whose screens the gallery workbench renders (design#148). README.md has the fields.",
   "apps": {
-    "example": { "path": "workbench/example", "entry": "index.ts" }
+    "example": { "path": "workbench/example", "entry": "index.ts" },
+    "fachwerk": {
+      "repo": "hansenexus/fachwerk",
+      "ref": "aab237718958ba6e92e2ef622a041e7ae39a505d",
+      "entry": "packages/screens/src/index.ts",
+      "aliases": {
+        "@fachwerk/ui": "packages/ui",
+        "@fachwerk/core": "packages/core/src",
+        "@fachwerk/module-lexilink": "packages/modules/lexilink",
+        "@fachwerk/module-quiz": "packages/modules/quiz",
+        "@fachwerk/module-seating": "packages/modules/seating",
+        "@fachwerk/module-timetable": "packages/modules/timetable",
+        "@fachwerk/screens": "packages/screens"
+      },
+      "allow": ["next-intl", "use-intl", "clsx", "tailwind-merge", "zod"]
+    }
   }
 }
