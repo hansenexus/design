@@ -25,6 +25,20 @@ const js = await Bun.build({
   splitting: false,
   // Production JSX runtime, as in @hansenexus/ui (design#27).
   jsx: { runtime: "automatic", development: false },
+  // `animated` imports `state` and `animations` (design#223): kept as imports of the shipped
+  // modules, not bundled in, so the page has one IllustrationSetProvider context, not two.
+  plugins: [
+    {
+      name: "shared-modules",
+      setup(build) {
+        build.onResolve({ filter: /^\.\/(state|animations)$/ }, (args) =>
+          args.importer.endsWith("animated.tsx")
+            ? { path: `${args.path}.js`, external: true }
+            : undefined
+        );
+      },
+    },
+  ],
 });
 if (!js.success) {
   for (const log of js.logs) console.error(log);

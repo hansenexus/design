@@ -127,6 +127,14 @@
     "./state": {
       "types": "./dist/state.d.ts",
       "import": "./dist/state.js"
+    },
+    "./animations": {
+      "types": "./dist/animations.d.ts",
+      "import": "./dist/animations.js"
+    },
+    "./animated": {
+      "types": "./dist/animated.d.ts",
+      "import": "./dist/animated.js"
     }
   },
   "files": [

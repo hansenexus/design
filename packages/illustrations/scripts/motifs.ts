@@ -43,12 +43,17 @@ export type Entry = {
 /**
  * Modules that are not motifs but ship as import paths of their own: the school family's
  * variant recipes, so an app can list and type the variants without importing a motif; the set
- * registry (design#220), data only; and StateIllustration, the state motifs of the active set.
+ * registry (design#220), data only; StateIllustration, the state motifs of the active set; and
+ * the animated motifs (design#223): their recipes and stylesheet as data in `animations`, the
+ * component in `animated`.
  */
-export const MODULES = ["school/variants", "sets", "state"] as const;
+export const MODULES = ["school/variants", "sets", "state", "animations", "animated"] as const;
 
-/** A module's source below src/: `.tsx` for the one that renders, `.ts` for the rest. */
-export const moduleSource = (m: string) => (m === "state" ? `${m}.tsx` : `${m}.ts`);
+/** The modules that render, sourced from `.tsx`. */
+const RENDERING = new Set<string>(["state", "animated"]);
+
+/** A module's source below src/: `.tsx` for the ones that render, `.ts` for the rest. */
+export const moduleSource = (m: string) => (RENDERING.has(m) ? `${m}.tsx` : `${m}.ts`);
 
 /** Every motif of every family, as one flat list. */
 export const ENTRIES: Entry[] = Object.entries(FAMILIES).flatMap(([family, motifs]) =>
