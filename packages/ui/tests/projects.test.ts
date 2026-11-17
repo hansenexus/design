@@ -195,9 +195,16 @@ describe("?project= view param", () => {
     expect(readProject("ghost")).toBe("");
     const view = readView(new URLSearchParams("project=fachwerk&theme=fachwerk"));
     expect(view.project).toBe("fachwerk");
-    expect(writeView(new URLSearchParams(), view).toString()).toBe(
-      "theme=fachwerk&project=fachwerk"
-    );
+    // The project's theme and set are the defaults under it: the link is the one param.
+    expect(writeView(new URLSearchParams(), view).toString()).toBe("project=fachwerk");
+    const bare = readView(new URLSearchParams("project=fachwerk"));
+    expect(bare).toMatchObject({ theme: "fachwerk", illustrations: "school" });
+    // An override under a project is written out, the default view's value included.
+    const back = { ...bare, theme: DEFAULT_VIEW.theme, illustrations: "auto" };
+    const query = writeView(new URLSearchParams(), back);
+    expect(query.get("theme")).toBe(DEFAULT_VIEW.theme);
+    expect(query.get("illustrations")).toBe("auto");
+    expect(readView(query)).toEqual(back);
     expect(readView(new URLSearchParams("project=ghost")).project).toBe("");
     expect(writeView(new URLSearchParams(), DEFAULT_VIEW).toString()).toBe("");
   });
@@ -235,7 +242,8 @@ describe("?project= view param", () => {
 
   test("a project that offers screens narrows the screens scene to its app", () => {
     expect(projectApp({ project: "example" })).toBe("example");
-    expect(projectApp({ project: "fachwerk" })).toBeNull();
+    expect(projectApp({ project: "fachwerk" })).toBe("fachwerk");
+    expect(projectApp({ project: "kommandant" })).toBeNull();
     expect(projectApp({ project: "" })).toBeNull();
   });
 });

@@ -10,9 +10,10 @@
     "fachwerk": {
       "label": "fachwerk",
       "repo": "hansenexus/fachwerk",
-      "roles": ["consumer", "offers-pack"],
+      "roles": ["consumer", "offers-pack", "offers-screens"],
       "theme": "fachwerk",
-      "illustrations": "school"
+      "illustrations": "school",
+      "app": "fachwerk"
     },
     "lexilink": {
       "label": "lexilink",

@@ -5,6 +5,7 @@
 // view param without a DOM or a build.
 
 import { isSetId, SET_IDS } from "@hansenexus/illustrations/sets";
+import { motionSetIds } from "@hansenexus/tokens";
 import apps from "../../../workbench/apps.json" with { type: "json" };
 import manifest from "../../../workbench/projects.json" with { type: "json" };
 import { BUILD_THEMES, packOf } from "./themes";
@@ -24,7 +25,7 @@ export type Project = {
   theme?: string;
   /** Its illustration set of @hansenexus/illustrations/sets (design#220). Picking the project sets it. */
   illustrations?: string;
-  /** Its motion set, once that axis exists (a sibling issue of design#147). */
+  /** Its motion set of @hansenexus/tokens (design#221). Picking the project sets it. */
   motion?: string;
   /** Its key in workbench/apps.json, when it offers screens. */
   app?: string;
@@ -101,8 +102,8 @@ export function validateProjects(
       problems.push(
         `${at}: illustrations ${String(p.illustrations)} is no set (${SET_IDS.join(", ")})`
       );
-    if (p.motion !== undefined && (typeof p.motion !== "string" || !p.motion))
-      problems.push(`${at}: motion must be a set name`);
+    if (p.motion !== undefined && !(motionSetIds as readonly unknown[]).includes(p.motion))
+      problems.push(`${at}: motion ${String(p.motion)} is no set (${motionSetIds.join(", ")})`);
   }
   return problems;
 }
@@ -113,15 +114,14 @@ export function readProject(value: string | null): string {
 }
 
 /**
- * The view after picking `id`, in one step: the project, the theme it wears and its illustration
- * set. A project without a set goes back to "auto", the pack default of the theme it sets, so an
- * override from the previous pick does not stick. "" clears the project and keeps the rest. The
- * motion set joins here once the view has it.
+ * The view after picking `id`, in one step: the project, the theme it wears, its illustration set
+ * and its motion set. A project without a set goes back to "auto", the pack default of the theme
+ * it sets, so an override from the previous pick does not stick. "" clears the project and keeps
+ * the rest.
  */
-export function applyProject<V extends Pick<View, "theme" | "project" | "illustrations">>(
-  view: V,
-  id: string
-): V {
+export function applyProject<
+  V extends Pick<View, "theme" | "project" | "illustrations" | "motionSet">,
+>(view: V, id: string): V {
   const project = findProject(id);
   if (!project) return { ...view, project: "" };
   return {
@@ -129,6 +129,7 @@ export function applyProject<V extends Pick<View, "theme" | "project" | "illustr
     project: project.id,
     theme: project.theme ?? view.theme,
     illustrations: project.illustrations ?? "auto",
+    motionSet: project.motion ?? "auto",
   };
 }
 
