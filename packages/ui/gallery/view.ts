@@ -5,7 +5,7 @@
 import { SET_IDS } from "@hansenexus/illustrations/sets";
 import { type Density, densities, type Mode, modes } from "@hansenexus/tokens";
 import { motionMs } from "../src/motion";
-import { readProject } from "./projects";
+import { findProject, readProject } from "./projects";
 import { BUILD_THEMES, GALLERY_THEMES } from "./themes";
 
 /** The gallery scenes, one page each: kit is ./, the rest ?scene=<name>. */
@@ -229,9 +229,25 @@ export function comparedThemes(view: Pick<View, "theme" | "compare">): string[] 
   return [...new Set([view.theme, ...compareThemes(view)])];
 }
 
-export function readView(query: URLSearchParams): View {
+/**
+ * What a key falls back to when the query leaves it out: the picked project's theme and
+ * illustration set (design#222), else the default view. So ?project=<id> alone is the whole link.
+ */
+function viewDefaults(project: string): View {
+  const picked = findProject(project);
+  if (!picked) return DEFAULT_VIEW;
   return {
-    theme: pick(VIEW_OPTIONS.theme, query.get("theme"), DEFAULT_VIEW.theme),
+    ...DEFAULT_VIEW,
+    theme: picked.theme ?? DEFAULT_VIEW.theme,
+    illustrations: picked.illustrations ?? DEFAULT_VIEW.illustrations,
+  };
+}
+
+export function readView(query: URLSearchParams): View {
+  const project = readProject(query.get("project"));
+  const defaults = viewDefaults(project);
+  return {
+    theme: pick(VIEW_OPTIONS.theme, query.get("theme"), defaults.theme),
     density: pick(VIEW_OPTIONS.density, query.get("density"), DEFAULT_VIEW.density),
     mode: pick(VIEW_OPTIONS.mode, query.get("mode"), DEFAULT_VIEW.mode),
     viewport: pick(VIEW_OPTIONS.viewport, query.get("viewport"), DEFAULT_VIEW.viewport),
@@ -242,9 +258,9 @@ export function readView(query: URLSearchParams): View {
     illustrations: pick(
       VIEW_OPTIONS.illustrations,
       query.get("illustrations"),
-      DEFAULT_VIEW.illustrations
+      defaults.illustrations
     ),
-    project: readProject(query.get("project")),
+    project,
   };
 }
 
@@ -262,11 +278,16 @@ export function itemHref(item: string, view: View): string {
   return `?${writeView(new URLSearchParams({ item }), view).toString()}`;
 }
 
-/** A copy of `query` with the view's keys set; defaults are dropped so plain links stay plain. */
+/**
+ * A copy of `query` with the view's keys set; defaults are dropped so plain links stay plain. Under
+ * a picked project its theme and illustration set are the defaults, so an override of them is
+ * written out even when it is the default view's value.
+ */
 export function writeView(query: URLSearchParams, view: View): URLSearchParams {
   const next = new URLSearchParams(query);
+  const defaults = viewDefaults(view.project);
   for (const key of KEYS) {
-    if (view[key] === DEFAULT_VIEW[key]) next.delete(key);
+    if (view[key] === defaults[key]) next.delete(key);
     else next.set(key, view[key]);
   }
   return next;
