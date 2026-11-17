@@ -11,14 +11,16 @@
       "label": "fachwerk",
       "repo": "hansenexus/fachwerk",
       "roles": ["consumer", "offers-pack"],
-      "theme": "fachwerk"
+      "theme": "fachwerk",
+      "illustrations": "school"
     },
     "lexilink": {
       "label": "lexilink",
       "repo": "hansenexus/hn-monorepo",
       "path": "apps/lexilink",
       "roles": ["consumer", "offers-pack"],
-      "theme": "lexilink"
+      "theme": "lexilink",
+      "illustrations": "estate"
     },
     "portal": {
       "label": "hn-monorepo portal",

@@ -3,6 +3,8 @@
 // repository is public); scripts/projects.ts adds each local checkout's @hansenexus/* ranges at
 // gallery build, as `virtual:projects`. Pure, so tests/projects.test.ts covers the schema and the
 // view param without a DOM or a build.
+
+import { isSetId, SET_IDS } from "@hansenexus/illustrations/sets";
 import apps from "../../../workbench/apps.json" with { type: "json" };
 import manifest from "../../../workbench/projects.json" with { type: "json" };
 import { BUILD_THEMES, packOf } from "./themes";
@@ -20,8 +22,9 @@ export type Project = {
   roles: Role[];
   /** The data-theme it wears: its pack's direction or a core theme. Picking the project sets it. */
   theme?: string;
-  /** Its illustration set and motion set, once those axes exist (sibling issues of design#147). */
+  /** Its illustration set of @hansenexus/illustrations/sets (design#220). Picking the project sets it. */
   illustrations?: string;
+  /** Its motion set, once that axis exists (a sibling issue of design#147). */
   motion?: string;
   /** Its key in workbench/apps.json, when it offers screens. */
   app?: string;
@@ -94,9 +97,12 @@ export function validateProjects(
       problems.push(`${at}: offers-screens and app go together`);
     if (p.app !== undefined && !appIds.includes(p.app as string))
       problems.push(`${at}: app ${String(p.app)} is not in workbench/apps.json`);
-    for (const key of ["illustrations", "motion"] as const)
-      if (p[key] !== undefined && (typeof p[key] !== "string" || !p[key]))
-        problems.push(`${at}: ${key} must be a set name`);
+    if (p.illustrations !== undefined && !isSetId(p.illustrations))
+      problems.push(
+        `${at}: illustrations ${String(p.illustrations)} is no set (${SET_IDS.join(", ")})`
+      );
+    if (p.motion !== undefined && (typeof p.motion !== "string" || !p.motion))
+      problems.push(`${at}: motion must be a set name`);
   }
   return problems;
 }
@@ -107,13 +113,23 @@ export function readProject(value: string | null): string {
 }
 
 /**
- * The view after picking `id`, in one step: the project, and the theme it wears. "" clears the
- * project and keeps the rest. The illustration and motion sets join here once the view has them.
+ * The view after picking `id`, in one step: the project, the theme it wears and its illustration
+ * set. A project without a set goes back to "auto", the pack default of the theme it sets, so an
+ * override from the previous pick does not stick. "" clears the project and keeps the rest. The
+ * motion set joins here once the view has it.
  */
-export function applyProject<V extends Pick<View, "theme" | "project">>(view: V, id: string): V {
+export function applyProject<V extends Pick<View, "theme" | "project" | "illustrations">>(
+  view: V,
+  id: string
+): V {
   const project = findProject(id);
   if (!project) return { ...view, project: "" };
-  return { ...view, project: project.id, theme: project.theme ?? view.theme };
+  return {
+    ...view,
+    project: project.id,
+    theme: project.theme ?? view.theme,
+    illustrations: project.illustrations ?? "auto",
+  };
 }
 
 /** The screens app the picked project offers, or null: the screens scene shows only its screens. */

@@ -12,6 +12,7 @@ import {
   MODULES,
   MOTIFS,
   type MotifId,
+  moduleSource,
   SCHOOL,
   SCHOOL_STATES,
 } from "../scripts/motifs";
@@ -132,7 +133,7 @@ describe("package shape", () => {
         (f) =>
           f !== "frame.tsx" &&
           !(family === "" && f in FAMILIES) &&
-          !MODULES.some((m) => `${family}/${f}` === `${m}.ts`)
+          !MODULES.some((m) => (family ? `${family}/${f}` : f) === moduleSource(m))
       );
       const ids = Object.keys(FAMILIES[family] ?? {});
       expect(sources.sort()).toEqual(ids.map((id) => `${id}.tsx`).sort());

@@ -2,8 +2,10 @@ import { describe, expect, test } from "bun:test";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import { packIllustrations } from "../gallery/packs";
 import {
   applyProject,
+  findProject,
   PROJECT_IDS,
   PROJECTS_MANIFEST,
   projectApp,
@@ -200,12 +202,35 @@ describe("?project= view param", () => {
     expect(writeView(new URLSearchParams(), DEFAULT_VIEW).toString()).toBe("");
   });
 
-  test("picking a project sets its theme in one step; none clears it and keeps the theme", () => {
+  test("picking a project sets its theme and illustration set in one step; none clears it", () => {
     const picked = applyProject(DEFAULT_VIEW, "fachwerk");
-    expect(picked).toEqual({ ...DEFAULT_VIEW, project: "fachwerk", theme: "fachwerk" });
+    expect(picked).toEqual({
+      ...DEFAULT_VIEW,
+      project: "fachwerk",
+      theme: "fachwerk",
+      illustrations: "school",
+    });
     expect(applyProject(picked, "")).toEqual({ ...picked, project: "" });
-    // A project without a theme keeps the current one.
-    expect(applyProject(picked, "design-ops")).toEqual({ ...picked, project: "design-ops" });
+    expect(applyProject(picked, "lexilink")).toMatchObject({ illustrations: "estate" });
+    // A project without a theme keeps the current one; without a set it goes back to auto.
+    expect(applyProject(picked, "design-ops")).toEqual({
+      ...picked,
+      project: "design-ops",
+      illustrations: "auto",
+    });
+    expect(applyProject({ ...DEFAULT_VIEW, illustrations: "school" }, "kommandant")).toMatchObject({
+      illustrations: "auto",
+    });
+  });
+
+  test("a project's illustration set matches its pack's default and is a known set", () => {
+    for (const id of ["fachwerk", "lexilink"])
+      expect(findProject(id)?.illustrations).toBe(packIllustrations(id));
+    expect(
+      validateProjects({
+        projects: { x: { label: "x", repo: "a/b", roles: ["consumer"], illustrations: "ghost" } },
+      })
+    ).toEqual(["projects.json: x: illustrations ghost is no set (estate, school)"]);
   });
 
   test("a project that offers screens narrows the screens scene to its app", () => {

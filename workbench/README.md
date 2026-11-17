@@ -197,7 +197,8 @@ Add an entry under `projects`, keyed by a kebab-case id, and open a PR:
 | `roles` | `consumer`, `offers-pack`, `offers-screens` (one or more) |
 | `theme` | the data-theme it wears, picked with the project; `offers-pack` needs one from its pack under `themes/` |
 | `app` | its key in `apps.json`; goes together with `offers-screens` |
-| `illustrations`, `motion` | its illustration set and motion set, once those axes exist (optional) |
+| `illustrations` | its illustration set of `@hansenexus/illustrations/sets` (`estate`, `school`), picked with the project; without one the gallery follows the pack default (optional) |
+| `motion` | its motion set, once that axis exists (optional) |
 
 `bun test tests/projects.test.ts` (in `packages/ui`) holds the schema; the gallery build fails on
 a broken entry. **The repository is public:** an entry holds names and roles only, nothing from a

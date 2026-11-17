@@ -1,5 +1,6 @@
 {
   "app": "lexilink",
   "default": "ledger",
+  "illustrations": "estate",
   "description": "lexilink's brand on the hansenexus core. ledger is B2 Ledger: pure paper and ink, 1px ink lines, square corners, one orange block. Still bundled into @hansenexus/tokens (data-theme=\"lexilink\") until lexilink adopts @hansenexus/theme-lexilink."
 }

@@ -119,6 +119,14 @@
     "./school/variants": {
       "types": "./dist/school/variants.d.ts",
       "import": "./dist/school/variants.js"
+    },
+    "./sets": {
+      "types": "./dist/sets.d.ts",
+      "import": "./dist/sets.js"
+    },
+    "./state": {
+      "types": "./dist/state.d.ts",
+      "import": "./dist/state.js"
     }
   },
   "files": [
