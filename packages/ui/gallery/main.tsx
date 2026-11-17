@@ -129,6 +129,7 @@ import { Navigation } from "./navigation";
 import { Overlays } from "./overlays";
 import { packFor, packIllustrations, registerLive } from "./packs";
 import { BareContext, PreviewCard, ViewContext, ViewProvider } from "./preview";
+import { Projects } from "./projects-scene";
 import { Screens } from "./screens";
 import { ShellScene } from "./shell";
 import {
@@ -1157,6 +1158,8 @@ function Scenes({ scene }: { scene: Scene }) {
       return <Motion />;
     case "screens":
       return <Screens query={query} />;
+    case "projects":
+      return <Projects />;
     case "shell":
       return <ShellScene />;
     case "loading":

@@ -5,6 +5,7 @@
 import { SET_IDS } from "@hansenexus/illustrations/sets";
 import { type Density, densities, type Mode, modes } from "@hansenexus/tokens";
 import { motionMs } from "../src/motion";
+import { readProject } from "./projects";
 import { BUILD_THEMES, GALLERY_THEMES } from "./themes";
 
 /** The gallery scenes, one page each: kit is ./, the rest ?scene=<name>. */
@@ -31,6 +32,7 @@ export const SCENES = [
   "motion",
   "shell",
   "screens",
+  "projects",
   "vote",
 ] as const;
 export type Scene = (typeof SCENES)[number];
@@ -59,6 +61,7 @@ export const SCENE_LABELS: Record<Scene, string> = {
   motion: "Motion",
   shell: "Shell",
   screens: "App screens",
+  projects: "Projects",
   vote: "Votes",
 };
 
@@ -92,7 +95,7 @@ export const SCENE_GROUPS: { id: string; label: string; scenes: Scene[] }[] = [
     label: "Overlays",
     scenes: ["dialog", "alert-dialog", "menu", "select", "tooltip", "toast", "overlays"],
   },
-  { id: "templates", label: "Templates", scenes: ["shell", "screens"] },
+  { id: "templates", label: "Templates", scenes: ["shell", "screens", "projects"] },
   { id: "review", label: "Review", scenes: ["vote"] },
 ];
 
@@ -161,6 +164,8 @@ export interface View {
   motion: Motion;
   /** "auto" (the pack's default) or a set id: ILLUSTRATION_CHOICES. */
   illustrations: string;
+  /** The picked project of workbench/projects.json (design#222), "" for none. */
+  project: string;
 }
 
 /** Matches index.html: kommandant, dark. */
@@ -174,6 +179,7 @@ export const DEFAULT_VIEW: View = {
   speed: "1",
   motion: "full",
   illustrations: "auto",
+  project: "",
 };
 
 export const VIEW_OPTIONS = {
@@ -197,6 +203,7 @@ const KEYS = [
   "speed",
   "motion",
   "illustrations",
+  "project",
 ] as const;
 
 function pick<T extends string>(list: readonly T[], value: string | null, fallback: T): T {
@@ -237,6 +244,7 @@ export function readView(query: URLSearchParams): View {
       query.get("illustrations"),
       DEFAULT_VIEW.illustrations
     ),
+    project: readProject(query.get("project")),
   };
 }
 

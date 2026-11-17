@@ -30,6 +30,7 @@ import { BUNDLED_PACKS, packThemes } from "../../tokens/scripts/resolve";
 import { DECIDE_PATH, type DecideBody, type DecideReply } from "../gallery/decide";
 import { graphSource, loadGraph } from "./graph";
 import { liveCss, livePlugin, liveSource } from "./live";
+import { latestVersions, projectsPlugin, readProjectsManifest, scanProjects } from "./projects";
 import { decide, readDecision, registrySource } from "./variants";
 import { readManifest, resolveApps, screensCss, screensPlugin } from "./workbench";
 
@@ -154,6 +155,10 @@ export async function buildGallery() {
   const live = liveSource();
   console.log(`gallery: live packs from ${live.label}`);
   writeFileSync(resolve(OUT, "live.css"), await liveCss(live));
+  // The projects around the system (design#222): the manifest plus a scan of local checkouts.
+  const latest = latestVersions();
+  const projects = scanProjects(readProjectsManifest(), { latest });
+  writeFileSync(resolve(OUT, "projects.json"), `${JSON.stringify(projects, null, 2)}\n`);
   mkdirSync(resolve(OUT, "brand"), { recursive: true });
   for (const file of BRAND_FILES) {
     copyFileSync(resolve(BRAND, file), resolve(OUT, "brand", file.split("/").pop() ?? file));
@@ -167,6 +172,7 @@ export async function buildGallery() {
     plugins: [
       screensPlugin(screens.apps, screens.skipped),
       livePlugin(live),
+      projectsPlugin(projects, latest),
       variants,
       uiSource,
       graphPlugin(graphSource(graph)),
