@@ -7,7 +7,7 @@
 //
 // The import rules: a file in an app's screen folders (its entry's folder and its alias targets)
 // imports only relative files inside those folders, react, react-dom, @hansenexus/*, radix-ui and
-// the app's aliases. Anything else (convex, next, an app's data layer) fails the build. The
+// the app's aliases and `allow` list. Anything else (convex, next, an app's data layer) fails the build. The
 // allowed packages resolve to the gallery's own copies, so there is one React and one skin
 // context, and @hansenexus/ui and @hansenexus/shell come from source like the rest of the gallery.
 import { existsSync, readFileSync, realpathSync } from "node:fs";
@@ -29,6 +29,11 @@ export type AppSource = {
   aliases?: Record<string, string>;
   /** A stylesheet the screens need beyond Tailwind utilities, root-relative. */
   css?: string;
+  /**
+   * Further packages this app's screens may import (exact names, subpaths included). They resolve
+   * to the gallery's own copies, so packages/ui lists each as a devDependency (design#157).
+   */
+  allow?: string[];
 };
 
 export type Manifest = { apps: Record<string, AppSource> };
@@ -42,6 +47,8 @@ export type ResolvedApp = {
   /** Absolute: the folders whose files count as screen code (the entry's, the alias targets'). */
   dirs: string[];
   css?: string;
+  /** The app's `allow` list from apps.json. */
+  allow?: readonly string[];
 };
 
 export type SkippedApp = { app: string; reason: string };
@@ -130,12 +137,31 @@ export function resolveApps(
     const css = source.css ? resolve(root, source.css) : undefined;
     if (css && !existsSync(css)) throw new Error(`workbench: ${app}'s css ${css} does not exist`);
     const dirs = [dirname(entry), ...Object.values(aliases)];
-    apps.push({ app, entry, aliases, dirs, css });
+    apps.push({ app, entry, aliases, dirs, css, allow: source.allow ?? [] });
   }
   return { apps, skipped };
 }
 
 const inside = (file: string, dir: string) => file === dir || file.startsWith(dir + sep);
+
+const under = (spec: string, name: string) => spec === name || spec.startsWith(`${name}/`);
+
+const field = (value: unknown, key: string): unknown =>
+  value && typeof value === "object" ? (value as Record<string, unknown>)[key] : undefined;
+
+/**
+ * An alias that names a package folder resolves through its `exports["."]`: Bun resolves a bare
+ * folder by its index file only, and a workspace package keeps its entry in exports
+ * (`@fachwerk/module-quiz` -> packages/modules/quiz -> ./src/index.ts). Null without one.
+ */
+export function packageEntry(dir: string): string | null {
+  const pkg = resolve(dir, "package.json");
+  if (!existsSync(pkg)) return null;
+  const exports: unknown = JSON.parse(readFileSync(pkg, "utf8")).exports;
+  const dot = typeof exports === "string" ? exports : field(exports, ".");
+  const target = typeof dot === "string" ? dot : (field(dot, "import") ?? field(dot, "default"));
+  return typeof target === "string" ? resolve(dir, target) : null;
+}
 
 export type ImportResolution = { path: string } | { error: string } | null;
 
@@ -158,13 +184,15 @@ export function resolveScreenImport(
     return { path: Bun.resolveSync(target, dirname(importer)) };
   }
   for (const [alias, target] of Object.entries(app.aliases)) {
-    if (spec === alias || spec.startsWith(`${alias}/`))
-      return { path: Bun.resolveSync(target + spec.slice(alias.length), dirname(importer)) };
+    if (!under(spec, alias)) continue;
+    const entry = spec === alias ? packageEntry(target) : null;
+    return { path: entry ?? Bun.resolveSync(target + spec.slice(alias.length), dirname(importer)) };
   }
   const core = coreImport(spec);
   if (core) return { path: core };
+  if (app.allow?.some((name) => under(spec, name))) return { path: Bun.resolveSync(spec, UI) };
   return {
-    error: `${from}: a screen imports only relative files, react, react-dom, @hansenexus/*, radix-ui and the aliases in workbench/apps.json (design#148)`,
+    error: `${from}: a screen imports only relative files, react, react-dom, @hansenexus/*, radix-ui, and the aliases and allow list of its app in workbench/apps.json (design#148)`,
   };
 }
 

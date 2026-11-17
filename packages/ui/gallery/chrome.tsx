@@ -14,6 +14,7 @@ import { EditorPanel } from "./editor";
 import { Check } from "./icons";
 import { ITEM_SCENES, itemsByLevel, type LevelItem, registryLevels } from "./levels";
 import { InspectorHeading, ViewToolbar } from "./preview";
+import { ProjectPicker } from "./projects-scene";
 import {
   frameQuery,
   groupOf,
@@ -527,6 +528,7 @@ export function Workbench({
         <div className="px-2 py-1 max-md:hidden">
           <Brand />
         </div>
+        <ProjectPicker view={view} onChange={onChange} />
         <Tree view={view} scene={scene} item={item} />
       </aside>
 

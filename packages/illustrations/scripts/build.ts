@@ -4,7 +4,7 @@
 // Run: bun scripts/build.ts
 import { readFileSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
-import { ENTRIES, MODULES } from "./motifs";
+import { ENTRIES, MODULES, moduleSource } from "./motifs";
 
 const ROOT = resolve(import.meta.dir, "..");
 const DIST = resolve(ROOT, "dist");
@@ -15,7 +15,7 @@ const paths = ENTRIES.map((e) => e.path);
 const js = await Bun.build({
   entrypoints: [
     ...paths.map((p) => resolve(ROOT, `src/${p}.tsx`)),
-    ...MODULES.map((m) => resolve(ROOT, `src/${m}.ts`)),
+    ...MODULES.map((m) => resolve(ROOT, `src/${moduleSource(m)}`)),
   ],
   outdir: DIST,
   root: resolve(ROOT, "src"),
