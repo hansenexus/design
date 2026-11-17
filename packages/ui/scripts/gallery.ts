@@ -28,6 +28,8 @@ import type { BunPlugin } from "bun";
 import { renderPackCss } from "../../tokens/scripts/build";
 import { BUNDLED_PACKS, packThemes } from "../../tokens/scripts/resolve";
 import { DECIDE_PATH, type DecideBody, type DecideReply } from "../gallery/decide";
+import { EDIT_PATH, type EditReply } from "../gallery/edit";
+import { type ApplyResult, applyDraft, editorCatalog, editorPlugin } from "./edit";
 import { graphSource, loadGraph } from "./graph";
 import { liveCss, livePlugin, liveSource } from "./live";
 import { decide, readDecision, registrySource } from "./variants";
@@ -167,6 +169,8 @@ export async function buildGallery() {
     plugins: [
       screensPlugin(screens.apps, screens.skipped),
       livePlugin(live),
+      // The live editor's catalog (design#151): every pack direction's tokens, both modes.
+      editorPlugin(await editorCatalog()),
       variants,
       uiSource,
       graphPlugin(graphSource(graph)),
@@ -288,20 +292,66 @@ export async function decideRoute(
   return reply(200, { category: body.category, winner: body.winner, date, deleted });
 }
 
+/**
+ * POST /api/edit, the live editor's Write back on the local server (design#151): applyDraft()
+ * from scripts/edit.ts writes the draft into its pack direction under themes/, then `rebuild`, so a
+ * reload shows it from the files. The owner commits (or `bun run edit apply … --pr` does). Same
+ * loopback and Origin guard as /api/decide; a refused draft is 400 with applyDraft()'s message.
+ */
+export async function editRoute(
+  req: Request,
+  rebuild: () => Promise<void>,
+  apply: (draft: unknown) => Promise<ApplyResult> = applyDraft
+): Promise<Response> {
+  const reply = (status: number, body: EditReply, headers?: HeadersInit) =>
+    Response.json(body, { status, headers });
+  if (req.method !== "POST") return reply(405, { error: "POST only" }, { allow: "POST" });
+  const origin = req.headers.get("origin");
+  const self = new URL(req.url).origin;
+  if (origin && origin !== self) return reply(403, { error: `origin ${origin} is not ${self}` });
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return reply(400, { error: "the body is not JSON" });
+  }
+  let result: ApplyResult;
+  try {
+    result = await apply(body);
+  } catch (e) {
+    return reply(400, { error: e instanceof Error ? e.message : String(e) });
+  }
+  try {
+    await rebuild();
+  } catch (e) {
+    const why = e instanceof Error ? e.message : String(e);
+    return reply(500, {
+      error: `${result.files.join(", ")} written, but rebuilding the gallery failed: ${why}. Restart the server.`,
+    });
+  }
+  return reply(200, result);
+}
+
 export type ServeOptions = {
   /** The package root the files are served from and decide() writes into. */
   root?: string;
   /** Runs after a decision, so the bundle carries the decided board. */
   rebuild?: () => Promise<void>;
+  /** Writes an editor draft (design#151); applyDraft() into this checkout's themes/. */
+  apply?: (draft: unknown) => Promise<ApplyResult>;
 };
 
-export function serve(port: number, { root = ROOT, rebuild = buildGallery }: ServeOptions = {}) {
+export function serve(
+  port: number,
+  { root = ROOT, rebuild = buildGallery, apply = applyDraft }: ServeOptions = {}
+) {
   return Bun.serve({
     hostname: "127.0.0.1",
     port,
     async fetch(req) {
       let path = decodeURIComponent(new URL(req.url).pathname);
       if (path === DECIDE_PATH) return decideRoute(req, root, rebuild);
+      if (path === EDIT_PATH) return editRoute(req, rebuild, apply);
       if (req.method !== "GET" && req.method !== "HEAD") {
         return new Response("method not allowed", { status: 405, headers: { allow: "GET, HEAD" } });
       }

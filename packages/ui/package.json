@@ -52,6 +52,7 @@
     "outdated": "bun scripts/outdated.ts",
     "variants": "bun scripts/variants.ts list",
     "decide": "bun scripts/variants.ts decide",
+    "edit": "bun scripts/edit.ts",
     "screenshots": "scripts/screenshots.sh",
     "screenshots:update": "scripts/screenshots.sh --update-snapshots"
   },

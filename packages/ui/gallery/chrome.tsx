@@ -10,6 +10,7 @@ import { CATEGORIES } from "virtual:variants";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import pkg from "../package.json";
 import { Badge, Button, cx, HansenexusMark, Kbd, ToggleGroup, ToggleGroupItem } from "../src";
+import { EditorPanel } from "./editor";
 import { Check } from "./icons";
 import { ITEM_SCENES, itemsByLevel, type LevelItem, registryLevels } from "./levels";
 import { InspectorHeading, ViewToolbar } from "./preview";
@@ -559,6 +560,7 @@ export function Workbench({
           <InspectorHeading>{item ? "Item" : "Scene"}</InspectorHeading>
           <Facts view={view} scene={scene} item={item} />
         </div>
+        <EditorPanel view={view} />
       </aside>
 
       <nav

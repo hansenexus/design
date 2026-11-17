@@ -106,7 +106,6 @@ import {
   TabsList,
   TabsTrigger,
   Textarea,
-  ThemePack,
   Toast,
   ToastAction,
   ToastDescription,
@@ -124,13 +123,15 @@ import { Charts } from "./charts";
 import { Workbench } from "./chrome";
 import { Controls } from "./controls";
 import { Data } from "./data";
+import { DraftPack } from "./draft";
+import { DraftStyle } from "./editor";
 import { Bell, Check, Key, MapIcon, More, Restart, Server } from "./icons";
 import { ItemPage, isItem } from "./item";
 import { Matrix } from "./matrix";
 import { Motion } from "./motion-scene";
 import { Navigation } from "./navigation";
 import { Overlays } from "./overlays";
-import { packFor, registerLive } from "./packs";
+import { registerLive } from "./packs";
 import { BareContext, PreviewCard, ViewProvider } from "./preview";
 import { Screens } from "./screens";
 import { ShellScene } from "./shell";
@@ -1359,9 +1360,9 @@ function Page() {
 /** The scene under the current theme's pack, so its skins render (design#143). */
 function PackedPage({ theme }: { theme: string }) {
   return (
-    <ThemePack pack={packFor(theme)}>
+    <DraftPack theme={theme}>
       <Page />
-    </ThemePack>
+    </DraftPack>
   );
 }
 
@@ -1415,6 +1416,7 @@ if (root) {
   createRoot(root).render(
     <StrictMode>
       <BareContext.Provider value={bare}>
+        <DraftStyle />
         {framed ? (
           <ViewProvider view={readView(query)}>
             <PackedPage theme={readView(query).theme} />

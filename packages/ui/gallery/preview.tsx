@@ -16,10 +16,10 @@ import {
   useEffect,
   useState,
 } from "react";
-import { Badge, Button, MotionProvider, ThemePack } from "../src";
+import { Badge, Button, MotionProvider } from "../src";
+import { DraftPack } from "./draft";
 import { Check, Restart } from "./icons";
 import { levelOf } from "./levels";
-import { packFor } from "./packs";
 import { BUILD_THEMES, LIVE, PACK_GROUPS, packOf } from "./themes";
 import {
   comparedThemes,
@@ -83,7 +83,7 @@ function ThemePanel({ theme, view, children }: { theme: string; view: View; chil
       className="flex min-w-0 flex-col gap-2 rounded-hn-lg border border-hn-line-subtle bg-hn-surface-page p-3 text-hn-ink-primary"
     >
       <span className="font-hn-mono text-xs text-hn-ink-muted">{theme}</span>
-      <ThemePack pack={packFor(theme)}>{children}</ThemePack>
+      <DraftPack theme={theme}>{children}</DraftPack>
     </div>
   );
 }
