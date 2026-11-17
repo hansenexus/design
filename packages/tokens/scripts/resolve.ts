@@ -47,6 +47,8 @@ export type PackManifest = {
   app: string;
   /** The direction the package ships; its data-theme is the app name. */
   default: string;
+  /** The pack's default illustration set, an id of @hansenexus/illustrations/sets (design#220). */
+  illustrations?: string;
   description?: string;
   /**
    * The motion set the app uses unless it says otherwise (design#221): an id of

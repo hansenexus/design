@@ -1,0 +1,52 @@
+{
+  "$comment": "The projects around the design system (design#222): who consumes it, who offers a theme pack or screens. Names and roles only; a scan at gallery build adds each local checkout's @hansenexus/* ranges. README.md has the fields.",
+  "projects": {
+    "kommandant": {
+      "label": "kommandant",
+      "repo": "hansenexus/kommandant",
+      "roles": ["consumer"],
+      "theme": "kommandant"
+    },
+    "fachwerk": {
+      "label": "fachwerk",
+      "repo": "hansenexus/fachwerk",
+      "roles": ["consumer", "offers-pack"],
+      "theme": "fachwerk",
+      "illustrations": "school"
+    },
+    "lexilink": {
+      "label": "lexilink",
+      "repo": "hansenexus/hn-monorepo",
+      "path": "apps/lexilink",
+      "roles": ["consumer", "offers-pack"],
+      "theme": "lexilink",
+      "illustrations": "estate"
+    },
+    "portal": {
+      "label": "hn-monorepo portal",
+      "repo": "hansenexus/hn-monorepo",
+      "path": "apps/portal",
+      "roles": ["consumer"],
+      "theme": "portal"
+    },
+    "hansenexus": {
+      "label": "hansenexus site",
+      "repo": "hansenexus/hn-monorepo",
+      "path": "apps/hansenexus",
+      "roles": ["consumer"],
+      "theme": "hansenexus"
+    },
+    "design-ops": {
+      "label": "design-ops",
+      "repo": "hansenexus/design-ops",
+      "roles": ["consumer"]
+    },
+    "example": {
+      "label": "workbench example",
+      "repo": "hansenexus/design",
+      "path": "workbench/example",
+      "roles": ["offers-screens"],
+      "app": "example"
+    }
+  }
+}

@@ -3,8 +3,10 @@
 // read from and written to the query so a view can be linked. The motion set of design#221
 // (motionSet) follows the pack's default until the query names one. Pure functions, so
 // tests/gallery-view.test.ts covers them without a DOM.
+import { SET_IDS } from "@hansenexus/illustrations/sets";
 import { type Density, densities, type Mode, modes, motionSetIds } from "@hansenexus/tokens";
 import { motionMs } from "../src/motion";
+import { readProject } from "./projects";
 import { BUILD_THEMES, GALLERY_THEMES, packMotion } from "./themes";
 
 /** The gallery scenes, one page each: kit is ./, the rest ?scene=<name>. */
@@ -31,6 +33,7 @@ export const SCENES = [
   "motion",
   "shell",
   "screens",
+  "projects",
   "vote",
 ] as const;
 export type Scene = (typeof SCENES)[number];
@@ -59,6 +62,7 @@ export const SCENE_LABELS: Record<Scene, string> = {
   motion: "Motion",
   shell: "Shell",
   screens: "App screens",
+  projects: "Projects",
   vote: "Votes",
 };
 
@@ -92,7 +96,7 @@ export const SCENE_GROUPS: { id: string; label: string; scenes: Scene[] }[] = [
     label: "Overlays",
     scenes: ["dialog", "alert-dialog", "menu", "select", "tooltip", "toast", "overlays"],
   },
-  { id: "templates", label: "Templates", scenes: ["shell", "screens"] },
+  { id: "templates", label: "Templates", scenes: ["shell", "screens", "projects"] },
   { id: "review", label: "Review", scenes: ["vote"] },
 ];
 
@@ -142,6 +146,20 @@ export const MATRIX_ROWS = [
 /** "auto" leaves data-density unset, so the theme's own density applies. */
 export type DensityChoice = Density | "auto";
 
+/**
+ * The illustration set (design#220): "auto" follows the theme pack's default (pack.json
+ * "illustrations"), a set id of @hansenexus/illustrations/sets overrides it under any pack.
+ */
+export const ILLUSTRATION_CHOICES: readonly string[] = ["auto", ...SET_IDS];
+
+/** The set the view draws: its own choice, or the pack's default under "auto". */
+export function activeIllustrationSet(
+  view: Pick<View, "illustrations">,
+  packDefault: string
+): string {
+  return view.illustrations === "auto" ? packDefault : view.illustrations;
+}
+
 export interface View {
   /** A data-theme: a tokens theme or a theme-pack direction (gallery/packs.ts). */
   theme: string;
@@ -153,6 +171,10 @@ export interface View {
   speed: Speed;
   motion: Motion;
   motionSet: MotionSetChoice;
+  /** "auto" (the pack's default) or a set id: ILLUSTRATION_CHOICES. */
+  illustrations: string;
+  /** The picked project of workbench/projects.json (design#222), "" for none. */
+  project: string;
 }
 
 /** Matches index.html: kommandant, dark. */
@@ -166,6 +188,8 @@ export const DEFAULT_VIEW: View = {
   speed: "1",
   motion: "full",
   motionSet: "auto",
+  illustrations: "auto",
+  project: "",
 };
 
 export const VIEW_OPTIONS = {
@@ -177,6 +201,7 @@ export const VIEW_OPTIONS = {
   speed: SPEEDS,
   motion: MOTIONS,
   motionSet: MOTION_SETS,
+  illustrations: ILLUSTRATION_CHOICES,
 } as const;
 
 const KEYS = [
@@ -189,6 +214,8 @@ const KEYS = [
   "speed",
   "motion",
   "motionSet",
+  "illustrations",
+  "project",
 ] as const;
 
 function pick<T extends string>(list: readonly T[], value: string | null, fallback: T): T {
@@ -225,6 +252,12 @@ export function readView(query: URLSearchParams): View {
     speed: pick(VIEW_OPTIONS.speed, query.get("speed"), DEFAULT_VIEW.speed),
     motion: pick(VIEW_OPTIONS.motion, query.get("motion"), DEFAULT_VIEW.motion),
     motionSet: pick(VIEW_OPTIONS.motionSet, query.get("motionSet"), DEFAULT_VIEW.motionSet),
+    illustrations: pick(
+      VIEW_OPTIONS.illustrations,
+      query.get("illustrations"),
+      DEFAULT_VIEW.illustrations
+    ),
+    project: readProject(query.get("project")),
   };
 }
 

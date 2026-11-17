@@ -6,7 +6,7 @@ The core stays in `packages/`: `@hansenexus/tokens`, `@hansenexus/ui`, `@hansene
 
 ```
 themes/<app>/                @hansenexus/theme-<app>
-  pack.json                 { "app": "<app>", "default": "<direction>", "motion"?: "<set>" }
+  pack.json                 { "app": "<app>", "default": "<direction>", "illustrations"?: "<set>", "motion"?: "<set>" }
   package.json              the npm package, built by scripts/theme-build.ts
   index.ts                  one ThemePackDefinition per direction, and `directions`
   <direction>/
@@ -42,6 +42,13 @@ themes/<app>/                @hansenexus/theme-<app>
   The build refuses a set that does not exist. The gallery follows the pack's default until its
   Animation set picker (`?motionSet=`) names another. A pack never overrides the motion tokens
   themselves: a set is how motion changes.
+- **Illustrations.** Illustration sets are an axis of their own (design#220): a pack names its
+  default set in `pack.json`'s optional `"illustrations"`, an id of
+  `@hansenexus/illustrations/sets`; without one the app gets the `estate` set. The app hands it to
+  `<IllustrationSetProvider set={…}>` and draws `<StateIllustration state="empty" />` from
+  `@hansenexus/illustrations/state`. Any set renders under any pack: the gallery follows the
+  pack's default until `?illustrations=<set>` overrides it. `packages/illustrations/tests`
+  holds every named set to the registry.
 - **Theme ids.** The default direction's `data-theme` is the app's name; another direction's is
   `<app>-<direction>`, so a candidate can render beside the live one in the gallery.
 - **Checks.** `bun run contrast` resolves every direction in both modes against the same WCAG
@@ -82,7 +89,7 @@ the package `@hansenexus/theme-<app>` (the build refuses any other name), add th
 `packages/ui/gallery/packs.ts`, and run `bun install`. Its first npm publish and its Trusted
 Publisher setting are the owner's.
 
-| Pack | Directions | Ships in |
-| --- | --- | --- |
-| `lexilink` | `ledger` (B2 Ledger, default) | `@hansenexus/tokens` (`data-theme="lexilink"`), until lexilink adopts `@hansenexus/theme-lexilink` |
-| `fachwerk` | `fachwerk` (direction B "Fachwerk", default): 2 px beams, square controls, no shadows, brace and hatch motifs, Bricolage Grotesque and IBM Plex Mono; skins `card.header`, `empty-state` | `@hansenexus/theme-fachwerk` |
+| Pack | Directions | Illustrations | Ships in |
+| --- | --- | --- | --- |
+| `lexilink` | `ledger` (B2 Ledger, default) | `estate` | `@hansenexus/tokens` (`data-theme="lexilink"`), until lexilink adopts `@hansenexus/theme-lexilink` |
+| `fachwerk` | `fachwerk` (direction B "Fachwerk", default): 2 px beams, square controls, no shadows, brace and hatch motifs, Bricolage Grotesque and IBM Plex Mono; skins `card.header`, `empty-state` | `school` | `@hansenexus/theme-fachwerk` |

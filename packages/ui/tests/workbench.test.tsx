@@ -219,6 +219,51 @@ describe("the gallery's import rules", () => {
     });
   });
 
+  test("an alias naming a package folder follows its exports['.'] (design#157)", () => {
+    const tmp = realpathSync(mkdtempSync(join(tmpdir(), "hn-workbench-")));
+    mkdirSync(join(tmp, "screens"));
+    mkdirSync(join(tmp, "quiz/src"), { recursive: true });
+    mkdirSync(join(tmp, "quiz/messages"));
+    writeFileSync(
+      join(tmp, "quiz/package.json"),
+      JSON.stringify({
+        exports: { ".": "./src/index.ts", "./messages/de.json": "./messages/de.json" },
+      })
+    );
+    writeFileSync(join(tmp, "quiz/src/index.ts"), "export const quiz = 1;");
+    writeFileSync(join(tmp, "quiz/messages/de.json"), "{}");
+    const real: ResolvedApp[] = [
+      {
+        app: "demo",
+        entry: join(tmp, "screens/index.ts"),
+        aliases: { "@demo/quiz": join(tmp, "quiz") },
+        dirs: [join(tmp, "screens"), join(tmp, "quiz")],
+      },
+    ];
+    const page = join(tmp, "screens/page.tsx");
+    expect(resolveScreenImport("@demo/quiz", page, real)).toEqual({
+      path: join(tmp, "quiz/src/index.ts"),
+    });
+    expect(resolveScreenImport("@demo/quiz/messages/de.json", page, real)).toEqual({
+      path: join(tmp, "quiz/messages/de.json"),
+    });
+  });
+
+  test("an app's allow list admits those packages, as the gallery's copies (design#157)", () => {
+    const allowed: ResolvedApp[] = [{ ...(apps[0] as ResolvedApp), allow: ["clsx", "next-intl"] }];
+    const clsx = resolveScreenImport("clsx", at, allowed);
+    expect(clsx && "path" in clsx ? clsx.path : "").toMatch(/node_modules.*clsx/);
+    expect(resolveScreenImport("next-intl", at, allowed)).toHaveProperty("path");
+    // Exact names only: a prefix is no match, and another app's list does not count.
+    for (const [spec, list] of [
+      ["clsx-extra", allowed],
+      ["clsx", apps],
+    ] as const) {
+      const r = resolveScreenImport(spec, at, list);
+      expect(r && "error" in r ? r.error : "").toContain(`imports "${spec}"`);
+    }
+  });
+
   test("the gallery build fails on a screen that imports Convex", async () => {
     const tmp = realpathSync(mkdtempSync(join(tmpdir(), "hn-workbench-")));
     writeFileSync(
