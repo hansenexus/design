@@ -72,7 +72,7 @@ function TokenRow({
   const swatch = HEX.test(value) ? value : HEX.test(token.value[mode]) ? token.value[mode] : null;
   const set = (v: string | null) => onChange(setToken(draft, scope, token.path, v));
   return (
-    <li className="flex flex-col gap-1" data-token={token.path}>
+    <li className="flex flex-col gap-1" data-editor-token={token.path}>
       <div className="flex items-center gap-1.5">
         <span
           title={token.description ?? token.path}
