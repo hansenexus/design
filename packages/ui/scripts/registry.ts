@@ -13,26 +13,20 @@ import { registryItemSchema, registrySchema } from "shadcn/schema";
 const ROOT = resolve(import.meta.dir, "..");
 export const NAMESPACE = "@hansenexus";
 
-/** Where the built registry is served: the kit-gallery image, behind Cloudflare Access (#65). */
-export const REGISTRY_URL = "https://design.hansenexus.dev/r/{name}.json";
+/**
+ * Where the built registry is served: the kit-gallery image on the Headscale mesh (#65, issue 237).
+ * The Ingress admits only mesh devices, so a request needs no credentials.
+ */
+export const REGISTRY_URL = "https://design.ts.hansenexus.dev/r/{name}.json";
 
 /**
- * The `registries` entry a consumer's components.json needs. The Access service token travels as
- * headers; `${VAR}` is filled from the environment by the shadcn CLI (and by outdated.ts), so the
- * token is never in a repo. `/design add` sets both variables for the child process from 1Password
- * (op-rw). Written to dist/r/components.json so a consumer, or the skill, can copy it verbatim.
+ * The `registries` entry a consumer's components.json needs. No headers: the mesh is the
+ * boundary, and the shadcn CLI must run on a mesh device. Written to dist/r/components.json so a
+ * consumer, or the skill, can copy it verbatim.
  */
 export const REGISTRIES = {
-  [NAMESPACE]: {
-    url: REGISTRY_URL,
-    headers: {
-      // biome-ignore lint/suspicious/noTemplateCurlyInString: shadcn CLI env placeholder, not a JS template
-      "CF-Access-Client-Id": "${HN_REGISTRY_CLIENT_ID}",
-      // biome-ignore lint/suspicious/noTemplateCurlyInString: shadcn CLI env placeholder, not a JS template
-      "CF-Access-Client-Secret": "${HN_REGISTRY_CLIENT_SECRET}",
-    },
-  },
-} satisfies Record<string, { url: string; headers: Record<string, string> }>;
+  [NAMESPACE]: { url: REGISTRY_URL },
+} satisfies Record<string, { url: string; headers?: Record<string, string> }>;
 
 type Item = {
   name: string;

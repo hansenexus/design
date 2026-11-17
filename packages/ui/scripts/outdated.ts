@@ -1,10 +1,10 @@
 // The outdated check behind `/design outdated` (#65): finds every copied-in registry block in a
 // consumer repo by its stamp (`"hn-registry: <item>@<version>";`, line 1, written by registry.ts),
 // fetches the registry index and lists each block whose version is behind `meta.version`.
-// The registry comes from the consumer's components.json (`registries["@hansenexus"]`, headers with
-// `${VAR}` filled from the environment, as the shadcn CLI does) or, without one, from REGISTRIES in
-// registry.ts. Header values are secrets: they are sent, never printed, and a missing variable is
-// reported by name only.
+// The registry comes from the consumer's components.json (`registries["@hansenexus"]`, any headers
+// with `${VAR}` filled from the environment, as the shadcn CLI does) or, without one, from
+// REGISTRIES in registry.ts (mesh-only, no headers, issue 237). Header values are secrets: they
+// are sent, never printed, and a missing variable is reported by name only.
 // Run: bun scripts/outdated.ts [consumerDir] [--registry <url|dir>] [--json]
 // Exit 1 when a block is behind, 2 on a usage or fetch error.
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
@@ -134,7 +134,7 @@ export async function loadIndex(
   const type = response.headers.get("content-type") ?? "";
   if (!type.includes("json"))
     throw new Error(
-      `outdated: ${url} answered ${type || "no content-type"}, not JSON (Access login page?)`
+      `outdated: ${url} answered ${type || "no content-type"}, not JSON (off the mesh, or a login page?)`
     );
   return (await response.json()) as { items: { name: string; meta?: { version?: string } }[] };
 }

@@ -85,6 +85,19 @@ jobs:
           fi
           echo "$out"
           grep -q 'CF_ACCESS_TEAM_DOMAIN and CF_ACCESS_AUD must both be set' <<<"$out"
+          # Mesh mode (design#237) needs no env: the gate is accepted and the proxy gets as far as
+          # starting its child, which the scratch image does not have.
+          if out=$(docker run --rm --read-only --user 101:101 -e ACCESS_MODE=mesh "$IMAGE:$GITHUB_SHA" -- /bin/true 2>&1); then
+            echo "::error::started a child that does not exist"; exit 1
+          fi
+          echo "$out"
+          grep -q 'start /bin/true' <<<"$out" || { echo "::error::mesh mode did not reach the child start"; exit 1; }
+          # An unknown mode still refuses to start, before anything else.
+          if out=$(docker run --rm --read-only --user 101:101 -e ACCESS_MODE=open "$IMAGE:$GITHUB_SHA" -- /bin/true 2>&1); then
+            echo "::error::started with ACCESS_MODE=open"; exit 1
+          fi
+          echo "$out"
+          grep -q 'ACCESS_MODE must be cf-access, licence or mesh, got "open"' <<<"$out"
 
       - name: Push
         if: env.PUSH == 'true'

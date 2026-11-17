@@ -4,7 +4,9 @@ name: kit-gallery
 # as a static-server image (Dockerfile) behind tools/access-proxy, the Cloudflare Access JWT check
 # (#47). hn-infra infrastructure/design pins the sha and serves it
 # at design.hansenexus.dev/ behind Cloudflare Access (hn-infra#248); that README holds the image
-# contract this job smoke-tests: port 8080, uid 101, read-only root, only /tmp writable.
+# contract this job smoke-tests: port 8080, uid 101, read-only root, only /tmp writable. The move
+# to the mesh (design#237, hn-infra#768) runs the same image with ACCESS_MODE=mesh at
+# design.ts.hansenexus.dev, so both modes are smoke-tested.
 # Pull requests that touch the image inputs build and smoke-test it without pushing, so a broken
 # Dockerfile is red on its PR rather than on main. Shape copied from blaupause images.yml.
 #
@@ -203,6 +205,42 @@ jobs:
           cache_control 'public, max-age=3600' "/dist/$font"
           cache_control 'public, max-age=3600' /dist/brand/favicon.svg
           cache_control '' /nope
+
+      # Mesh mode (design#237): design.ts.hansenexus.dev runs this image with ACCESS_MODE=mesh behind an
+      # Ingress that admits only the Headscale range, so the proxy checks nothing. Same constraints,
+      # no Cloudflare env: the gallery and the registry answer without any header.
+      - name: Smoke test in mesh mode
+        run: |
+          set -euo pipefail
+          docker run -d --name kit-gallery-mesh -p 8082:8080 \
+            --read-only --tmpfs /tmp --user 101:101 --cap-drop ALL \
+            --security-opt no-new-privileges \
+            -e ACCESS_MODE=mesh \
+            "$IMAGE:$GITHUB_SHA"
+          trap 'docker logs kit-gallery-mesh; docker rm -f kit-gallery-mesh >/dev/null' EXIT
+          base=http://127.0.0.1:8082
+          for _ in $(seq 1 20); do curl -fs -o /dev/null "$base/health" && break; sleep 0.5; done
+          expect() { # expect <status> <curl args...>
+            want=$1; shift
+            got=$(curl -sS -o /dev/null -w '%{http_code}' "$@")
+            echo "$got $*"
+            [ "$got" = "$want" ] || { echo "::error::want $want, got $got for $*"; exit 1; }
+          }
+          expect 200 "$base/health"
+          expect 200 "$base/"
+          expect 200 "$base/r/registry.json"
+          expect 200 "$base/r/components.json"
+          expect 404 "$base/nope"
+          # The served registry entry points at the mesh host and carries no Access headers.
+          entry=$(curl -fsS "$base/r/components.json")
+          echo "$entry"
+          grep -q 'https://design.ts.hansenexus.dev/r/{name}.json' <<<"$entry" \
+            || { echo "::error::components.json does not point at design.ts.hansenexus.dev"; exit 1; }
+          if grep -qi 'cf-access' <<<"$entry"; then echo "::error::components.json carries CF-Access headers"; exit 1; fi
+          # An unknown mode refuses to start.
+          if docker run --rm --read-only --user 101:101 -e ACCESS_MODE=open "$IMAGE:$GITHUB_SHA" >/dev/null 2>&1; then
+            echo "::error::started with ACCESS_MODE=open"; exit 1
+          fi
 
       - name: Push
         if: env.PUSH == 'true'

@@ -108,17 +108,22 @@ describe("outdated (#65)", () => {
       headers: { "X-Token": "${T}" },
     });
     expect(registryConfig(consumer({}))).toBe(REGISTRIES[NAMESPACE]);
-    expect(indexUrl(REGISTRY_URL)).toBe("https://design.hansenexus.dev/r/registry.json");
+    expect(indexUrl(REGISTRY_URL)).toBe("https://design.ts.hansenexus.dev/r/registry.json");
 
+    // A consumer's own headers still expand; the default entry has none.
+    const headers = {
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: literal shadcn env placeholder under test
+      "X-Client-Id": "${HN_REGISTRY_CLIENT_ID}",
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: literal shadcn env placeholder under test
+      "X-Client-Secret": "${HN_REGISTRY_CLIENT_SECRET}",
+    };
     expect(
-      expandHeaders(REGISTRIES[NAMESPACE].headers, {
-        HN_REGISTRY_CLIENT_ID: "id",
-        HN_REGISTRY_CLIENT_SECRET: "s3cret",
-      })
-    ).toEqual({ "CF-Access-Client-Id": "id", "CF-Access-Client-Secret": "s3cret" });
+      expandHeaders(headers, { HN_REGISTRY_CLIENT_ID: "id", HN_REGISTRY_CLIENT_SECRET: "s3cret" })
+    ).toEqual({ "X-Client-Id": "id", "X-Client-Secret": "s3cret" });
+    expect(expandHeaders(undefined, {})).toEqual({});
     let message = "";
     try {
-      expandHeaders(REGISTRIES[NAMESPACE].headers, { HN_REGISTRY_CLIENT_ID: "id" });
+      expandHeaders(headers, { HN_REGISTRY_CLIENT_ID: "id" });
     } catch (error) {
       message = error instanceof Error ? error.message : String(error);
     }
@@ -134,7 +139,8 @@ describe("outdated (#65)", () => {
     expect(file).toEqual({ registries: REGISTRIES });
     const entry = file.registries[NAMESPACE];
     expect(entry.url).toBe(REGISTRY_URL);
-    for (const value of Object.values(entry.headers) as string[])
-      expect(value).toMatch(/^\$\{HN_REGISTRY_[A-Z_]+\}$/);
+    // Mesh-only (issue 237): no Cloudflare Access service-token headers.
+    expect(entry.headers).toBeUndefined();
+    expect(JSON.stringify(file)).not.toContain("CF-Access");
   });
 });

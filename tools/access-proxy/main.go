@@ -12,6 +12,11 @@
 //     start if the domain is empty or CF_ACCESS_AUD holds no tag.
 //   - licence (the Lotse shadcn registry, #92): `Authorization: Bearer <key>` whose SHA-256 is
 //     listed in LICENCE_KEYS_FILE (licence.go); it refuses to start if the file cannot be read.
+//   - mesh (design.ts.hansenexus.dev, #237): no check at all. Only for an origin whose Ingress
+//     admits nothing but the Headscale mesh (ipAllowList 100.64.0.0/10); that allow-list is the
+//     boundary. Needs no other env.
+//
+// Any other ACCESS_MODE refuses to start.
 package main
 
 import (
@@ -75,8 +80,10 @@ func newGate() (gate, string, error) {
 			return nil, "", fmt.Errorf("licence keys: %w", err)
 		}
 		return licences, fmt.Sprintf("licence mode, %d keys", licences.Count()), nil
+	case "mesh":
+		return meshGate{}, "mesh mode, no check (the Ingress allow-list is the boundary)", nil
 	default:
-		return nil, "", fmt.Errorf("ACCESS_MODE must be cf-access or licence, got %q", mode)
+		return nil, "", fmt.Errorf("ACCESS_MODE must be cf-access, licence or mesh, got %q", mode)
 	}
 }
 
@@ -198,3 +205,12 @@ func (v *Verifier) refuse(w http.ResponseWriter) {
 	w.Header().Set("Cache-Control", "no-store")
 	w.WriteHeader(http.StatusForbidden)
 }
+
+// meshGate admits every request: in mesh mode the Ingress allow-list (the Headscale range) is the
+// boundary, and the proxy only keeps the address contract and the Authorization stripping.
+type meshGate struct{}
+
+func (meshGate) allow(*http.Request) (string, error) { return "", nil }
+
+// refuse is never reached, since allow admits everything.
+func (meshGate) refuse(w http.ResponseWriter) { w.WriteHeader(http.StatusForbidden) }
