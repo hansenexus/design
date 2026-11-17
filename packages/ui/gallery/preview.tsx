@@ -8,6 +8,7 @@
 // panel, whose data-theme redeclares them), and a card with a `loop` gets an auto-loop toggle
 // that drives its content through QueryState's states. ViewProvider carries the same scale to the
 // timers that read the motion tokens in TS (MotionProvider, #91).
+import { motionSets } from "@hansenexus/tokens";
 import {
   type CSSProperties,
   createContext,
@@ -16,12 +17,14 @@ import {
   useEffect,
   useState,
 } from "react";
-import { Badge, Button, MotionProvider, ThemePack } from "../src";
+import { Badge, Button, MotionProvider } from "../src";
+import { DraftPack } from "./draft";
 import { Check, Restart } from "./icons";
 import { levelOf } from "./levels";
-import { packFor, packIllustrations } from "./packs";
+import { packIllustrations } from "./packs";
 import { BUILD_THEMES, LIVE, PACK_GROUPS, packOf } from "./themes";
 import {
+  activeMotionSet,
   comparedThemes,
   compareThemes,
   DEFAULT_VIEW,
@@ -49,7 +52,9 @@ export const ViewContext = createContext<View>(DEFAULT_VIEW);
 export function ViewProvider({ view, children }: { view: View; children: ReactNode }) {
   return (
     <ViewContext.Provider value={view}>
-      <MotionProvider scale={motionScale(view)}>{children}</MotionProvider>
+      <MotionProvider scale={motionScale(view)} set={activeMotionSet(view)}>
+        {children}
+      </MotionProvider>
     </ViewContext.Provider>
   );
 }
@@ -58,15 +63,16 @@ export function ViewProvider({ view, children }: { view: View; children: ReactNo
 function useLoop(on: boolean, view: View): LoopStatus {
   const [step, setStep] = useState(0);
   const { speed, motion } = view;
+  const motionSet = activeMotionSet(view);
   useEffect(() => {
     if (!on) {
       setStep(0);
       return;
     }
-    const { steps } = loopTimings({ speed, motion });
+    const { steps } = loopTimings({ speed, motion, motionSet });
     const t = setTimeout(() => setStep((n) => (n + 1) % steps.length), steps[step]?.ms ?? 0);
     return () => clearTimeout(t);
-  }, [on, step, speed, motion]);
+  }, [on, step, speed, motion, motionSet]);
   return LOOP[step] ?? "loading";
 }
 
@@ -83,7 +89,7 @@ function ThemePanel({ theme, view, children }: { theme: string; view: View; chil
       className="flex min-w-0 flex-col gap-2 rounded-hn-lg border border-hn-line-subtle bg-hn-surface-page p-3 text-hn-ink-primary"
     >
       <span className="font-hn-mono text-xs text-hn-ink-muted">{theme}</span>
-      <ThemePack pack={packFor(theme)}>{children}</ThemePack>
+      <DraftPack theme={theme}>{children}</DraftPack>
     </div>
   );
 }
@@ -178,8 +184,12 @@ export function PreviewCard({
       {copy === "failed" ? (
         <code className="font-hn-mono text-[12px] text-hn-ink-body">{command}</code>
       ) : null}
-      {/* Keyed on speed and motion too, so timers that read their timing on mount pick it up. */}
-      <div key={`${run}-${view.speed}-${view.motion}`} data-run={run} className="contents">
+      {/* Keyed on speed, motion and set too, so timers that read their timing on mount pick it up. */}
+      <div
+        key={`${run}-${view.speed}-${view.motion}-${activeMotionSet(view)}`}
+        data-run={run}
+        className="contents"
+      >
         {view.compare !== "off" ? (
           <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,260px),1fr))] gap-3">
             {(view.compare === "on" ? BUILD_THEMES : comparedThemes(view)).map((theme) => (
@@ -205,6 +215,12 @@ const SELECT =
   "h-8 w-[9.5rem] min-w-0 rounded-hn-sm border border-hn-line-strong bg-hn-surface-card px-2 font-hn-mono text-[12.5px] text-hn-ink-primary";
 
 /** One inspector row: the label on the left, its select on the right. */
+/** A motion set's label; "auto" says which set the pack's default resolves to (design#221). */
+export function motionSetLabel(id: string, view: Pick<View, "theme">): string {
+  const label = (set: string) => motionSets[set as keyof typeof motionSets]?.label ?? set;
+  return id === "auto" ? `auto (${label(activeMotionSet(view))})` : label(id);
+}
+
 function Picker<T extends string>({
   label,
   value,
@@ -395,6 +411,13 @@ export function ViewToolbar({
           value={view.motion}
           options={VIEW_OPTIONS.motion}
           onChange={set("motion")}
+        />
+        <Picker
+          label="Animation set"
+          value={view.motionSet}
+          options={VIEW_OPTIONS.motionSet}
+          name={(v) => motionSetLabel(v, view)}
+          onChange={set("motionSet")}
         />
       </section>
     </div>

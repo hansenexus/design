@@ -102,7 +102,6 @@ import {
   TabsList,
   TabsTrigger,
   Textarea,
-  ThemePack,
   Toast,
   ToastAction,
   ToastDescription,
@@ -120,6 +119,8 @@ import { Charts } from "./charts";
 import { Workbench } from "./chrome";
 import { Controls } from "./controls";
 import { Data } from "./data";
+import { DraftPack } from "./draft";
+import { DraftStyle } from "./editor";
 import { Bell, Check, Key, MapIcon, More, Restart, Server } from "./icons";
 import { Illustrations } from "./illustrations-scene";
 import { ItemPage, isItem } from "./item";
@@ -127,7 +128,7 @@ import { Matrix } from "./matrix";
 import { Motion } from "./motion-scene";
 import { Navigation } from "./navigation";
 import { Overlays } from "./overlays";
-import { packFor, packIllustrations, registerLive } from "./packs";
+import { packIllustrations, registerLive } from "./packs";
 import { BareContext, PreviewCard, ViewContext, ViewProvider } from "./preview";
 import { Projects } from "./projects-scene";
 import { Screens } from "./screens";
@@ -1334,11 +1335,11 @@ function Page() {
 function PackedPage({ theme }: { theme: string }) {
   const view = useContext(ViewContext);
   return (
-    <ThemePack pack={packFor(theme)}>
+    <DraftPack theme={theme}>
       <IllustrationSetProvider set={activeIllustrationSet(view, packIllustrations(theme))}>
         <Page />
       </IllustrationSetProvider>
-    </ThemePack>
+    </DraftPack>
   );
 }
 
@@ -1392,6 +1393,7 @@ if (root) {
   createRoot(root).render(
     <StrictMode>
       <BareContext.Provider value={bare}>
+        <DraftStyle />
         {framed ? (
           <ViewProvider view={readView(query)}>
             <PackedPage theme={readView(query).theme} />

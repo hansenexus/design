@@ -1089,6 +1089,33 @@ public enum HNElevation {
   public static let raised: HNShadowValue = HNShadowValue(color: HNRGBA(0x000000, alpha: 0xB3), x: 0, y: 30, blur: 60, spread: -30)
 }
 
+/// Choreography: one element draws the eye. Off under Reduce Motion.
+public enum HNEmphasis {
+  /// Choreography: one element draws the eye, a changed value, a fresh row
+  public static let duration: Double = 0.32
+
+  /// Out to the peak and back
+  public static let easing: HNCubicBezier = HNCubicBezier(0.2, 0, 0, 1)
+}
+
+/// Choreography: something arrives. Off under Reduce Motion.
+public enum HNEnter {
+  /// Choreography: something arrives, a panel, a sheet, a row
+  public static let duration: Double = 0.2
+
+  /// Decelerate: arrives fast, settles
+  public static let easing: HNCubicBezier = HNCubicBezier(0, 0, 0.2, 1)
+}
+
+/// Choreography: something leaves, shorter than enter. Off under Reduce Motion.
+public enum HNExit {
+  /// Choreography: something leaves; shorter than enter
+  public static let duration: Double = 0.15
+
+  /// Accelerate: eases off, then goes
+  public static let easing: HNCubicBezier = HNCubicBezier(0.4, 0, 1, 1)
+}
+
 /// Focus ring geometry in points. The ring colour is `HNColors.focus.ring`.
 public enum HNFocus {
   public static let offset: Double = 2
@@ -1307,6 +1334,12 @@ public enum HNSpin {
 
   /// Linear
   public static let easing: HNCubicBezier = HNCubicBezier(0, 0, 1, 1)
+}
+
+/// Choreography: the step in seconds between siblings that enter one after another.
+public enum HNStagger {
+  /// Choreography: between siblings that enter one after another
+  public static let step: Double = 0.04
 }
 
 /// Type scale per theme: size, line height (points) and weight per role. `Font.hn(.body)` in SwiftUI reads it.

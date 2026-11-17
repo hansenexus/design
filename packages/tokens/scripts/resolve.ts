@@ -50,6 +50,11 @@ export type PackManifest = {
   /** The pack's default illustration set, an id of @hansenexus/illustrations/sets (design#220). */
   illustrations?: string;
   description?: string;
+  /**
+   * The motion set the app uses unless it says otherwise (design#221): an id of
+   * tokens/motion-sets/sets.json. Without one the pack uses the default set.
+   */
+  motion?: string;
 };
 
 export type PackTheme = {
@@ -60,7 +65,15 @@ export type PackTheme = {
   /** Absolute path of themes/<app>/<direction>. */
   dir: string;
   isDefault: boolean;
+  /** The pack's default motion set, from pack.json; undefined is the default set. */
+  motion?: string;
 };
+
+/** The motion set ids of tokens/motion-sets/sets.json (scripts/motion-sets.ts reads the sets). */
+export function motionSetIds(tokensDir: string = TOKENS_DIR): string[] {
+  const path = join(tokensDir, "motion-sets/sets.json");
+  return (JSON.parse(readFileSync(path, "utf8")) as { sets: string[] }).sets;
+}
 
 /** Every pack direction under `packsDir`: by app, the default direction first. */
 export function packThemes(packsDir: string = PACKS_DIR): PackTheme[] {
@@ -71,6 +84,11 @@ export function packThemes(packsDir: string = PACKS_DIR): PackTheme[] {
     if (!existsSync(manifestPath)) continue;
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as PackManifest;
     if (manifest.app !== app) throw new Error(`pack ${app}: pack.json names app ${manifest.app}`);
+    if (manifest.motion !== undefined && !motionSetIds().includes(manifest.motion)) {
+      throw new Error(
+        `pack ${app}: pack.json names motion set ${manifest.motion}, which is no set`
+      );
+    }
     const directions = readdirSync(join(packsDir, app), { withFileTypes: true })
       .filter((d) => d.isDirectory() && existsSync(join(packsDir, app, d.name, "tokens.json")))
       .map((d) => d.name)
@@ -86,6 +104,7 @@ export function packThemes(packsDir: string = PACKS_DIR): PackTheme[] {
         direction,
         dir: join(packsDir, app, direction),
         isDefault,
+        ...(manifest.motion ? { motion: manifest.motion } : {}),
       });
     }
   }

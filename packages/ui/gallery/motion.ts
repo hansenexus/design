@@ -7,6 +7,7 @@
 // is a lookup and replay is t = 0. Recording from Playwright was rejected: it needs a recorder and
 // a mapping from DOM events back to component props, and a recording breaks when a label changes.
 
+import { motionSets } from "@hansenexus/tokens";
 import motion from "@hansenexus/tokens/tokens/semantic/motion.json";
 import scale from "@hansenexus/tokens/tokens/semantic/scale.json";
 import { motionMs } from "../src/motion";
@@ -77,15 +78,35 @@ export function motionGroups(tree: Node, source: string): MotionGroup[] {
     });
 }
 
+type SetValues = { ms: Record<string, Record<string, number>>; easing: Record<string, Bezier> };
+
+/** A motion set's values (design#221); an unknown id is the default set. */
+function setValues(set: string): SetValues {
+  const sets = motionSets as unknown as Record<string, SetValues>;
+  return sets[set] ?? (sets.default as SetValues);
+}
+
 /**
  * What the scene shows: every group of semantic/motion.json, then the transition durations of
- * semantic/scale.json that the primitives and the scripted flow use.
+ * semantic/scale.json that the primitives and the scripted flow use, with the values of the
+ * motion set `set` (design#221; the tokens as they are for "default").
  */
-export function motionScene(): MotionGroup[] {
+export function motionScene(set = "default"): MotionGroup[] {
+  const values = setValues(set);
   return [
     ...motionGroups(motion as Node, "semantic/motion.json"),
     ...motionGroups({ duration: scale.duration } as Node, "semantic/scale.json"),
-  ];
+  ].map((group) => ({
+    ...group,
+    durations: group.durations.map((d) => {
+      const [a = "", b = ""] = d.path.split(".");
+      return { ...d, ms: values.ms[a]?.[b] ?? d.ms };
+    }),
+    easing: group.easing && {
+      ...group.easing,
+      value: values.easing[group.name] ?? group.easing.value,
+    },
+  }));
 }
 
 /** The CSS form of a cubicBezier token. */
@@ -148,36 +169,68 @@ export type PaletteSheetState = {
   sheet: string | null;
 };
 
-const ms = motionMs();
-
 /**
  * The flow of #61: open the command palette, narrow it to one machine, pick it, and its sheet
- * slides in. Steps that open something hold duration.base (the palette and panel token) on top
- * of the time to read them.
+ * slides in. Steps that open something hold enter.duration (the choreography's enter, which the
+ * palette and the sheet play) on top of the time to read them, in the motion set `set`.
  */
-export const PALETTE_SHEET_FLOW: Flow<PaletteSheetState> = {
-  id: "palette-sheet",
-  title: "Scripted flow: ⌘K, pick a machine, its sheet slides in",
-  steps: [
-    { label: "Page at rest", ms: 600, state: { palette: false, query: "", sheet: null } },
-    {
-      label: "⌘K opens the palette",
-      ms: ms.duration.base + 800,
-      state: { palette: true, query: "", sheet: null },
-    },
-    { label: "Type “kran”", ms: 800, state: { palette: true, query: "kran", sheet: null } },
-    {
-      label: "Narrow to “kran-04”",
-      ms: 800,
-      state: { palette: true, query: "kran-04", sheet: null },
-    },
-    {
-      label: "Enter picks kran-04, its sheet slides in",
-      ms: ms.duration.base + 1600,
-      state: { palette: false, query: "kran-04", sheet: "kran-04" },
-    },
-  ],
-};
+export function paletteSheetFlow(set = "default"): Flow<PaletteSheetState> {
+  const enter = motionMs(1, set).enter.duration;
+  return {
+    id: "palette-sheet",
+    title: "Scripted flow: ⌘K, pick a machine, its sheet slides in",
+    steps: [
+      { label: "Page at rest", ms: 600, state: { palette: false, query: "", sheet: null } },
+      {
+        label: "⌘K opens the palette",
+        ms: enter + 800,
+        state: { palette: true, query: "", sheet: null },
+      },
+      { label: "Type “kran”", ms: 800, state: { palette: true, query: "kran", sheet: null } },
+      {
+        label: "Narrow to “kran-04”",
+        ms: 800,
+        state: { palette: true, query: "kran-04", sheet: null },
+      },
+      {
+        label: "Enter picks kran-04, its sheet slides in",
+        ms: enter + 1600,
+        state: { palette: false, query: "kran-04", sheet: "kran-04" },
+      },
+    ],
+  };
+}
 
-/** The flows the scene ships. */
-export const FLOWS = [PALETTE_SHEET_FLOW] as const;
+/** The palette-to-sheet flow in the default motion set. */
+export const PALETTE_SHEET_FLOW = paletteSheetFlow();
+
+/** The flows the scene ships, in the motion set `set`. */
+export function flowsFor(set = "default") {
+  return [paletteSheetFlow(set)] as const;
+}
+
+/** The flows the scene ships, in the default motion set. */
+export const FLOWS = flowsFor();
+
+/** The choreography demo's rows: they enter staggered, the first one takes the emphasis. */
+export const CHOREO_ROWS = ["kran-01", "kran-02", "kran-04", "pegel"] as const;
+
+/**
+ * The CSS transition of choreography row `index`: entering, opacity and translate over
+ * enter.duration with enter.easing, each row stagger.step after the one before; leaving, all at
+ * once over exit.duration with exit.easing; scale always over emphasis. Variables only, so the
+ * gallery's speed and data-motion reach it, and motion-reduce: switches it off.
+ */
+export function choreoTransition(index: number, shown: boolean): string {
+  const scale = "scale var(--hn-emphasis-duration) var(--hn-emphasis-easing)";
+  if (!shown)
+    return ["opacity", "translate"]
+      .map((p) => `${p} var(--hn-exit-duration) var(--hn-exit-easing)`)
+      .concat(scale)
+      .join(", ");
+  const delay = `calc(${index} * var(--hn-stagger-step))`;
+  return ["opacity", "translate"]
+    .map((p) => `${p} var(--hn-enter-duration) var(--hn-enter-easing) ${delay}`)
+    .concat(scale)
+    .join(", ");
+}
