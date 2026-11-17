@@ -8,7 +8,9 @@
 // board's Decide (gallery/decide.ts): on the local server (`bun run gallery -- --serve`) a POST to
 // EDIT_PATH runs applyDraft() from scripts/edit.ts in that checkout; on the hosted gallery (nothing
 // writes there) the control opens a prefilled issue carrying the draft and the command an agent
-// runs (`bun run edit apply <draft> --pr`). Only pack directions are editable, never core themes.
+// runs (`bun run edit apply <draft> --pr`). Pack directions and, since design#233, the core themes
+// (hansenexus, kommandant, portal) are editable; a core theme carries no skins, and its write back
+// is named a core change that reaches every consumer on the next release.
 
 import type { ThemePackDefinition } from "../src";
 import { REPO } from "./decide";
@@ -52,9 +54,16 @@ export type EditorTheme = {
   tokens: EditorToken[];
   /** Every reference a value may name ("palette.fachwerk.brick", "radius.sm") -> its CSS value, per mode. */
   refs: Record<"dark" | "light", Record<string, string>>;
+  /**
+   * Set for a core theme of @hansenexus/tokens (design#233): written into packages/tokens, worn
+   * by these projects of workbench/projects.json ("label (repo/path)").
+   */
+  core?: { wornBy: string[] };
 };
 
-export type EditReply = { theme: string; files: string[]; contrast: string[] } | { error: string };
+export type EditReply =
+  | { theme: string; files: string[]; contrast: string[]; core?: { wornBy: string[] } }
+  | { error: string };
 
 export const emptyDraft = (theme: string): Draft => ({
   theme,
@@ -208,10 +217,19 @@ export function writeTarget(hostname: string): WriteTarget {
 /** The draft as the file `bun run edit apply` reads. */
 export const draftJson = (draft: Draft) => `${JSON.stringify(draft, null, 2)}\n`;
 
+/** What a core write back reaches (design#233): the gallery's confirm step and the issue say it. */
+export function coreReach(theme: Pick<EditorTheme, "id" | "core">): string {
+  const worn = theme.core?.wornBy ?? [];
+  return `Core change: \`${theme.id}\` is a core theme of @hansenexus/tokens, so this reaches every consumer on the next @hansenexus/tokens / @hansenexus/ui release (the owner's tag step; nothing is released from here). Worn by: ${worn.length ? worn.join(", ") : "no project listed"}.`;
+}
+
 /** The issue body: the draft and the command an agent runs in a lane. */
-export function editIssueBody(draft: Draft): string {
+export function editIssueBody(draft: Draft, theme?: Pick<EditorTheme, "id" | "core">): string {
   return [
-    `Owner's edit of the \`${draft.theme}\` pack direction, from the gallery's live editor (design#151).`,
+    theme?.core
+      ? `Owner's edit of the \`${draft.theme}\` core theme (packages/tokens), from the gallery's live editor (design#233).`
+      : `Owner's edit of the \`${draft.theme}\` pack direction, from the gallery's live editor (design#151).`,
+    ...(theme?.core ? ["", coreReach(theme)] : []),
     "",
     "```json",
     draftJson(draft).trimEnd(),
@@ -227,10 +245,10 @@ export function editIssueBody(draft: Draft): string {
 }
 
 /** The prefilled new-issue URL for the hosted gallery. */
-export function editIssueUrl(draft: Draft): string {
+export function editIssueUrl(draft: Draft, theme?: Pick<EditorTheme, "id" | "core">): string {
   const q = new URLSearchParams({
-    title: `edit ${draft.theme}: ${draftSize(draft)} change${draftSize(draft) === 1 ? "" : "s"} from the live editor`,
-    body: editIssueBody(draft),
+    title: `edit ${theme?.core ? "core theme " : ""}${draft.theme}: ${draftSize(draft)} change${draftSize(draft) === 1 ? "" : "s"} from the live editor`,
+    body: editIssueBody(draft, theme),
     labels: "ready",
   });
   return `https://github.com/${REPO}/issues/new?${q}`;
