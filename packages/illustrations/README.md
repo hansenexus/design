@@ -138,6 +138,40 @@ spell it out by hand: its row in `STATE_ILLUSTRATIONS` (`src/state.tsx`, a type 
 is there) and its `exports` paths in `package.json` (the "one export path per motif" test lists
 the missing ones).
 
+## Animated motifs (design#223)
+
+`@hansenexus/illustrations/animated` draws a state motif of the active set in motion:
+
+```tsx
+import { AnimatedIllustration } from "@hansenexus/illustrations/animated";
+
+<EmptyState illustration={<AnimatedIllustration state="empty" />} />
+<AnimatedIllustration state="success" motionSet="calm" />  {/* time this one by one set */}
+<AnimatedIllustration state="error" reducedMotion />       {/* always the still motif */}
+```
+
+- **Every motif enters**: its parts rise in one stagger step apart. Then a recipe moves named
+  parts, either on a **loop** (the box's shapes float, the gears turn, the warn bar flickers) or
+  **once** (the success check pops and its confetti lands, then it holds the still motif). The
+  recipes are data in `@hansenexus/illustrations/animations` (`RECIPES`); the `estate` set has
+  all eight states, a set without recipes plays the entrance alone, so every set animates.
+- **Timed by the motion set** (design#221): every duration and easing is a `--hn-*` variable of
+  `@hansenexus/tokens` (enter, stagger, emphasis, pulse, spin), never a number in this package.
+  `tokens.css` redeclares those per `[data-motion]`, so the page's active set (or the
+  `motionSet` prop, set as `data-motion` on the `<svg>`) drives the motif: calm glides, snappy
+  lands hard.
+- **Still under reduced motion**: with `prefers-reduced-motion: reduce` (or `reducedMotion`) the
+  component renders the still motif, attribute for attribute; the stylesheet itself sits inside
+  `@media (prefers-reduced-motion: no-preference)` and skips anything below a
+  `[data-reduced-motion]` element.
+- The stylesheet ships with the component as a React 19 hoisted `<style>`, once per page;
+  `ANIMATION_CSS` is the same string, for an app that serves its CSS as a file.
+
+A recipe names a part by its place among the motif's top-level SVG children (`:nth-child`, the
+estate frame's ground shadow is 1). Turning and scaling moves go about the part's own centre, so
+the tests keep them off parts drawn with a `transform` of their own. In the gallery the
+Illustrations scene plays them under the view's "Animation set" (`?motionSet=`), with Replay.
+
 ## Use
 
 One import path per motif and no index, so a page ships only the motifs it draws.
