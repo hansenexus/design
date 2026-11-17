@@ -175,7 +175,7 @@ export async function buildGallery() {
       screensPlugin(screens.apps, screens.skipped),
       livePlugin(live),
       projectsPlugin(projects, latest),
-      // The live editor's catalog (design#151): every pack direction's tokens, both modes.
+      // The live editor's catalog (design#151, design#233): every core theme's and pack direction's tokens.
       editorPlugin(await editorCatalog()),
       variants,
       uiSource,
@@ -300,7 +300,8 @@ export async function decideRoute(
 
 /**
  * POST /api/edit, the live editor's Write back on the local server (design#151): applyDraft()
- * from scripts/edit.ts writes the draft into its pack direction under themes/, then `rebuild`, so a
+ * from scripts/edit.ts writes the draft into its pack direction under themes/ (or a core theme of
+ * packages/tokens, design#233), then `rebuild`, so a
  * reload shows it from the files. The owner commits (or `bun run edit apply … --pr` does). Same
  * loopback and Origin guard as /api/decide; a refused draft is 400 with applyDraft()'s message.
  */

@@ -1,19 +1,22 @@
 // The live editor in the workbench's inspector (design#151): every token and recipe value of the
-// current pack direction, and the skin each slot uses, grouped by level. Edits draw on the canvas
+// current pack direction or core theme (design#233), and the skin each slot uses, grouped by level. Edits draw on the canvas
 // at once (DraftStyle, DraftPack), in every frame and compare panel of that theme, and Write back
-// turns the draft into files (local server) or a prefilled issue (hosted). The draft logic is in
+// turns the draft into files (local server) or a prefilled issue (hosted). A core theme carries no
+// skins, and its Write back first says what it reaches and asks to confirm. The draft logic is in
 // gallery/edit.ts, the files side in scripts/edit.ts.
 import { EDITOR_THEMES } from "virtual:editor";
 import { useMemo, useState } from "react";
 import { Badge, Button, cx, skinSlots } from "../src";
 import { useDrafts } from "./draft";
 import {
+  coreReach,
   DEFAULT_SKIN,
   type Draft,
   draftCss,
   draftJson,
   draftSize,
   EDIT_PATH,
+  type EditorTheme,
   type EditorToken,
   type EditReply,
   editedValue,
@@ -69,7 +72,7 @@ function TokenRow({
   const swatch = HEX.test(value) ? value : HEX.test(token.value[mode]) ? token.value[mode] : null;
   const set = (v: string | null) => onChange(setToken(draft, scope, token.path, v));
   return (
-    <li className="flex flex-col gap-1" data-token={token.path}>
+    <li className="flex flex-col gap-1" data-editor-token={token.path}>
       <div className="flex items-center gap-1.5">
         <span
           title={token.description ?? token.path}
@@ -268,13 +271,22 @@ type Status = {
   written?: boolean;
 } | null;
 
-function WriteBack({ draft }: { draft: Draft }) {
+function WriteBack({ draft, theme }: { draft: Draft; theme: EditorTheme }) {
   const [status, setStatus] = useState<Status>(null);
   const [busy, setBusy] = useState(false);
+  // A core write back reaches every consumer on the next release: the first click says so and
+  // asks to confirm (design#233), the second writes.
+  const [confirming, setConfirming] = useState(false);
   const target = writeTarget(location.hostname);
   const write = async () => {
+    if (theme.core && !confirming) {
+      setConfirming(true);
+      setStatus({ tone: "muted", text: coreReach(theme) });
+      return;
+    }
+    setConfirming(false);
     if (target === "issue") {
-      window.open(editIssueUrl(draft), "_blank", "noopener");
+      window.open(editIssueUrl(draft, theme), "_blank", "noopener");
       setStatus({
         tone: "muted",
         text: "Opened a prefilled issue; an agent applies it in a lane.",
@@ -312,8 +324,24 @@ function WriteBack({ draft }: { draft: Draft }) {
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap gap-1.5">
         <Button size="xs" onClick={write} disabled={busy || draftSize(draft) === 0}>
-          {target === "server" ? "Write back" : "Write back as issue"}
+          {confirming
+            ? "Confirm core write back"
+            : target === "server"
+              ? "Write back"
+              : "Write back as issue"}
         </Button>
+        {confirming ? (
+          <Button
+            size="xs"
+            variant="ghost"
+            onClick={() => {
+              setConfirming(false);
+              setStatus(null);
+            }}
+          >
+            Cancel
+          </Button>
+        ) : null}
         <Button
           size="xs"
           variant="secondary"
@@ -334,6 +362,7 @@ function WriteBack({ draft }: { draft: Draft }) {
           disabled={draftSize(draft) === 0}
           onClick={() => {
             saveDraft(emptyDraft(draft.theme));
+            setConfirming(false);
             setStatus(null);
           }}
         >
@@ -388,8 +417,8 @@ export function EditorPanel({ view }: { view: View }) {
       <section className="flex flex-col gap-1" aria-label="Editor">
         <InspectorHeading>Editor</InspectorHeading>
         <p className="m-0 text-[12px] text-hn-ink-muted">
-          Pick a pack direction ({EDITOR_THEMES.map((t) => t.id).join(", ")}) to edit its tokens,
-          recipes and skins. Core themes and live copies are read-only here.
+          Pick a theme ({EDITOR_THEMES.map((t) => t.id).join(", ")}) to edit its tokens, recipes and
+          skins. Live copies are read-only here.
         </p>
       </section>
     );
@@ -401,7 +430,8 @@ export function EditorPanel({ view }: { view: View }) {
       <div className="flex items-center gap-2">
         <InspectorHeading>Editor</InspectorHeading>
         <span className="ml-auto pb-1 font-hn-mono text-[11px] text-hn-ink-muted">
-          {theme.id} · {view.mode}
+          {theme.id}
+          {theme.core ? " · core" : ""} · {view.mode}
         </span>
         {size ? <Badge tone="accent">{size}</Badge> : null}
       </div>
@@ -416,10 +446,17 @@ export function EditorPanel({ view }: { view: View }) {
       <details>
         <summary className="cursor-pointer text-[13px] text-hn-ink-primary">Skins by level</summary>
         <div className="mt-2">
-          <Skins theme={theme.id} draft={draft} onChange={saveDraft} />
+          {theme.core ? (
+            <p className="m-0 text-[12px] text-hn-ink-muted">
+              A core theme carries no skins: every slot renders the default component of
+              @hansenexus/ui. Skins belong to a pack direction.
+            </p>
+          ) : (
+            <Skins theme={theme.id} draft={draft} onChange={saveDraft} />
+          )}
         </div>
       </details>
-      <WriteBack draft={draft} />
+      <WriteBack key={theme.id} draft={draft} theme={theme} />
     </section>
   );
 }
