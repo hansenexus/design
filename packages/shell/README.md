@@ -77,8 +77,9 @@ measure, and the `footer` slot an optional `SessionFooter`.
   in the shell has it.
 - **Footer**: the shell docks it, pads it for the safe area and lifts it above an on-screen
   keyboard. Without one the slot fills the height.
-- **Measure**: `text` is `--hn-shell-measure` (default 65ch), `board` is `--hn-shell-board`
-  (default 72rem); `SessionFooter` lines up with the same width.
+- **Measure**: `text` is the `shell.measure` recipe token (65ch), `board` is `shell.board`
+  (72rem), both new in `@hansenexus/tokens` 0.12.0; on an older tokens the shell falls back to the
+  same values. `SessionFooter` lines up with the same width.
 - **Focus** stays in the session: Tab from the last stop wraps to the first.
 - **Motion**: the progress bar's width transition is off under reduced motion.
 
@@ -276,8 +277,8 @@ A pack skins the shell through its recipe tokens, never through a prop or an app
 and side sheet), `radius` (panels, the drawer and sheet corners), the `shell.nav-*` rows,
 `border.width`, `elevation.panel`, and the `panel.main` fill. For what the recipes cannot say, the
 whole `Shell` is the theme pack's `shell` skin slot (`@hansenexus/ui` `skinnable`). The session
-layout's widths read `--hn-shell-measure` and `--hn-shell-board`, with 65ch and 72rem as
-fallbacks.
+layout's widths are `shell.measure` and `shell.board` (tokens 0.12.0), the one token addition
+of 0.3.
 
 ## Migrating from 0.2
 

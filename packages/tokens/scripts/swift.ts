@@ -347,7 +347,7 @@ function renderEnum(name: string, docText: string, cases: readonly string[], def
 
 /**
  * Token types with no SwiftUI meaning: border.style is a CSS stroke style, motif.* are CSS
- * background-image values. They stay on the web.
+ * background-image values. They stay on the web, as do the shell.measure and shell.board CSS lengths (string tokens).
  */
 const WEB_ONLY_TYPES = new Set(["strokeStyle", "string"]);
 

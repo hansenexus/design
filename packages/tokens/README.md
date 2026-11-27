@@ -172,13 +172,14 @@ them.
 | `shell.nav-row`, `shell.nav-pad`, `shell.nav-radius` | `32px`, `12px`, `radius.sm` | a RailItem's height, inline padding and corner |
 | `shell.nav-divider` | `0px` | the rule under each nav row and between phone tabs |
 | `shell.brand-row` | `32px` | the brand row's height at the head of the rail |
+| `shell.measure`, `shell.board` | `65ch`, `72rem` | the session layout's slot width: the reading measure for text, the wider board for cards or a quiz (design#239); CSS lengths, web only |
 
 Control shape is a radius, so a square pack sets the `control.*` radii to its sawn edge and a
 round one keeps the pills; `control.box` and `control.dot` follow `radius.sm` and `radius.pill`
 unless a theme sets them. A motif is a CSS `background-image` value and may read a colour
 variable (`var(--hn-line-strong)`): it resolves on the element that carries `data-theme` and
 `data-mode`. A flat pack sets each `elevation.*` to a transparent zero shadow. Swift gets
-`HNBorder`, `HNElevation`, `HNControl` and `HNShell`; `border.style` and `motif.*` are web only.
+`HNBorder`, `HNElevation`, `HNControl` and `HNShell`; `border.style`, `motif.*`, `shell.measure` and `shell.board` are web only.
 
 The shell's colours are semantic colour tokens, per mode: `panel.main` (the main panel's ground,
 `surface.card`), and `nav.active`, `nav.active-ink`, `nav.active-icon`, `nav.active-meta`,
