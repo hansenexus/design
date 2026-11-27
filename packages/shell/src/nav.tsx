@@ -1,25 +1,15 @@
-// The nav slot's content: RailItems in a column from 768 px of shell width, a bottom tab bar
-// below. Both come from one list, filtered by the app's capabilities (navVisible), so a row the
-// context cannot reach is in neither.
-import {
-  cx,
-  focusRing,
-  RailItem,
-  Sheet,
-  SheetBody,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@hansenexus/ui";
+// The nav slot's content: RailItems in a column, the same in the column from 768 px of shell
+// width and in the drawer below (design#239, the owner's M2; 0.2's bottom tab bar is gone). The
+// rows come from one list, filtered by the app's capabilities (navVisible), so a row the context
+// cannot reach is in neither the nav nor the palette.
+import { cx, RailItem } from "@hansenexus/ui";
 import {
   type ComponentProps,
   type ComponentType,
   Fragment,
   type MouseEvent,
   type ReactNode,
-  useState,
 } from "react";
-import { SHELL_COPY } from "./copy";
 import { type Capabilities, navVisible } from "./nav-visibility";
 import { useShellIfAny } from "./shell";
 
@@ -27,9 +17,9 @@ export type ShellNavItem = {
   id: string;
   label: string;
   href: string;
-  /** Drawn in the rail, and alone in the tab bar (the label stays for assistive tech). */
+  /** Drawn before the label. */
   icon?: ReactNode;
-  /** Right-aligned in the rail: a count, a Kbd. Not in the tab bar. */
+  /** Right-aligned in the row: a count, a Kbd. */
   trailing?: ReactNode;
   /** Capabilities the row needs; it is hidden unless all are on. */
   requires?: readonly string[];
@@ -57,24 +47,21 @@ export type ShellNavProps = {
   /** The current page's item id: aria-current="page". `activeNavId` finds it from a path. */
   activeId?: string;
   capabilities?: Capabilities;
-  /** Section headings, by id, for the rail and the More sheet. */
+  /** Section headings, by id. */
   sections?: readonly ShellNavSection[];
-  /** The head of the rail: the mark and app name. Not drawn in the tab bar. */
+  /** The head of the rail: the mark and app name. */
   brand?: ReactNode;
   /**
    * A click on a row, for a client-side router: call `event.preventDefault()` and navigate.
-   * Without it (and without `link`) the rows are plain links.
+   * Without it (and without `link`) the rows are plain links. A row picked in the drawer also
+   * closes the drawer.
    */
   onNavigate?: (item: ShellNavItem, event: MouseEvent<HTMLAnchorElement>) => void;
   /** Render rows as this component instead of `<a>`, e.g. a router's Link. */
   link?: ShellNavLink;
-  /**
-   * The most tabs the phone tab bar shows. With more visible rows, the bar shows the first
-   * `tabLimit - 1` and a More tab that opens a sheet with the whole nav, sections included.
-   * Default: no limit.
-   */
+  /** @deprecated 0.2's phone tab bar; the 0.3 shell has a drawer instead. Ignored. */
   tabLimit?: number;
-  /** The More tab's label; the default comes from SHELL_COPY. */
+  /** @deprecated 0.2's More tab; ignored. */
   moreLabel?: string;
 };
 
@@ -169,43 +156,10 @@ function Rows({
   });
 }
 
-const TAB = cx(
-  "flex min-h-hn-target min-w-0 items-center justify-center rounded-hn-md px-1 text-hn-ink-muted no-underline",
-  "border-0 border-r-(length:--hn-shell-nav-divider) border-hn-line-subtle last:border-r-0",
-  "hover:text-hn-ink-primary aria-[current=page]:bg-hn-nav-tab aria-[current=page]:text-hn-nav-tab-ink [&_svg]:size-5",
-  focusRing
-);
-
-function TabFace({ icon, label }: { icon?: ReactNode; label: string }) {
-  return icon ? (
-    <>
-      <span aria-hidden="true" className="flex">
-        {icon}
-      </span>
-      <span className="sr-only">{label}</span>
-    </>
-  ) : (
-    <span className="truncate font-medium text-xs">{label}</span>
-  );
-}
-
-function MoreIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      aria-hidden="true"
-    >
-      <path d="M4 7h16M4 12h16M4 17h16" />
-    </svg>
-  );
-}
-
+/**
+ * The app's navigation as a rail: the brand, then the rows in their sections. The shell draws it
+ * in the nav column from 768 px of shell width and in the drawer below.
+ */
 export function ShellNav({
   items,
   activeId,
@@ -214,100 +168,36 @@ export function ShellNav({
   brand,
   onNavigate,
   link: Link,
-  tabLimit,
-  moreLabel,
 }: ShellNavProps) {
   const shell = useShellIfAny();
-  const [moreOpen, setMoreOpen] = useState(false);
   const visible = visibleNavItems(items, capabilities);
+  // A row picked in the drawer closes it; the router then shows the page behind. In the column
+  // the drawer is closed already, so closing it again changes nothing.
   const click: Click = (item) =>
-    onNavigate ? (e: MouseEvent<HTMLAnchorElement>) => onNavigate(item, e) : undefined;
-  const overflow = tabLimit !== undefined && visible.length > tabLimit;
-  const tabs = overflow ? visible.slice(0, Math.max(tabLimit - 1, 0)) : visible;
-  const moreActive =
-    overflow && activeId !== undefined && !tabs.some((item) => item.id === activeId);
-  const more = moreLabel ?? SHELL_COPY[shell?.locale ?? "en"].more;
-  // A row picked in the sheet closes it; the router then shows the page behind.
-  const sheetClick: Click = (item) => (e) => {
-    onNavigate?.(item, e);
-    setMoreOpen(false);
-  };
+    onNavigate || shell?.hasNav
+      ? (e: MouseEvent<HTMLAnchorElement>) => {
+          onNavigate?.(item, e);
+          shell?.setNavOpen(false);
+        }
+      : undefined;
 
   return (
-    <>
-      <div
-        data-shell-nav="rail"
-        className="hidden h-full flex-col gap-(--hn-shell-nav-gap) p-(--hn-shell-nav-inset) @3xl:flex"
-      >
-        {brand ? (
-          <div
-            data-shell-nav="brand"
-            className={cx(
-              "mb-(--hn-shell-nav-inset) flex h-(--hn-shell-brand-row) shrink-0 items-center px-[calc(var(--hn-shell-nav-pad)-4px)]",
-              DIVIDER
-            )}
-          >
-            {brand}
-          </div>
-        ) : null}
-        <Rows items={visible} activeId={activeId} sections={sections} link={Link} click={click} />
-      </div>
-      <div data-shell-nav="tabs" className="grid h-full auto-cols-fr grid-flow-col @3xl:hidden">
-        {tabs.map((item) => {
-          const tab = {
-            href: item.href,
-            onClick: click(item),
-            "aria-current": item.id === activeId ? ("page" as const) : undefined,
-            title: item.label,
-            className: TAB,
-          };
-          return Link ? (
-            <Link key={item.id} {...tab}>
-              <TabFace icon={item.icon} label={item.label} />
-            </Link>
-          ) : (
-            <a key={item.id} {...tab}>
-              <TabFace icon={item.icon} label={item.label} />
-            </a>
-          );
-        })}
-        {overflow ? (
-          <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
-            <button
-              type="button"
-              aria-haspopup="dialog"
-              aria-expanded={moreOpen}
-              aria-current={moreActive ? "page" : undefined}
-              title={more}
-              onClick={() => setMoreOpen(true)}
-              className={cx(TAB, "cursor-pointer bg-transparent")}
-            >
-              <TabFace icon={<MoreIcon />} label={more} />
-            </button>
-            <SheetContent
-              side="bottom"
-              locale={shell?.locale}
-              container={shell?.portal}
-              className="max-h-[80dvh]"
-            >
-              <SheetHeader>
-                <SheetTitle>{more}</SheetTitle>
-              </SheetHeader>
-              <SheetBody>
-                <div data-shell-nav="more" className="flex flex-col gap-(--hn-shell-nav-gap)">
-                  <Rows
-                    items={visible}
-                    activeId={activeId}
-                    sections={sections}
-                    link={Link}
-                    click={sheetClick}
-                  />
-                </div>
-              </SheetBody>
-            </SheetContent>
-          </Sheet>
-        ) : null}
-      </div>
-    </>
+    <div
+      data-shell-nav="rail"
+      className="flex h-full flex-col gap-(--hn-shell-nav-gap) p-(--hn-shell-nav-inset)"
+    >
+      {brand ? (
+        <div
+          data-shell-nav="brand"
+          className={cx(
+            "mb-(--hn-shell-nav-inset) flex h-(--hn-shell-brand-row) shrink-0 items-center px-[calc(var(--hn-shell-nav-pad)-4px)]",
+            DIVIDER
+          )}
+        >
+          {brand}
+        </div>
+      ) : null}
+      <Rows items={visible} activeId={activeId} sections={sections} link={Link} click={click} />
+    </div>
   );
 }

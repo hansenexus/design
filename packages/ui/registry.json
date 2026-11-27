@@ -996,22 +996,12 @@
       "name": "shell",
       "type": "registry:block",
       "title": "Shell",
-      "description": "The app shell from the shell-layout vote: floating panels for nav, header, main and an optional context pane, and a ⌘K container for external command sets or a whole palette. Installs the npm package @hansenexus/shell; it copies no files.",
+      "description": "The app shell: the work, focus and full layouts over a nav column, a page column (sticky header, scrolling slot, fixed footer bar) and an optional aside, a drawer and bottom sheet on phones, and a ⌘K container for external command sets or a whole palette. Installs the npm package @hansenexus/shell; it copies no files.",
       "meta": {
         "level": "template",
-        "uses": [
-          "button",
-          "command",
-          "cx",
-          "dialog",
-          "kbd",
-          "rail-item",
-          "sheet",
-          "skin",
-          "state-copy"
-        ]
+        "uses": ["button", "command", "cx", "dialog", "kbd", "rail-item", "skin", "state-copy"]
       },
-      "dependencies": ["@hansenexus/shell@^0.2.0"],
+      "dependencies": ["@hansenexus/shell@^0.3.0"],
       "registryDependencies": ["@hansenexus/tokens"]
     },
     {

@@ -464,36 +464,132 @@ test("scripted flow: plays in order, scrubs and replays", async ({ page }) => {
   await expect(flow).toHaveAttribute("data-step", "1", { timeout: 8000 });
 });
 
-test("shell: the layout follows the shell's width, not the viewport's", async ({ page }, info) => {
-  // The wide card needs 1024 px of its own; at 1280 the scene tree leaves it less.
-  if (info.project.name === "1280") await page.setViewportSize({ width: 1440, height: 900 });
+test("shell: the layout follows the shell's width, not the viewport's", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/gallery/?scene=shell");
-  const [wide, phone] = [page.locator("[data-shell]").nth(0), page.locator("[data-shell]").nth(1)];
-  const box = async (shell: typeof wide, panel: string) =>
+  const story = (id: string) => page.locator(`[data-story="${id}"] [data-shell]`);
+  const [desktop, tablet, phone] = [
+    story("work-desktop"),
+    story("work-tablet"),
+    story("work-phone"),
+  ];
+  const box = async (shell: typeof desktop, panel: string) =>
     (await shell.locator(`[data-shell-panel="${panel}"]`).boundingBox()) ?? { x: 0, y: 0 };
 
-  // The narrow frame: header on top, main, the tab bar at the bottom, no context pane.
-  await expect(phone.locator('[data-shell-nav="tabs"]')).toBeVisible();
-  await expect(phone.locator('[data-shell-nav="rail"]')).toBeHidden();
-  await expect(phone.locator('[data-shell-panel="context"]')).toBeHidden();
-  await expect(phone.getByRole("button", { name: "Hide context panel" })).toBeHidden();
-  expect((await box(phone, "nav")).y).toBeGreaterThan((await box(phone, "main")).y);
+  // Phone: header, slot, footer bar at the bottom; no nav column, no aside column.
+  await expect(phone).toHaveAttribute("data-shell-width", "compact");
+  await expect(phone.locator('[data-shell-panel="nav"]')).toBeHidden();
+  await expect(phone.locator('[data-shell-panel="aside"]')).toBeHidden();
+  await expect(phone.getByRole("button", { name: "Open navigation" })).toBeVisible();
   expect((await box(phone, "main")).y).toBeGreaterThan((await box(phone, "header")).y);
+  expect((await box(phone, "footer")).y).toBeGreaterThan((await box(phone, "main")).y);
 
-  if (info.project.name === "1280") {
-    // The full-width card: the nav rail left of main, the context pane right of it.
-    await expect(wide.locator('[data-shell-nav="rail"]')).toBeVisible();
-    await expect(wide.locator('[data-shell-panel="context"]')).toBeVisible();
-    expect((await box(wide, "nav")).x).toBeLessThan((await box(wide, "main")).x);
-    expect((await box(wide, "context")).x).toBeGreaterThan((await box(wide, "main")).x);
-    await wide.getByRole("button", { name: "Hide context panel" }).click();
-    await expect(wide.locator('[data-shell-panel="context"]')).toHaveCount(0);
-  }
+  // Tablet: the nav column, the aside as a sheet.
+  await expect(tablet).toHaveAttribute("data-shell-width", "medium");
+  await expect(tablet.locator('[data-shell-nav="rail"]').first()).toBeVisible();
+  await expect(tablet.getByRole("button", { name: "Open navigation" })).toBeHidden();
+  await expect(tablet.locator('[data-shell-panel="aside"]')).toBeHidden();
+
+  // Desktop: nav column left of the page, the aside right of it, and the toggle folds it.
+  await expect(desktop).toHaveAttribute("data-shell-width", "wide");
+  await expect(desktop.locator('[data-shell-panel="aside"]')).toBeVisible();
+  expect((await box(desktop, "nav")).x).toBeLessThan((await box(desktop, "main")).x);
+  expect((await box(desktop, "aside")).x).toBeGreaterThan((await box(desktop, "main")).x);
+  await desktop.getByRole("button", { name: "Hide context panel" }).click();
+  await expect(desktop.locator('[data-shell-panel="aside"]')).toHaveCount(0);
+});
+
+test("shell: the phone drawer traps focus, closes on Escape and a swipe, restores focus", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/gallery/?scene=shell");
+  const phone = page.locator('[data-story="work-phone"] [data-shell]');
+  // By its hook, not its role: the open drawer hides the rest of the shell from the a11y tree.
+  const menu = phone.locator('[data-shell-control="menu"]');
+  await menu.click();
+  const drawer = phone.getByRole("dialog", { name: "App" });
+  await expect(drawer).toBeVisible();
+  await expect(drawer.getByRole("navigation", { name: "App" })).toBeVisible();
+  await expect(menu).toHaveAttribute("aria-expanded", "true");
+  // Focus stays inside: tabbing past the last row wraps.
+  for (let i = 0; i < 12; i++) await page.keyboard.press("Tab");
+  expect(await drawer.evaluate((el) => el.contains(document.activeElement))).toBe(true);
+  await page.keyboard.press("Escape");
+  await expect(drawer).toBeHidden();
+  await expect(menu).toBeFocused();
+
+  // A row closes it; a leftward swipe closes it.
+  await menu.click();
+  await drawer.getByRole("link", { name: /Watch/ }).click();
+  await expect(drawer).toBeHidden();
+  await menu.click();
+  // Measure once the slide-in has settled, so the swipe lands on the drawer, not beside it.
+  const shellBox = (await phone.boundingBox()) ?? { x: 0, y: 0, width: 0, height: 0 };
+  await expect
+    .poll(async () => Math.round((await drawer.boundingBox())?.x ?? -1))
+    .toBeGreaterThanOrEqual(Math.floor(shellBox.x));
+  const rect = (await drawer.boundingBox()) ?? { x: 0, y: 0, width: 0, height: 0 };
+  const y = rect.y + rect.height / 2;
+  await page.mouse.move(rect.x + rect.width - 20, y);
+  await page.mouse.down();
+  await page.mouse.move(rect.x + 20, y, { steps: 4 });
+  await page.mouse.up();
+  await expect(drawer).toBeHidden();
+});
+
+test("shell: below 1280 px the aside is a sheet from the header action", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/gallery/?scene=shell");
+  const phone = page.locator('[data-story="work-phone"] [data-shell]');
+  const toggle = phone.getByRole("button", { name: "Show context panel" });
+  await toggle.click();
+  const sheet = phone.getByRole("dialog", { name: "Context" });
+  await expect(sheet).toBeVisible();
+  // A bottom sheet: once it has slid in, it ends at the shell's bottom edge.
+  const bottom = async (box: { y: number; height: number } | null) =>
+    Math.round((box?.y ?? 0) + (box?.height ?? 0));
+  const shellBottom = await bottom(await phone.boundingBox());
+  await expect.poll(async () => bottom(await sheet.boundingBox())).toBe(shellBottom);
+  await page.keyboard.press("Escape");
+  await expect(sheet).toBeHidden();
+  await expect(toggle).toBeFocused();
+});
+
+test("shell: focus folds the aside, full drops the nav for a back link", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/gallery/?scene=shell&layout=focus");
+  const focus = page.locator('[data-story="focus-desktop"] [data-shell]');
+  await expect(focus).toHaveAttribute("data-layout", "focus");
+  await expect(focus.locator('[data-shell-panel="aside"]')).toHaveCount(0);
+  await focus.getByRole("button", { name: "Show context panel" }).click();
+  await expect(focus.locator('[data-shell-panel="aside"]')).toBeVisible();
+
+  await page.locator('[data-layout-pick="full"]').click();
+  const full = page.locator('[data-story="full-desktop"] [data-shell]');
+  await expect(full).toHaveAttribute("data-layout", "full");
+  await expect(full.locator('[data-shell-panel="nav"]')).toHaveCount(0);
+  await expect(full.getByRole("link", { name: "Machines" })).toBeVisible();
+  await expect(
+    page.locator('[data-story="full-phone"]').getByRole("button", { name: "Open navigation" })
+  ).toHaveCount(0);
+});
+
+test("shell: a skip link is the first stop and lands on the slot", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/gallery/?scene=shell&bare=1");
+  const desktop = page.locator('[data-story="work-desktop"] [data-shell]');
+  const skip = desktop.getByRole("link", { name: "Skip to content" });
+  await skip.focus();
+  await expect(skip).toBeVisible();
+  await skip.press("Enter");
+  await expect(desktop.locator('[data-shell-panel="main"]')).toBeFocused();
 });
 
 test("shell: ⌘K opens its palette inside the shell, Enter runs the command", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/gallery/?scene=shell");
-  const wide = page.locator("[data-shell]").nth(0);
+  const wide = page.locator('[data-story="work-desktop"] [data-shell]');
   await page.locator("body").press("Control+k");
   // Only the shell that binds the shortcut opens, and its palette lives inside it.
   const dialog = wide.getByRole("dialog", { name: "Command palette" });
@@ -514,7 +610,7 @@ test("shell: an ops preset mounts in the palette slot, the shell keeps focus and
   page,
 }) => {
   await page.goto("/gallery/?scene=shell");
-  const shell = page.locator("[data-shell]").nth(2);
+  const shell = page.locator('[data-story="work-preset"] [data-shell]');
   const trigger = shell.getByRole("button", { name: "Search or run a command" });
   await trigger.click();
   const dialog = shell.getByRole("dialog");
