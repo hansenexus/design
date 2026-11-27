@@ -75,6 +75,7 @@ export const GROUPS: SceneGroup[] = [
     label: "Templates",
     scenes: [
       { id: "shell", label: "Shell", items: 4 },
+      { id: "patterns", label: "Page patterns", items: 4 },
       { id: "screens", label: "App screens", items: 1 },
       { id: "projects", label: "Projects", items: 1 },
     ],

@@ -241,7 +241,7 @@ const LAYOUT_NOTE: Record<ShellLayout, string> = {
     "Learning, reading and play: no nav, no app header. A session header (exit, title, progress, status), the slot centred to a reading measure, an optional footer. Escape goes to exit.",
 };
 
-function Frame({
+export function Frame({
   width,
   height,
   phone = false,

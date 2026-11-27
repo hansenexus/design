@@ -807,3 +807,90 @@ test("toggle, toggle group, slider: keyboard and ARIA", async ({ page }) => {
     "75"
   );
 });
+
+test.describe("page patterns (design#240)", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+  });
+
+  test("tabbed page: the tab is in the URL, a dirty tab asks before it is left", async ({
+    page,
+  }) => {
+    await page.goto("/gallery/?scene=patterns");
+    const story = page.locator('[data-story="tabs-desktop"]');
+    await story.getByRole("tab", { name: "Mitglieder" }).click();
+    await expect(page).toHaveURL(/[?&]tab=mitglieder/);
+    await story.getByRole("tab", { name: "Profil" }).click();
+    await expect(page).toHaveURL(/[?&]tab=profil/);
+    await story.getByRole("textbox", { name: "Name der Gruppe" }).fill("Fachschaft Englisch");
+    await story.getByRole("tab", { name: /Darstellung/ }).click();
+    const confirm = page.getByRole("alertdialog", { name: "Ungespeicherte Änderungen verwerfen?" });
+    await expect(confirm).toBeVisible();
+    await confirm.getByRole("button", { name: "Weiter bearbeiten" }).click();
+    await expect(story.getByRole("tab", { name: /Profil/ })).toHaveAttribute(
+      "aria-selected",
+      "true"
+    );
+    await story.getByRole("tab", { name: /Darstellung/ }).click();
+    await page.getByRole("button", { name: "Verwerfen" }).click();
+    await expect(story.getByRole("tab", { name: /Darstellung/ })).toHaveAttribute(
+      "aria-selected",
+      "true"
+    );
+  });
+
+  test("wizard: back through the stepper, a failing step stays with its message", async ({
+    page,
+  }) => {
+    await page.goto("/gallery/?scene=patterns&pattern=wizard");
+    const story = page.locator('[data-story="wizard-desktop"]');
+    await expect(story.locator('[data-step][aria-current="step"]')).toHaveAttribute(
+      "data-step",
+      "faecher"
+    );
+    await story.locator('[data-step="grunddaten"] [data-step-select]').click();
+    const heading = story.getByRole("heading", { level: 2, name: "Grunddaten" });
+    await expect(heading).toBeFocused();
+    await story.getByRole("textbox", { name: /Name der Klasse/ }).fill("");
+    await story.getByRole("textbox", { name: /Name der Klasse/ }).press("Enter");
+    await expect(story.locator("[data-wizard-error]")).toContainText("braucht einen Namen");
+    await expect(story.locator('[data-step="grunddaten"]')).toHaveAttribute("data-status", "error");
+    await story.getByRole("textbox", { name: /Name der Klasse/ }).fill("7b");
+    await story.locator('[data-wizard="next"]').click();
+    await expect(story.locator('[data-wizard-step="schueler"]')).toBeVisible();
+  });
+
+  test("review queue: ? lists the shortcuts, an action key decides and moves on", async ({
+    page,
+  }) => {
+    await page.goto("/gallery/?scene=patterns&pattern=review");
+    const story = page.locator('[data-story="review-desktop"]');
+    const item = story.locator("[data-queue-item]");
+    const first = await item.getAttribute("data-queue-item");
+    await story.locator('[data-queue="next"]').focus();
+    await page.keyboard.press("?");
+    const help = page.getByRole("dialog", { name: "Tastenkürzel" });
+    await expect(help).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(help).toBeHidden();
+    await story.locator('[data-queue="next"]').focus();
+    await page.keyboard.press("s");
+    await expect(item).not.toHaveAttribute("data-queue-item", first ?? "");
+  });
+
+  test("create queue: Enter saves, the count grows, the first field is ready again", async ({
+    page,
+  }) => {
+    await page.goto("/gallery/?scene=patterns&pattern=create");
+    const story = page.locator('[data-story="create-desktop"]');
+    const count = story.locator("[data-queue-count]");
+    await expect(count).toContainText("4");
+    const word = story.getByRole("textbox", { name: /Wort/ });
+    await word.fill("the tide");
+    await story.getByRole("textbox", { name: /Übersetzung/ }).fill("die Gezeiten");
+    await story.getByRole("textbox", { name: /Übersetzung/ }).press("Enter");
+    await expect(count).toContainText("5");
+    await expect(word).toBeFocused();
+    await expect(word).toHaveValue("");
+  });
+});

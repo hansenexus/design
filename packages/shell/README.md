@@ -43,7 +43,7 @@ is then a plain, unpadded `<div>`, so the page has one main landmark, not two.
 
 `layout="session"` is for a page of its own, where the app's chrome would be in the way: a
 flashcard review, a reading passage, a timed test, a live quiz host (design#239 addendum). No nav,
-no menu button, no aside: the `header` slot takes a `SessionHeader`, the slot is centred to a
+no menu button, no aside unless given: the `header` slot takes a `SessionHeader`, the slot is centred to a
 measure, and the `footer` slot an optional `SessionFooter`.
 
 ```tsx
@@ -82,6 +82,87 @@ measure, and the `footer` slot an optional `SessionFooter`.
   same values. `SessionFooter` lines up with the same width.
 - **Focus** stays in the session: Tab from the last stop wraps to the first.
 - **Motion**: the progress bar's width transition is off under reduced motion.
+- **Aside** (0.4): a session may take an `aside` (the Queue's item list). It starts folded unless
+  `defaultAsideOpen`; `ShellAsideToggle` in the header's `status` opens it.
+
+## Page patterns
+
+Three ready pages on top of the layouts (design#240). Each brings its own `Shell` and takes the
+shell's passthrough props (`nav`, `locale`, `palette`, `commands`, …); the app hands over content
+and callbacks. Words default to German or English (`locale`), overridable through `labels`.
+They need `@hansenexus/ui` 0.6 (the `Stepper`).
+
+### TabbedPage: settings and detail pages
+
+```tsx
+<TabbedPage
+  nav={nav}
+  title="Einstellungen"
+  tabs={[
+    { id: "profil", label: "Profil", content: <ProfileForm />, footer: <SaveBar />, dirty },
+    { id: "mitglieder", label: "Mitglieder", content: <Members />, badge: 12 },
+  ]}
+  onDiscard={(id) => resetForm(id)} // the user dropped a tab's changes
+  variant="tabs" // or "sections": a list in a left sub-column, for many sections
+/>
+```
+
+- **URL**: the active tab is `?tab=<id>` (`url={{ param, history: "push" | "replace" }}`); Back
+  goes to the previous tab. A page that routes tabs itself passes `url={false}` and `value`,
+  which is also the way to render the right tab on the server.
+- **Keyboard**: the arrows move between tabs, Enter or Space opens one (manual activation, so a
+  dirty tab is not left by an arrow).
+- **Unsaved changes**: switching away from a `dirty` tab, Back, and a reload ask first.
+- **Phone**: under 768 px of shell width a `sections` page, or a `tabs` page with more than
+  `selectFrom` (4) tabs, becomes a select; fewer tabs scroll sideways.
+
+### Wizard: a create flow in steps
+
+```tsx
+<Wizard
+  title="Neue Klasse"
+  steps={[
+    { id: "grunddaten", label: "Grunddaten", content: <BasicFields />, validate: () => form.valid("basic") },
+    { id: "faecher", label: "Fächer", content: <Subjects /> },
+  ]}
+  draft={saved?.position} // resume where the user left off
+  onDraftChange={(position) => saveDraft({ ...values, position })}
+  dirty={form.dirty} // Abbrechen and a reload ask first
+  onCancel={() => router.back()}
+  onFinish={async () => (await create()) ? undefined : "Konnte nicht speichern"}
+/>
+```
+
+- `layout="focus"` (default, keeps the nav) or `"session"` (the whole page).
+- The header's `Stepper`: done, current, open, error; done and failed steps behind the current
+  one are buttons back. Under 768 px it is `Schritt 2 von 4` over a bar, with failed steps named.
+- Each step is a form: Enter in a field is Weiter. `validate` returns false or a message to stay;
+  the message shows on the step and takes focus. `errors` marks steps from the server.
+- The footer (Abbrechen, Zurück, Weiter or Fertig) is the shell's, docked above the keyboard.
+
+### Queue: entering or working through many items
+
+```tsx
+<Queue
+  mode="review"
+  title="Klausur 3"
+  items={submissions} // { id, label, status?: "open" | "done" | "skipped" | "flagged", meta? }
+  actions={[
+    { id: "grade", label: "Bewerten", shortcut: "Enter", run: grade },
+    { id: "flag", label: "Markieren", shortcut: "m", variant: "secondary", run: flag },
+  ]}
+  renderItem={(item) => <Submission id={item.id} />}
+  onExit={() => router.back()}
+/>
+```
+
+- `mode="review"`: resumes at the first open item; an action runs, then (unless `advance: false`)
+  the queue moves to the next open one. Nothing open left: an "Alles erledigt" state with Fertig.
+- `mode="create"`: `form` and `onSave` (return false to stay); Enter saves and the first field
+  takes focus for the next item. `editing`, `onEdit`, `onRemove` and `onCancelEdit` edit the list.
+- Layout `session`. The item list is the aside: a column from 1280 px, a bottom sheet below,
+  opened from the header. `?` opens the shortcut overlay; j/k or ←/→ move between items; the
+  action keys fire unless focus is in a field (Enter does). Escape exits, through `confirmExit`.
 
 ## Breakpoints
 

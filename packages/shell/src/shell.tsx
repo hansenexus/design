@@ -6,6 +6,7 @@
 //          auth, onboarding.
 //   session no nav, no app header: the page's SessionHeader (exit, title, progress, status), the
 //          slot centred to a reading measure, an optional SessionFooter. Learning, reading, play.
+//          The aside is folded unless the page opens it (0.4: the Queue's item list, design#240).
 // Under 768 px of shell width the nav is a drawer from the header's menu button (the owner's M2,
 // 2026-11-27), the aside a bottom sheet from a header action, the footer docked at the bottom,
 // safe-area and keyboard aware. The aside is a column from 1280 px, a side sheet in between.
@@ -109,8 +110,8 @@ export type ShellSlots = {
   footer?: ReactNode;
   /**
    * The right column: details, an inspector, a roster. A column from 1280 px of shell width when
-   * open, a sheet below (bottom sheet under 768 px). Toggle it with ShellAsideToggle. Not drawn
-   * in session.
+   * open, a sheet below (bottom sheet under 768 px). Toggle it with ShellAsideToggle. In session
+   * it starts folded (0.4); a page that wants it open passes `defaultAsideOpen`.
    */
   aside?: ReactNode;
   /** @deprecated 0.2's name for aside. */
@@ -479,7 +480,7 @@ function ShellBase({
   const side = aside ?? contextPane;
   const session = layout === "session";
   const hasNav = layout !== "full" && !session && nav !== undefined && nav !== null;
-  const hasAside = !session && side !== undefined && side !== null;
+  const hasAside = side !== undefined && side !== null;
   const asideColumn = hasAside && layout !== "full";
   const showColumn = asideColumn && asideOpen;
   const hasCommand = palette !== undefined || commands.length > 0;

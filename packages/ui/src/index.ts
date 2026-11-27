@@ -52,6 +52,7 @@ export * from "./state-copy";
 export * from "./status-badge";
 export * from "./status-dot";
 export * from "./status-glyph";
+export * from "./stepper";
 export * from "./switch";
 export * from "./table";
 export * from "./tabs";

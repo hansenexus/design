@@ -108,6 +108,7 @@ import {
   StatusBadge,
   StatusDot,
   StatusGlyph,
+  Stepper,
   Switch,
   Table,
   TableBody,
@@ -502,6 +503,17 @@ export const DEMOS: Record<string, () => ReactNode> = {
         ))}
       </TableBody>
     </Table>
+  ),
+  stepper: () => (
+    <Stepper
+      steps={[
+        { id: "host", label: "Host", status: "done" },
+        { id: "keys", label: "Keys", status: "error" },
+        { id: "roles", label: "Roles", status: "current" },
+        { id: "review", label: "Review", status: "open" },
+      ]}
+      onStepSelect={() => {}}
+    />
   ),
   tabs: () => (
     <Tabs defaultValue="grid">

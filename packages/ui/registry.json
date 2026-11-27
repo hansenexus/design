@@ -373,6 +373,26 @@
       ]
     },
     {
+      "name": "stepper",
+      "type": "registry:ui",
+      "title": "Stepper",
+      "description": "A wizard's step indicator: done, current, open and failed steps, back-selectable; compact `Step 2 of 4` with a bar on a phone.",
+      "meta": { "level": "molecule" },
+      "registryDependencies": [
+        "@hansenexus/tokens",
+        "@hansenexus/cx",
+        "@hansenexus/icons",
+        "@hansenexus/progress",
+        "@hansenexus/state-copy"
+      ],
+      "files": [
+        {
+          "path": "src/stepper.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "tabs",
       "type": "registry:ui",
       "title": "Tabs",
@@ -1005,14 +1025,19 @@
           "command",
           "cx",
           "dialog",
+          "empty-state",
+          "form-alert",
           "kbd",
           "progress",
           "rail-item",
+          "select",
           "skin",
-          "state-copy"
+          "state-copy",
+          "stepper",
+          "tabs"
         ]
       },
-      "dependencies": ["@hansenexus/shell@^0.3.0"],
+      "dependencies": ["@hansenexus/shell@^0.4.0"],
       "registryDependencies": ["@hansenexus/tokens"]
     },
     {
