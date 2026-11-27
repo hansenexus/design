@@ -173,9 +173,9 @@ describe("recipes", () => {
   };
   const TYPE_DEFAULTS: Record<string, [string, string]> = {
     "text.control-xs": ["12px", "16px"],
-    "text.control-sm": ["13px", "18px"],
+    "text.control-sm": ["13px", "19.5px"],
     "text.control-md": ["14px", "20px"],
-    "text.control-lg": ["15px", "22px"],
+    "text.control-lg": ["15px", "22.5px"],
   };
 
   test("mask defaults (design#243) are today's literals and radius steps in every theme but rund", async () => {

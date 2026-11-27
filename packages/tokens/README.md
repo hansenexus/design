@@ -89,7 +89,7 @@ vars.text.body.size; // "var(--hn-text-body)"
 | `title` | 20 / 28 | 15 / 20 | 600 | card and panel titles |
 | `heading` | 24 / 32 | 18 / 24 | 600 | page headings |
 | `display` | 36 / 44 | 28 / 34 | 600 | hero titles, big numbers |
-| `control-xs` … `control-lg` | 12/16, 13/18, 14/20, 15/22 | the same | 400 | text in controls and fields (design#243); a Button sets its own semibold |
+| `control-xs` … `control-lg` | 12/16, 13/19.5, 14/20, 15/22.5 | the same | 400 | text in controls and fields (design#243); a Button sets its own semibold |
 
 CSS: `--hn-text-<role>` (size), `--hn-text-<role>--line-height`, `--hn-text-<role>--font-weight`,
 following the theme. Tailwind: `text-hn-<role>`. Swift: `Font.hn(.body)`, `HNTypeScale.of(theme)`.
@@ -172,7 +172,7 @@ them.
 | `size.control-xs`…`lg` | 24, 32, 36, 48 px | `h-hn-control-*`, `size-hn-control-*`: control heights, per density (below) |
 | `size.control-pad-xs`…`lg` | 8, 12, 14, 16 px | `px-hn-control-pad-*`: inline padding of those controls |
 | `size.field`, `size.field-pad` | 40, 12 px | `h-hn-field`, `px-hn-field-pad`: text fields |
-| `text.control-xs`…`lg` | 12/16, 13/18, 14/20, 15/22 | `text-hn-control-*`: control and field type (type scale, below) |
+| `text.control-xs`…`lg` | 12/16, 13/19.5, 14/20, 15/22.5 | `text-hn-control-*`: control and field type (type scale, below) |
 | `motif.hatch` | `none` | `bg-(image:--hn-motif-hatch)`: progress and meter tracks |
 | `motif.brace`, `motif.cross` | `none` | pack skins |
 | `radius.*`, `size.*` (density) | | as before: the corner scale and the theme's density |

@@ -1434,13 +1434,13 @@ public struct HNTypeScale: Sendable, Equatable {
   public static let caption: HNTextStyle = HNTextStyle(size: 12, lineHeight: 16, weight: 500)
 
   /// Text in a large control (design#243). Weight 400: a Button sets its own semibold; a pack changes size and leading here
-  public static let controlLg: HNTextStyle = HNTextStyle(size: 15, lineHeight: 22, weight: 400)
+  public static let controlLg: HNTextStyle = HNTextStyle(size: 15, lineHeight: 22.5, weight: 400)
 
   /// Text in a control and a text field (design#243). Weight 400: a Button sets its own semibold; a pack changes size and leading here
   public static let controlMd: HNTextStyle = HNTextStyle(size: 14, lineHeight: 20, weight: 400)
 
   /// Text in a small control (design#243). Weight 400: a Button sets its own semibold; a pack changes size and leading here
-  public static let controlSm: HNTextStyle = HNTextStyle(size: 13, lineHeight: 18, weight: 400)
+  public static let controlSm: HNTextStyle = HNTextStyle(size: 13, lineHeight: 19.5, weight: 400)
 
   /// Text in an xs control (design#243). Weight 400: a Button sets its own semibold; a pack changes size and leading here
   public static let controlXs: HNTextStyle = HNTextStyle(size: 12, lineHeight: 16, weight: 400)
@@ -1452,7 +1452,7 @@ public struct HNTypeScale: Sendable, Equatable {
   public static let heading: HNTextStyle = HNTextStyle(size: 24, lineHeight: 32, weight: 600)
 
   /// Secondary lines, timestamps, section headers
-  public static let meta: HNTextStyle = HNTextStyle(size: 13, lineHeight: 18, weight: 400)
+  public static let meta: HNTextStyle = HNTextStyle(size: 13, lineHeight: 19.5, weight: 400)
 
   /// Card and panel titles
   public static let title: HNTextStyle = HNTextStyle(size: 20, lineHeight: 28, weight: 600)
@@ -1460,10 +1460,10 @@ public struct HNTypeScale: Sendable, Equatable {
   /// The theme's own values.
   public static func of(_ theme: HNTheme) -> HNTypeScale {
     switch theme {
-    case .hansenexus: return HNTypeScale(body: HNTextStyle(size: 16, lineHeight: 24, weight: 400), bodySm: HNTextStyle(size: 14, lineHeight: 20, weight: 400), caption: HNTextStyle(size: 12, lineHeight: 16, weight: 500), controlLg: HNTextStyle(size: 15, lineHeight: 22, weight: 400), controlMd: HNTextStyle(size: 14, lineHeight: 20, weight: 400), controlSm: HNTextStyle(size: 13, lineHeight: 18, weight: 400), controlXs: HNTextStyle(size: 12, lineHeight: 16, weight: 400), display: HNTextStyle(size: 36, lineHeight: 44, weight: 600), heading: HNTextStyle(size: 24, lineHeight: 32, weight: 600), meta: HNTextStyle(size: 13, lineHeight: 18, weight: 400), title: HNTextStyle(size: 20, lineHeight: 28, weight: 600))
-    case .kommandant: return HNTypeScale(body: HNTextStyle(size: 13, lineHeight: 20, weight: 400), bodySm: HNTextStyle(size: 12, lineHeight: 16, weight: 400), caption: HNTextStyle(size: 10, lineHeight: 14, weight: 500), controlLg: HNTextStyle(size: 15, lineHeight: 22, weight: 400), controlMd: HNTextStyle(size: 14, lineHeight: 20, weight: 400), controlSm: HNTextStyle(size: 13, lineHeight: 18, weight: 400), controlXs: HNTextStyle(size: 12, lineHeight: 16, weight: 400), display: HNTextStyle(size: 28, lineHeight: 34, weight: 600), heading: HNTextStyle(size: 18, lineHeight: 24, weight: 600), meta: HNTextStyle(size: 11, lineHeight: 16, weight: 400), title: HNTextStyle(size: 15, lineHeight: 20, weight: 600))
-    case .portal: return HNTypeScale(body: HNTextStyle(size: 16, lineHeight: 24, weight: 400), bodySm: HNTextStyle(size: 14, lineHeight: 20, weight: 400), caption: HNTextStyle(size: 12, lineHeight: 16, weight: 500), controlLg: HNTextStyle(size: 15, lineHeight: 22, weight: 400), controlMd: HNTextStyle(size: 14, lineHeight: 20, weight: 400), controlSm: HNTextStyle(size: 13, lineHeight: 18, weight: 400), controlXs: HNTextStyle(size: 12, lineHeight: 16, weight: 400), display: HNTextStyle(size: 36, lineHeight: 44, weight: 600), heading: HNTextStyle(size: 24, lineHeight: 32, weight: 600), meta: HNTextStyle(size: 13, lineHeight: 18, weight: 400), title: HNTextStyle(size: 20, lineHeight: 28, weight: 600))
-    case .lexilink: return HNTypeScale(body: HNTextStyle(size: 16, lineHeight: 24, weight: 400), bodySm: HNTextStyle(size: 14, lineHeight: 20, weight: 400), caption: HNTextStyle(size: 12, lineHeight: 16, weight: 500), controlLg: HNTextStyle(size: 15, lineHeight: 22, weight: 400), controlMd: HNTextStyle(size: 14, lineHeight: 20, weight: 400), controlSm: HNTextStyle(size: 13, lineHeight: 18, weight: 400), controlXs: HNTextStyle(size: 12, lineHeight: 16, weight: 400), display: HNTextStyle(size: 36, lineHeight: 44, weight: 600), heading: HNTextStyle(size: 24, lineHeight: 32, weight: 600), meta: HNTextStyle(size: 13, lineHeight: 18, weight: 400), title: HNTextStyle(size: 20, lineHeight: 28, weight: 600))
+    case .hansenexus: return HNTypeScale(body: HNTextStyle(size: 16, lineHeight: 24, weight: 400), bodySm: HNTextStyle(size: 14, lineHeight: 20, weight: 400), caption: HNTextStyle(size: 12, lineHeight: 16, weight: 500), controlLg: HNTextStyle(size: 15, lineHeight: 22.5, weight: 400), controlMd: HNTextStyle(size: 14, lineHeight: 20, weight: 400), controlSm: HNTextStyle(size: 13, lineHeight: 19.5, weight: 400), controlXs: HNTextStyle(size: 12, lineHeight: 16, weight: 400), display: HNTextStyle(size: 36, lineHeight: 44, weight: 600), heading: HNTextStyle(size: 24, lineHeight: 32, weight: 600), meta: HNTextStyle(size: 13, lineHeight: 19.5, weight: 400), title: HNTextStyle(size: 20, lineHeight: 28, weight: 600))
+    case .kommandant: return HNTypeScale(body: HNTextStyle(size: 13, lineHeight: 20, weight: 400), bodySm: HNTextStyle(size: 12, lineHeight: 16, weight: 400), caption: HNTextStyle(size: 10, lineHeight: 14, weight: 500), controlLg: HNTextStyle(size: 15, lineHeight: 22.5, weight: 400), controlMd: HNTextStyle(size: 14, lineHeight: 20, weight: 400), controlSm: HNTextStyle(size: 13, lineHeight: 19.5, weight: 400), controlXs: HNTextStyle(size: 12, lineHeight: 16, weight: 400), display: HNTextStyle(size: 28, lineHeight: 34, weight: 600), heading: HNTextStyle(size: 18, lineHeight: 24, weight: 600), meta: HNTextStyle(size: 11, lineHeight: 16, weight: 400), title: HNTextStyle(size: 15, lineHeight: 20, weight: 600))
+    case .portal: return HNTypeScale(body: HNTextStyle(size: 16, lineHeight: 24, weight: 400), bodySm: HNTextStyle(size: 14, lineHeight: 20, weight: 400), caption: HNTextStyle(size: 12, lineHeight: 16, weight: 500), controlLg: HNTextStyle(size: 15, lineHeight: 22.5, weight: 400), controlMd: HNTextStyle(size: 14, lineHeight: 20, weight: 400), controlSm: HNTextStyle(size: 13, lineHeight: 19.5, weight: 400), controlXs: HNTextStyle(size: 12, lineHeight: 16, weight: 400), display: HNTextStyle(size: 36, lineHeight: 44, weight: 600), heading: HNTextStyle(size: 24, lineHeight: 32, weight: 600), meta: HNTextStyle(size: 13, lineHeight: 19.5, weight: 400), title: HNTextStyle(size: 20, lineHeight: 28, weight: 600))
+    case .lexilink: return HNTypeScale(body: HNTextStyle(size: 16, lineHeight: 24, weight: 400), bodySm: HNTextStyle(size: 14, lineHeight: 20, weight: 400), caption: HNTextStyle(size: 12, lineHeight: 16, weight: 500), controlLg: HNTextStyle(size: 15, lineHeight: 22.5, weight: 400), controlMd: HNTextStyle(size: 14, lineHeight: 20, weight: 400), controlSm: HNTextStyle(size: 13, lineHeight: 19.5, weight: 400), controlXs: HNTextStyle(size: 12, lineHeight: 16, weight: 400), display: HNTextStyle(size: 36, lineHeight: 44, weight: 600), heading: HNTextStyle(size: 24, lineHeight: 32, weight: 600), meta: HNTextStyle(size: 13, lineHeight: 19.5, weight: 400), title: HNTextStyle(size: 20, lineHeight: 28, weight: 600))
     }
   }
 }
