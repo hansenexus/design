@@ -22,6 +22,15 @@ export type ShellCopy = {
   skip: string;
   /** The full layout's back link, when the page gives it no label of its own. */
   back: string;
+  /** The session header's exit button (×). */
+  exit: string;
+  /** The session's progress bar, when the page gives it no name of its own. */
+  progress: string;
+  /** The confirm before an exit that would lose progress: heading, body, leave, stay. */
+  exitConfirmTitle: string;
+  exitConfirmBody: string;
+  exitLeave: string;
+  exitStay: string;
 };
 
 export const SHELL_COPY: Record<StateLocale, ShellCopy> = {
@@ -36,6 +45,12 @@ export const SHELL_COPY: Record<StateLocale, ShellCopy> = {
     close: "Close",
     skip: "Skip to content",
     back: "Back",
+    exit: "Exit session",
+    progress: "Progress",
+    exitConfirmTitle: "Leave this session?",
+    exitConfirmBody: "Your progress in this session will be lost.",
+    exitLeave: "Leave",
+    exitStay: "Stay",
   },
   de: {
     nav: "App",
@@ -48,5 +63,11 @@ export const SHELL_COPY: Record<StateLocale, ShellCopy> = {
     close: "Schließen",
     skip: "Zum Inhalt springen",
     back: "Zurück",
+    exit: "Sitzung beenden",
+    progress: "Fortschritt",
+    exitConfirmTitle: "Sitzung verlassen?",
+    exitConfirmBody: "Dein Fortschritt in dieser Sitzung geht verloren.",
+    exitLeave: "Verlassen",
+    exitStay: "Bleiben",
   },
 };

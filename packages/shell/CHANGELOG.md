@@ -13,10 +13,15 @@ The layout system (design#239, owner ruling 2026-11-27 in the fachwerk walkthrou
   the button). The phone tab bar is gone.
 - The aside (`aside`, was `contextPane`) is a column from 1280 px, a side sheet from 768 px and a
   bottom sheet below, opened by `ShellAsideToggle` (was `ShellContextToggle`).
+- `layout="session"` (owner addendum, same day): learning, reading and play on a page of their
+  own. No nav, no app header, no aside; `SessionHeader` (exit with an optional confirm, title,
+  progress as a bar and `7/20`, status) and an optional `SessionFooter`; the slot centred to a
+  `measure` (`text` 65ch or `board` 72rem, `--hn-shell-measure` / `--hn-shell-board`); Escape
+  is exit; focus stays in the session.
 - A skip link to the slot; the overlays' slide respects reduced motion.
 - `useShell()` adds `layout`, `width`, `navOpen`, `asideShown`, `toggleAside`; new exports
   `ShellMenuButton`, `ShellAsideToggle`, `SHELL_LAYOUTS`, `SHELL_BREAKPOINTS`, `shellWidthOf`,
-  `keyboardInset`.
+  `keyboardInset`, `SessionHeader`, `SessionFooter`, `SHELL_MEASURE`.
 - Skinned by the existing `shell.*` recipe tokens and the `shell` skin slot; no new token.
 - Migration: README, "Migrating from 0.2". Every 0.2 prop still compiles.
 

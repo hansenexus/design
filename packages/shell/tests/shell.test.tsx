@@ -391,6 +391,123 @@ describe("slots", () => {
   });
 });
 
+// design#239 addendum: learning, reading and play on a page of their own.
+describe("session layout", () => {
+  const exit = () => {};
+  const page = (
+    props: Partial<shell.ShellProps> = {},
+    head: Partial<shell.SessionHeaderProps> = {}
+  ) =>
+    render(
+      <Shell
+        layout="session"
+        nav={<ShellNav items={NAV} activeId="machines" />}
+        aside={<p>Detail</p>}
+        header={
+          <shell.SessionHeader
+            title="Deck 3: Verben"
+            onExit={exit}
+            progress={{ value: 7, max: 20 }}
+            status={<span>04:12</span>}
+            {...head}
+          />
+        }
+        footer={
+          <shell.SessionFooter>
+            <button type="button">Aufdecken</button>
+          </shell.SessionFooter>
+        }
+        {...props}
+      >
+        <p>Card</p>
+      </Shell>
+    );
+
+  test("session is the fourth layout", () => {
+    expect(shell.SHELL_LAYOUTS).toEqual(["work", "focus", "full", "session"]);
+  });
+
+  test("no nav, no menu button, no aside: header, main and footer landmarks only", () => {
+    const html = page();
+    expect(html).toContain('data-layout="session"');
+    expect(html).not.toContain("<nav");
+    expect(html).not.toContain('data-shell-control="menu"');
+    expect(html).not.toContain("<aside");
+    expect(html).not.toContain("Detail");
+    expect(html).toMatch(/<header data-shell-panel="header"[^>]*data-session=""/);
+    expect(html).toMatch(/<main [^>]*data-shell-panel="main"/);
+    expect(html).toMatch(/<footer data-shell-panel="footer"[^>]*>.*Aufdecken/);
+    expect(html).toContain("@3xl:grid-cols-[minmax(0,1fr)]");
+  });
+
+  test("the session header: exit first, the title, a progress bar with 7/20, the status", () => {
+    const html = page();
+    expect(html).toMatch(
+      /data-session-header=""[^>]*><button[^>]*data-shell-control="exit" aria-label="Exit session"/
+    );
+    expect(html).toMatch(/<h1 data-session-title=""[^>]*>Deck 3: Verben<\/h1>/);
+    expect(html).toMatch(
+      /role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="20" aria-valuenow="7" aria-valuetext="7\/20"/
+    );
+    expect(html).toContain(">7/20</span>");
+    expect(html).toMatch(/data-session-status=""[^>]*><span>04:12/);
+    // Compact under 768 px: the title is for screen readers only, exit and progress stay.
+    expect(html).toContain("sr-only m-0 truncate");
+    expect(html).toContain("@3xl:not-sr-only");
+  });
+
+  test("German words, a progress node of the page's own, no status", () => {
+    const html = page(
+      { locale: "de" },
+      { progress: <span data-own="">Frage 3</span>, status: undefined }
+    );
+    expect(html).toContain('aria-label="Sitzung beenden"');
+    expect(html).toContain('<span data-own="">Frage 3</span>');
+    expect(html).not.toContain('role="progressbar"');
+    expect(html).not.toContain("data-session-status");
+  });
+
+  test("the slot is centred to the measure; board is wider; the footer lines up", () => {
+    const text = page();
+    expect(text).toMatch(
+      /data-shell-measure="text" class="mx-auto flex min-h-full w-full flex-col max-w-\[var\(--hn-shell-measure,65ch\)\]"><p>Card/
+    );
+    expect(text).toMatch(
+      /data-session-footer="" class="[^"]*max-w-\[var\(--hn-shell-measure,65ch\)\]/
+    );
+    const board = page({ measure: "board" });
+    expect(board).toContain('data-shell-measure="board"');
+    expect(board).toContain("max-w-[var(--hn-shell-board,72rem)]");
+    // Other layouts draw the slot as it is.
+    expect(render(<Shell header={<span />}>x</Shell>)).not.toContain("data-shell-measure");
+  });
+
+  test("no footer: the slot fills the height", () => {
+    const html = page({ footer: undefined });
+    expect(html).not.toContain("<footer");
+    expect(html).toMatch(/data-shell-panel="main" class="[^"]*flex-1/);
+  });
+
+  test("Escape and the focus trap are wired; the confirm sits in the shell", () => {
+    const src = readFileSync(resolve(ROOT, "src/session.tsx"), "utf8");
+    expect(src).toContain('e.key !== "Escape"');
+    expect(src).toContain("escapeTaken(e, portal)");
+    expect(src).toContain("container={portal}");
+    const shellSrc = readFileSync(resolve(ROOT, "src/shell.tsx"), "utf8");
+    expect(shellSrc).toContain("if (!session || !root) return;");
+    expect(shellSrc).toContain("trapTab(root, e)");
+  });
+
+  test("the session blocks need a Shell", () => {
+    expect(() => render(<shell.SessionHeader title="x" onExit={exit} />)).toThrow(
+      /not inside a <Shell>/
+    );
+    expect(() => render(<shell.SessionFooter>x</shell.SessionFooter>)).toThrow(
+      /not inside a <Shell>/
+    );
+  });
+});
+
 // design#152: what fachwerk needed to mount the shell instead of its own.
 describe("nav: sections, active path, link", () => {
   const ROWS: ShellNavItem[] = [

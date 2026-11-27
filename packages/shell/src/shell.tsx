@@ -4,6 +4,8 @@
 //   focus  the same with the aside folded away; the page can toggle it back.
 //   full   no nav column; the header carries its own back link. Live quiz, presentation, print,
 //          auth, onboarding.
+//   session no nav, no app header: the page's SessionHeader (exit, title, progress, status), the
+//          slot centred to a reading measure, an optional SessionFooter. Learning, reading, play.
 // Under 768 px of shell width the nav is a drawer from the header's menu button (the owner's M2,
 // 2026-11-27), the aside a bottom sheet from a header action, the footer docked at the bottom,
 // safe-area and keyboard aware. The aside is a column from 1280 px, a side sheet in between.
@@ -39,9 +41,21 @@ import { SHELL_COPY } from "./copy";
 import { ShellOverlay } from "./overlay";
 
 /** The layouts a page picks from. */
-export type ShellLayout = "work" | "focus" | "full";
+export type ShellLayout = "work" | "focus" | "full" | "session";
 
-export const SHELL_LAYOUTS: readonly ShellLayout[] = ["work", "focus", "full"];
+export const SHELL_LAYOUTS: readonly ShellLayout[] = ["work", "focus", "full", "session"];
+
+/** The session layout's widths: a reading measure for text, wider for cards or a quiz board. */
+export type ShellMeasure = "text" | "board";
+
+/**
+ * The session slot's max width per measure. A pack sets them with --hn-shell-measure and
+ * --hn-shell-board; the fallbacks are the defaults (65ch, 72rem).
+ */
+export const SHELL_MEASURE: Record<ShellMeasure, string> = {
+  text: "max-w-[var(--hn-shell-measure,65ch)]",
+  board: "max-w-[var(--hn-shell-board,72rem)]",
+};
 
 /**
  * The shell's width class, measured from its root: compact under 768 px (drawer, bottom sheet),
@@ -75,20 +89,28 @@ export type ShellSlots = {
   layout?: ShellLayout;
   /**
    * The app's navigation, inside the nav landmark: a column on the left from 768 px of shell
-   * width, a drawer from the header's menu button below. ShellNav draws both. Not drawn in full.
+   * width, a drawer from the header's menu button below. ShellNav draws both. Not drawn in full
+   * or session.
    */
   nav?: ReactNode;
-  /** The page column's sticky top bar: title, actions, the ⌘K trigger, the aside toggle. */
+  /**
+   * The page column's sticky top bar: title, actions, the ⌘K trigger, the aside toggle. In
+   * session, the SessionHeader.
+   */
   header: ReactNode;
   /** The page: the slot that scrolls between header and footer. */
   children?: ReactNode;
   /** @deprecated 0.2's name for the slot; pass children. */
   main?: ReactNode;
-  /** The fixed footer bar under the slot: the page's primary actions. Docked on a phone. */
+  /**
+   * The fixed footer bar under the slot: the page's primary actions. Docked on a phone. In
+   * session, the SessionFooter; without one the slot fills the height.
+   */
   footer?: ReactNode;
   /**
    * The right column: details, an inspector, a roster. A column from 1280 px of shell width when
-   * open, a sheet below (bottom sheet under 768 px). Toggle it with ShellAsideToggle.
+   * open, a sheet below (bottom sheet under 768 px). Toggle it with ShellAsideToggle. Not drawn
+   * in session.
    */
   aside?: ReactNode;
   /** @deprecated 0.2's name for aside. */
@@ -98,6 +120,8 @@ export type ShellSlots = {
 export type ShellProps = ShellSlots & {
   /** The full layout's back link, first in the header. Ignored in work and focus. */
   back?: ShellBack;
+  /** The session slot's width: "text" (a reading measure) or "board" (cards, a quiz board). */
+  measure?: ShellMeasure;
   /** Command sets for the ⌘K container: the nav (navCommands), an addon's actions, a preset. */
   commands?: readonly ShellCommandSet[];
   /**
@@ -164,6 +188,8 @@ const COLUMNS = {
 export type ShellState = {
   locale: StateLocale;
   layout: ShellLayout;
+  /** The session slot's width; "text" outside session. */
+  measure: ShellMeasure;
   /** The shell's measured width class; "wide" until the first measure (and on the server). */
   width: ShellWidth;
   /** A nav was passed and the layout draws one. */
@@ -364,6 +390,31 @@ function BackLink({ back, locale }: { back: ShellBack; locale: StateLocale }) {
   return Link ? <Link {...props}>{face}</Link> : <a {...props}>{face}</a>;
 }
 
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/**
+ * The session layout keeps focus inside the shell: Tab past the last stop wraps to the first,
+ * Shift+Tab before the first to the last. A dialog open in the shell traps its own.
+ */
+function trapTab(root: HTMLElement, e: KeyboardEvent) {
+  if (e.key !== "Tab") return;
+  const stops = Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+    (el) => !el.closest('[role="dialog"], [role="alertdialog"]') && el.getClientRects().length > 0
+  );
+  const first = stops[0];
+  const last = stops[stops.length - 1];
+  if (!first || !last) return;
+  const active = document.activeElement;
+  if (e.shiftKey && (active === first || !root.contains(active))) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && active === last) {
+    e.preventDefault();
+    first.focus();
+  }
+}
+
 function ShellBase({
   layout = "work",
   nav,
@@ -374,6 +425,7 @@ function ShellBase({
   aside,
   contextPane,
   back,
+  measure = "text",
   commands = [],
   palette,
   commandHotkey = "k",
@@ -425,8 +477,9 @@ function ShellBase({
   const [asideSheetOpen, setAsideSheetOpen] = useState(false);
   const slot = children ?? main;
   const side = aside ?? contextPane;
-  const hasNav = layout !== "full" && nav !== undefined && nav !== null;
-  const hasAside = side !== undefined && side !== null;
+  const session = layout === "session";
+  const hasNav = layout !== "full" && !session && nav !== undefined && nav !== null;
+  const hasAside = !session && side !== undefined && side !== null;
   const asideColumn = hasAside && layout !== "full";
   const showColumn = asideColumn && asideOpen;
   const hasCommand = palette !== undefined || commands.length > 0;
@@ -441,6 +494,13 @@ function ShellBase({
     if (!hasNav) setNavOpen(false);
     if (!hasAside) setAsideSheetOpen(false);
   }, [hasNav, hasAside]);
+
+  useEffect(() => {
+    if (!session || !root) return;
+    const onKey = (e: KeyboardEvent) => trapTab(root, e);
+    root.addEventListener("keydown", onKey);
+    return () => root.removeEventListener("keydown", onKey);
+  }, [session, root]);
 
   useEffect(() => {
     if (!hasCommand || commandHotkey === false) return;
@@ -462,6 +522,7 @@ function ShellBase({
     () => ({
       locale,
       layout,
+      measure,
       width,
       hasNav,
       navOpen,
@@ -483,6 +544,7 @@ function ShellBase({
     [
       locale,
       layout,
+      measure,
       width,
       hasNav,
       navOpen,
@@ -570,6 +632,7 @@ function ShellBase({
                 SHELL_PANEL,
                 "sticky top-0 z-10 flex min-h-12 shrink-0 items-center gap-2 px-2 py-1.5 @3xl:gap-3 @3xl:px-4 @3xl:py-2"
               )}
+              data-session={session ? "" : undefined}
             >
               {hasNav ? <ShellMenuButton /> : null}
               {layout === "full" && back ? <BackLink back={back} locale={locale} /> : null}
@@ -585,7 +648,16 @@ function ShellBase({
                 !pageOwnsMain && "p-4 @3xl:px-8 @3xl:py-6"
               )}
             >
-              {slot}
+              {session ? (
+                <div
+                  data-shell-measure={measure}
+                  className={cx("mx-auto flex min-h-full w-full flex-col", SHELL_MEASURE[measure])}
+                >
+                  {slot}
+                </div>
+              ) : (
+                slot
+              )}
             </MainPanel>
             {footer !== undefined && footer !== null ? (
               <footer
@@ -670,7 +742,7 @@ declare module "@hansenexus/ui" {
   }
 }
 
-/** The app shell: the work, focus and full layouts over nav, header, slot, footer and aside. */
+/** The app shell: the work, focus, full and session layouts over nav, header, slot, footer and aside. */
 export const Shell = skinnable("shell", ShellBase);
 
 function PanelIcon() {

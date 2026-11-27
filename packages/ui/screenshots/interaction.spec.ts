@@ -575,6 +575,88 @@ test("shell: focus folds the aside, full drops the nav for a back link", async (
   ).toHaveCount(0);
 });
 
+test("shell: session drops nav and app header, centres the slot, docks the footer", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/gallery/?scene=shell&layout=session");
+  const desk = page.locator('[data-story="session-reading-desktop"] [data-shell]');
+  await expect(desk).toHaveAttribute("data-layout", "session");
+  await expect(desk.locator("nav")).toHaveCount(0);
+  await expect(desk.locator('[data-shell-control="menu"]')).toHaveCount(0);
+  await expect(desk.getByRole("heading", { name: "The lighthouse keeper" })).toBeVisible();
+  await expect(desk.getByRole("progressbar", { name: "Pages read" })).toHaveAttribute(
+    "aria-valuetext",
+    "3/12"
+  );
+  // The slot is centred to the reading measure, narrower than the shell.
+  const shellBox = (await desk.boundingBox()) ?? { x: 0, y: 0, width: 0, height: 0 };
+  const text = (await desk.locator('[data-shell-measure="text"]').boundingBox()) ?? shellBox;
+  expect(text.width).toBeLessThan(shellBox.width * 0.75);
+  const left = text.x - shellBox.x;
+  const right = shellBox.x + shellBox.width - (text.x + text.width);
+  expect(Math.abs(left - right)).toBeLessThan(4);
+  // The quiz board is wider than the reading measure.
+  const board = page.locator('[data-story="session-quiz-desktop"] [data-shell-measure="board"]');
+  expect((await board.boundingBox())?.width ?? 0).toBeGreaterThan(text.width);
+  // The footer sits at the shell's bottom; the quiz host has none and its slot fills the height.
+  const footer = (await desk.locator('[data-shell-panel="footer"]').boundingBox()) ?? shellBox;
+  expect(shellBox.y + shellBox.height - (footer.y + footer.height)).toBeLessThan(16);
+  const quiz = page.locator('[data-story="session-quiz-desktop"] [data-shell]');
+  await expect(quiz.locator("footer")).toHaveCount(0);
+  // On a phone: compact header, the title for screen readers only, exit and progress shown.
+  const phone = page.locator('[data-story="session-test-phone"] [data-shell]');
+  await expect(phone).toHaveAttribute("data-shell-width", "compact");
+  await expect(phone.locator("[data-session-title]")).toHaveClass(/sr-only/);
+  await expect(phone.locator('[data-shell-control="exit"]')).toBeVisible();
+  await expect(phone.getByRole("progressbar")).toBeVisible();
+  await expect(phone.getByRole("timer")).toBeVisible();
+});
+
+test("shell: session exit asks first, Escape is exit, focus stays in the session", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/gallery/?scene=shell&layout=session");
+  const story = page.locator('[data-story="session-flashcard-desktop"]');
+  const card = story.locator("[data-shell]");
+  const exits = story.locator("[data-session-exits]");
+  const exit = card.locator('[data-shell-control="exit"]');
+  // The exit button asks, Stay keeps the session and returns focus.
+  await exit.click();
+  const confirm = card.getByRole("alertdialog", { name: "Leave this session?" });
+  await expect(confirm).toBeVisible();
+  await confirm.getByRole("button", { name: "Stay" }).click();
+  await expect(confirm).toBeHidden();
+  await expect(exit).toBeFocused();
+  await expect(exits).toHaveAttribute("data-session-exits", "0");
+  // Escape from inside the session is exit: the same confirm; Escape again closes only it.
+  await card.getByRole("button", { name: "Reveal" }).focus();
+  await page.keyboard.press("Escape");
+  await expect(confirm).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(confirm).toBeHidden();
+  await expect(exits).toHaveAttribute("data-session-exits", "0");
+  await exit.click();
+  await confirm.getByRole("button", { name: "Leave" }).click();
+  await expect(exits).toHaveAttribute("data-session-exits", "1");
+  // No other session on the page reacted.
+  await expect(page.getByRole("alertdialog")).toHaveCount(0);
+  await expect(page.locator('[data-session-exits="1"]')).toHaveCount(1);
+  // Without confirmExit, Escape exits at once.
+  const reading = page.locator('[data-story="session-reading-desktop"]');
+  await reading.getByRole("button", { name: "Next page" }).focus();
+  await page.keyboard.press("Escape");
+  await expect(reading.locator("[data-session-exits]")).toHaveAttribute("data-session-exits", "1");
+  // Focus is trapped: Tab from the last stop wraps to the first, Shift+Tab back.
+  const next = reading.getByRole("button", { name: "Next page" });
+  await next.focus();
+  await page.keyboard.press("Tab");
+  await expect(reading.locator('[data-shell-control="skip"]')).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(next).toBeFocused();
+});
+
 test("shell: a skip link is the first stop and lands on the slot", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/gallery/?scene=shell&bare=1");

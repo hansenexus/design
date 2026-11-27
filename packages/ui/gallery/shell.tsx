@@ -1,6 +1,7 @@
 // The shell scene (hansenexus/design#64, layouts design#239): @hansenexus/shell as a template.
 // Each card mounts the real package on the invented estate of the vote board. One story per
-// layout (work, focus, full; `?layout=` picks it) × breakpoint (desktop 1280, tablet 900, phone
+// layout (work, focus, full, session; `?layout=` picks it; session has its own four pages in
+// shell-session.tsx) × breakpoint (desktop 1280, tablet 900, phone
 // 390 in a phone frame) × theme pack (the toolbar's pack switcher, or `?theme=`).
 // The shell lays itself out by its own width (container queries), so each frame shows its
 // breakpoint on any viewport; a frame wider than the scene scrolls inside its card.
@@ -23,6 +24,7 @@ import {
 import { Badge, Button, Command, type CommandGroup, cx } from "../src";
 import { Restart, Server } from "./icons";
 import { PreviewCard } from "./preview";
+import { SESSION_KINDS, SessionDemo } from "./shell-session";
 import {
   Brand,
   MACHINES,
@@ -235,6 +237,8 @@ const LAYOUT_NOTE: Record<ShellLayout, string> = {
   work: "Nav column, page column (sticky header, scrolling slot, fixed footer bar) and the aside as a column from 1280 px.",
   focus: "The same with the aside folded away; the header's panel button brings it back.",
   full: "No nav column; the header carries its own back link. Live quiz, presentation, print, auth, onboarding.",
+  session:
+    "Learning, reading and play: no nav, no app header. A session header (exit, title, progress, status), the slot centred to a reading measure, an optional footer. Escape goes to exit.",
 };
 
 function Frame({
@@ -302,9 +306,9 @@ export function ShellScene() {
           Shell
         </h1>
         <p className="m-0 max-w-[68ch] text-sm text-hn-ink-body">
-          Three layouts a page picks from, laid out by the shell's own width. Under 768 px the nav
-          is a drawer from the header's menu button, the aside a bottom sheet, the footer bar docked
-          at the bottom. The pack switcher skins every frame through the shell recipe.
+          Four layouts a page picks from, laid out by the shell's own width. Under 768 px the nav is
+          a drawer from the header's menu button, the aside a bottom sheet, the footer bar docked at
+          the bottom. The pack switcher skins every frame through the shell recipe.
         </p>
         <fieldset className="relative m-0 mt-2 flex w-fit gap-1 rounded-hn-md border border-hn-line-subtle p-1">
           <legend className="sr-only">Layout</legend>
@@ -330,38 +334,59 @@ export function ShellScene() {
           {LAYOUT_NOTE[layout]}
         </p>
       </header>
-      <div className="flex flex-col gap-10">
-        {SHELL_STORIES.map((story) => (
-          <PreviewCard
-            key={`${layout}-${story.id}`}
-            title={`${layout} · ${story.label}`}
-            item="shell"
-            wide
-          >
-            <div data-story={`${layout}-${story.id}`}>
-              <Frame width={story.width} height={story.height} phone={story.id === "phone"}>
-                <DemoShell
-                  layout={layout}
-                  screen={story.id === "phone" ? "phone" : "desktop"}
-                  hotkey={story.id === "desktop"}
-                />
-              </Frame>
-            </div>
-          </PreviewCard>
-        ))}
-        {layout === "work" ? (
-          <PreviewCard
-            title="The palette slot: an ops preset instead of the default list"
-            item="shell"
-          >
-            <div data-story="work-preset">
-              <Frame width={390} height={720}>
-                <DemoShell screen="phone" preset />
-              </Frame>
-            </div>
-          </PreviewCard>
-        ) : null}
-      </div>
+      {layout === "session" ? (
+        <div className="flex flex-col gap-10">
+          {SESSION_KINDS.map((kind) =>
+            SHELL_STORIES.filter((story) => story.id !== "tablet").map((story) => (
+              <PreviewCard
+                key={`session-${kind.id}-${story.id}`}
+                title={`session · ${kind.label} · ${story.label}`}
+                item="shell"
+                wide
+              >
+                <div data-story={`session-${kind.id}-${story.id}`}>
+                  <Frame width={story.width} height={story.height} phone={story.id === "phone"}>
+                    <SessionDemo kind={kind.id} />
+                  </Frame>
+                </div>
+              </PreviewCard>
+            ))
+          )}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-10">
+          {SHELL_STORIES.map((story) => (
+            <PreviewCard
+              key={`${layout}-${story.id}`}
+              title={`${layout} · ${story.label}`}
+              item="shell"
+              wide
+            >
+              <div data-story={`${layout}-${story.id}`}>
+                <Frame width={story.width} height={story.height} phone={story.id === "phone"}>
+                  <DemoShell
+                    layout={layout}
+                    screen={story.id === "phone" ? "phone" : "desktop"}
+                    hotkey={story.id === "desktop"}
+                  />
+                </Frame>
+              </div>
+            </PreviewCard>
+          ))}
+          {layout === "work" ? (
+            <PreviewCard
+              title="The palette slot: an ops preset instead of the default list"
+              item="shell"
+            >
+              <div data-story="work-preset">
+                <Frame width={390} height={720}>
+                  <DemoShell screen="phone" preset />
+                </Frame>
+              </div>
+            </PreviewCard>
+          ) : null}
+        </div>
+      )}
     </main>
   );
 }

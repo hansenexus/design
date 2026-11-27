@@ -24,6 +24,7 @@ bun add @hansenexus/shell @hansenexus/ui @hansenexus/tokens react react-dom
 | `work` (default) | a nav column; a page column with a sticky header, the scrolling slot and a fixed footer bar; the aside as a right column | lists, boards, anything with a selection to inspect |
 | `focus` | the same with the aside folded away; `ShellAsideToggle` brings it back | editors, long forms, reading |
 | `full` | no nav column; `back` puts its own back link first in the header; header, slot and footer stay | live quiz, presentation, print, auth, onboarding |
+| `session` | no nav, no app header, no aside: the page's `SessionHeader`, the slot centred to a measure, an optional `SessionFooter` | learning, reading, play: a page of its own (§ Session) |
 
 ## Slots
 
@@ -37,6 +38,49 @@ bun add @hansenexus/shell @hansenexus/ui @hansenexus/tokens react react-dom
 
 `pageOwnsMain` is for an app whose pages render their own `<main>` landmark and padding: the slot
 is then a plain, unpadded `<div>`, so the page has one main landmark, not two.
+
+## Session
+
+`layout="session"` is for a page of its own, where the app's chrome would be in the way: a
+flashcard review, a reading passage, a timed test, a live quiz host (design#239 addendum). No nav,
+no menu button, no aside: the `header` slot takes a `SessionHeader`, the slot is centred to a
+measure, and the `footer` slot an optional `SessionFooter`.
+
+```tsx
+<Shell
+  layout="session"
+  measure="text" // or "board": cards, a quiz board
+  header={
+    <SessionHeader
+      title="Deck 3: Strong verbs"
+      onExit={() => router.back()}
+      confirmExit // ask before progress is lost; or { title, description, leave, stay }
+      progress={{ value: 7, max: 20 }} // a bar and 7/20; or a node of your own
+      status={<Timer />} // a timer, a streak, a score, the connection
+    />
+  }
+  footer={
+    <SessionFooter align="between">
+      <Button variant="secondary">Again</Button>
+      <Button>Good</Button>
+    </SessionFooter>
+  }
+>
+  <Card />
+</Shell>
+```
+
+- **Header**: exit (×) first, the title, the progress, the status. Under 768 px of shell width it
+  stays compact: the title is for screen readers only, exit, progress and status stay.
+- **Exit**: the × and Escape both call `onExit`, through the confirm when `confirmExit` is set.
+  Escape counts when focus is in the session (or nowhere), and not while a dialog, menu or listbox
+  in the shell has it.
+- **Footer**: the shell docks it, pads it for the safe area and lifts it above an on-screen
+  keyboard. Without one the slot fills the height.
+- **Measure**: `text` is `--hn-shell-measure` (default 65ch), `board` is `--hn-shell-board`
+  (default 72rem); `SessionFooter` lines up with the same width.
+- **Focus** stays in the session: Tab from the last stop wraps to the first.
+- **Motion**: the progress bar's width transition is off under reduced motion.
 
 ## Breakpoints
 
@@ -219,9 +263,10 @@ palette's copy (`STATE_COPY.command` in `@hansenexus/ui`). English is the defaul
 
 ## In the gallery and the registry
 
-The kit gallery's `shell` scene mounts the package once per layout (`?layout=work|focus|full`) ×
+The kit gallery's `shell` scene mounts the package once per layout (`?layout=work|focus|full|session`) ×
 breakpoint (desktop 1280 px, tablet 900 px, phone 390 px in a phone frame) × theme pack (the
-toolbar's pack switcher or `?theme=`), plus a preset in the palette slot. It has pixel baselines
+toolbar's pack switcher or `?theme=`), plus a preset in the palette slot. `session` shows four
+pages instead (flashcard review, reading passage, timed test, live quiz host) at desktop and phone. It has pixel baselines
 and interaction checks (`packages/ui/screenshots`). The shell-layout vote board draws it too.
 
 ## Skinning
@@ -230,8 +275,9 @@ A pack skins the shell through its recipe tokens, never through a prop or an app
 `shell.inset`, `gap`, `seam`, `rail` (the nav column and the drawer), `context` (the aside column
 and side sheet), `radius` (panels, the drawer and sheet corners), the `shell.nav-*` rows,
 `border.width`, `elevation.panel`, and the `panel.main` fill. For what the recipes cannot say, the
-whole `Shell` is the theme pack's `shell` skin slot (`@hansenexus/ui` `skinnable`). 0.3 adds no
-token.
+whole `Shell` is the theme pack's `shell` skin slot (`@hansenexus/ui` `skinnable`). The session
+layout's widths read `--hn-shell-measure` and `--hn-shell-board`, with 65ch and 72rem as
+fallbacks.
 
 ## Migrating from 0.2
 
@@ -246,7 +292,7 @@ token.
 | the context pane showed from 1024 px of shell width | the aside column shows from 1280 px; below that it is a sheet |
 | `data-shell-panel="context"` | `data-shell-panel="aside"`; new panels `page` and `footer` |
 | no footer | `footer`: the fixed primary-action bar |
-| one layout | `layout="work"` (the default, same as 0.2), `"focus"`, `"full"` with `back` |
+| one layout | `layout="work"` (the default, same as 0.2), `"focus"`, `"full"` with `back`, `"session"` with `SessionHeader` and `SessionFooter` |
 
 Apps that put their own phone tab bar or detail sheet around the 0.2 shell can drop it. Apps that
 test the tab bar (`data-shell-nav="tabs"`) test the menu button and the drawer instead
