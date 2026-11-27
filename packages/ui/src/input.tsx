@@ -11,7 +11,7 @@ export function Input({ mono = false, className, type = "text", ...props }: Inpu
     <input
       type={type}
       className={cx(
-        "h-10 w-full min-w-0 rounded-hn-md border border-hn-line-strong bg-hn-surface-page px-3 text-sm text-hn-ink-primary",
+        "h-hn-field w-full min-w-0 rounded-hn-control-field border border-hn-line-strong bg-hn-surface-page px-hn-field-pad text-hn-control-md text-hn-ink-primary",
         "placeholder:text-hn-ink-muted disabled:cursor-not-allowed disabled:opacity-50",
         "aria-invalid:border-hn-status-crit",
         mono ? "font-hn-mono" : "font-hn-sans",

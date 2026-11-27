@@ -249,7 +249,14 @@ test("compare: every card renders once per theme, side by side", async ({ page }
   const card = page.locator('[data-preview="spinner"]');
   const panels = card.locator("[data-compare]");
   // Every theme of this build, the theme packs' directions included (design 143), no live copies.
-  expect(BUILD_THEMES).toEqual(["hansenexus", "kommandant", "portal", "lexilink", "fachwerk"]);
+  expect(BUILD_THEMES).toEqual([
+    "hansenexus",
+    "kommandant",
+    "portal",
+    "lexilink",
+    "fachwerk",
+    "fachwerk-rund",
+  ]);
   await expect(panels).toHaveCount(BUILD_THEMES.length);
   for (const theme of BUILD_THEMES)
     await expect(card.locator(`[data-compare="${theme}"]`)).toHaveAttribute("data-theme", theme);

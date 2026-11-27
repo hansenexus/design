@@ -13,6 +13,11 @@ forked.
   active row and phone tab a terracotta cell, pages on the limewash (`panel.main`).
 - **Skins** (`fachwerk/skins/`): `card.header` sets a braced beam bay before the title,
   `empty-state` stands in a hatched frame.
+- **Direction `rund`** (`data-theme="fachwerk-rund"`, export `fachwerkRund`, design#243): the
+  same colours and fonts on a round, roomier mask, set by tokens alone and without skins: pill
+  buttons, softer corners, 1 px rules in a 2 px frame, taller controls with wider padding and
+  one step larger control type. The proof that a pack changes the component mask, not only its
+  colour; its colour files are copies of the default direction's.
 - **Fonts**: Bricolage Grotesque (display, sans) and IBM Plex Mono. The app loads them, e.g.
   `@fontsource-variable/bricolage-grotesque` and `@fontsource/ibm-plex-mono`.
 

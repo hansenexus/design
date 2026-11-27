@@ -50,7 +50,7 @@ export function ToggleGroupItem({
         TOGGLE_STYLES.variant[variant],
         TOGGLE_STYLES.size[size],
         variant === "outline" &&
-          "rounded-none first:rounded-l-hn-md last:rounded-r-hn-md focus-visible:z-10 data-[state=on]:z-[1]",
+          "rounded-none first:rounded-l-hn-control-button last:rounded-r-hn-control-button focus-visible:z-10 data-[state=on]:z-[1]",
         focusRing,
         className
       )}

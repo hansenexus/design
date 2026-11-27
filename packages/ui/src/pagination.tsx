@@ -53,7 +53,7 @@ export type PaginationProps = Omit<ComponentProps<"nav">, "onChange"> & {
 };
 
 const CONTROL =
-  "inline-flex h-9 min-h-hn-target min-w-8 cursor-pointer items-center justify-center gap-1.5 rounded-hn-md border px-1.5 sm:min-w-9 sm:px-2.5 font-hn-sans text-sm font-medium no-underline " +
+  "inline-flex h-hn-control-md min-h-hn-target min-w-8 cursor-pointer items-center justify-center gap-1.5 rounded-hn-control-button border px-1.5 sm:min-w-9 sm:px-2.5 font-hn-sans text-hn-control-md font-medium no-underline " +
   "transition-colors duration-(--hn-duration-fast) motion-reduce:transition-none " +
   "aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0";
 

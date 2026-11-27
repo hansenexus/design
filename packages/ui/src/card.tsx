@@ -32,7 +32,7 @@ function CardRoot({
       aria-busy={pending || undefined}
       inert={disabled || undefined}
       className={cx(
-        "flex flex-col rounded-hn-lg border border-hn-line-subtle font-hn-sans text-hn-ink-body",
+        "flex flex-col rounded-hn-control-card border-(length:--hn-border-frame) border-hn-line-subtle font-hn-sans text-hn-ink-body",
         SURFACE[surface],
         disabled && "opacity-50",
         className
@@ -139,7 +139,7 @@ export function CardSkeleton({
       label={label ?? LAYOUT_COPY[locale].loading}
       data-surface={surface}
       className={cx(
-        "flex flex-col rounded-hn-lg border border-hn-line-subtle",
+        "flex flex-col rounded-hn-control-card border-(length:--hn-border-frame) border-hn-line-subtle",
         SURFACE[surface],
         className
       )}

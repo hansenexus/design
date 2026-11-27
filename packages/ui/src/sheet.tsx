@@ -26,9 +26,9 @@ export function SheetOverlay({
 }
 
 const EDGE: Record<SheetSide, string> = {
-  right: "inset-y-0 right-0 w-[min(420px,calc(100vw-48px))] rounded-l-hn-xl border-l",
-  left: "inset-y-0 left-0 w-[min(420px,calc(100vw-48px))] rounded-r-hn-xl border-r",
-  bottom: "inset-x-0 bottom-0 max-h-[85dvh] rounded-t-hn-xl border-t",
+  right: "inset-y-0 right-0 w-[min(420px,calc(100vw-48px))] rounded-l-hn-control-dialog border-l",
+  left: "inset-y-0 left-0 w-[min(420px,calc(100vw-48px))] rounded-r-hn-control-dialog border-r",
+  bottom: "inset-x-0 bottom-0 max-h-[85dvh] rounded-t-hn-control-dialog border-t",
 };
 
 /**
@@ -37,13 +37,13 @@ const EDGE: Record<SheetSide, string> = {
  */
 const EDGE_RESPONSIVE: Record<Exclude<SheetSide, "bottom">, string> = {
   right:
-    "inset-x-0 bottom-0 max-h-[85dvh] rounded-t-hn-xl border-t " +
+    "inset-x-0 bottom-0 max-h-[85dvh] rounded-t-hn-control-dialog border-t " +
     "sm:inset-x-auto sm:inset-y-0 sm:right-0 sm:max-h-none sm:w-[min(420px,calc(100vw-48px))] " +
-    "sm:rounded-tr-none sm:rounded-bl-hn-xl sm:border-t-0 sm:border-l",
+    "sm:rounded-tr-none sm:rounded-bl-hn-control-dialog sm:border-t-0 sm:border-l",
   left:
-    "inset-x-0 bottom-0 max-h-[85dvh] rounded-t-hn-xl border-t " +
+    "inset-x-0 bottom-0 max-h-[85dvh] rounded-t-hn-control-dialog border-t " +
     "sm:inset-x-auto sm:inset-y-0 sm:left-0 sm:max-h-none sm:w-[min(420px,calc(100vw-48px))] " +
-    "sm:rounded-tl-none sm:rounded-br-hn-xl sm:border-t-0 sm:border-r",
+    "sm:rounded-tl-none sm:rounded-br-hn-control-dialog sm:border-t-0 sm:border-r",
 };
 
 export type SheetContentProps = ComponentProps<typeof SheetPrimitive.Content> & {
@@ -124,7 +124,7 @@ export function SheetContent({
             aria-label={closeLabel ?? STATE_COPY[locale].overlay.close}
             disabled={pending}
             className={cx(
-              "absolute top-3.5 right-3.5 inline-flex size-6 min-h-hn-target min-w-hn-target cursor-pointer items-center justify-center rounded-hn-sm text-hn-ink-muted hover:bg-hn-surface-raised hover:text-hn-ink-primary",
+              "absolute top-3.5 right-3.5 inline-flex size-6 min-h-hn-target min-w-hn-target cursor-pointer items-center justify-center rounded-hn-control-item text-hn-ink-muted hover:bg-hn-surface-raised hover:text-hn-ink-primary",
               "disabled:pointer-events-none disabled:opacity-50",
               focusRing
             )}

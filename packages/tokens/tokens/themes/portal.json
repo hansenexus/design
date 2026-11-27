@@ -7,6 +7,16 @@
     },
     "target": {
       "$value": "{density.comfortable.target}"
-    }
+    },
+    "control-xs": { "$value": "{density.comfortable.control-xs}" },
+    "control-sm": { "$value": "{density.comfortable.control-sm}" },
+    "control-md": { "$value": "{density.comfortable.control-md}" },
+    "control-lg": { "$value": "{density.comfortable.control-lg}" },
+    "control-pad-xs": { "$value": "{density.comfortable.control-pad-xs}" },
+    "control-pad-sm": { "$value": "{density.comfortable.control-pad-sm}" },
+    "control-pad-md": { "$value": "{density.comfortable.control-pad-md}" },
+    "control-pad-lg": { "$value": "{density.comfortable.control-pad-lg}" },
+    "field": { "$value": "{density.comfortable.field}" },
+    "field-pad": { "$value": "{density.comfortable.field-pad}" }
   }
 }

@@ -98,7 +98,7 @@ function AlertBase({
           aria-label={dismissLabel ?? copy.dismiss}
           onClick={dismiss}
           className={cx(
-            "absolute top-2 right-2 inline-flex size-7 min-h-hn-target min-w-hn-target cursor-pointer items-center justify-center rounded-hn-sm border-0 bg-transparent text-hn-ink-muted hover:bg-hn-surface-raised hover:text-hn-ink-primary",
+            "absolute top-2 right-2 inline-flex size-7 min-h-hn-target min-w-hn-target cursor-pointer items-center justify-center rounded-hn-control-item border-0 bg-transparent text-hn-ink-muted hover:bg-hn-surface-raised hover:text-hn-ink-primary",
             "transition-colors duration-(--hn-duration-fast) motion-reduce:transition-none",
             focusRing
           )}

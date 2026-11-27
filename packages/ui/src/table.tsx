@@ -4,7 +4,7 @@ import { cx } from "./cx";
 /** A data table in a card. Rows follow the density: 36 px compact, 48 comfortable, 56 touch. */
 export function Table({ className, ...props }: ComponentProps<"table">) {
   return (
-    <div className="w-full overflow-x-auto rounded-hn-lg border border-hn-line-subtle bg-hn-surface-card">
+    <div className="w-full overflow-x-auto rounded-hn-control-card border-(length:--hn-border-frame) border-hn-line-subtle bg-hn-surface-card">
       <table
         className={cx(
           "w-full border-collapse font-hn-sans text-[13.5px] text-hn-ink-primary",

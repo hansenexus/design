@@ -29,6 +29,22 @@
     "display": {
       "$value": { "fontSize": "36px", "lineHeight": "44px", "fontWeight": 600 },
       "$description": "Hero titles and big numbers"
+    },
+    "control-xs": {
+      "$value": { "fontSize": "12px", "lineHeight": "16px", "fontWeight": 400 },
+      "$description": "Text in an xs control (design#243). Weight 400: a Button sets its own semibold; a pack changes size and leading here"
+    },
+    "control-sm": {
+      "$value": { "fontSize": "13px", "lineHeight": "18px", "fontWeight": 400 },
+      "$description": "Text in a small control (design#243). Weight 400: a Button sets its own semibold; a pack changes size and leading here"
+    },
+    "control-md": {
+      "$value": { "fontSize": "14px", "lineHeight": "20px", "fontWeight": 400 },
+      "$description": "Text in a control and a text field (design#243). Weight 400: a Button sets its own semibold; a pack changes size and leading here"
+    },
+    "control-lg": {
+      "$value": { "fontSize": "15px", "lineHeight": "22px", "fontWeight": 400 },
+      "$description": "Text in a large control (design#243). Weight 400: a Button sets its own semibold; a pack changes size and leading here"
     }
   }
 }

@@ -9,7 +9,17 @@
       },
       "target": {
         "$value": "24px"
-      }
+      },
+      "control-xs": { "$value": "24px" },
+      "control-sm": { "$value": "32px" },
+      "control-md": { "$value": "36px" },
+      "control-lg": { "$value": "48px" },
+      "control-pad-xs": { "$value": "8px" },
+      "control-pad-sm": { "$value": "12px" },
+      "control-pad-md": { "$value": "14px" },
+      "control-pad-lg": { "$value": "16px" },
+      "field": { "$value": "40px" },
+      "field-pad": { "$value": "12px" }
     },
     "comfortable": {
       "$description": "hansenexus.dev and the portal",
@@ -18,7 +28,17 @@
       },
       "target": {
         "$value": "24px"
-      }
+      },
+      "control-xs": { "$value": "24px" },
+      "control-sm": { "$value": "32px" },
+      "control-md": { "$value": "36px" },
+      "control-lg": { "$value": "48px" },
+      "control-pad-xs": { "$value": "8px" },
+      "control-pad-sm": { "$value": "12px" },
+      "control-pad-md": { "$value": "14px" },
+      "control-pad-lg": { "$value": "16px" },
+      "field": { "$value": "40px" },
+      "field-pad": { "$value": "12px" }
     },
     "touch": {
       "$description": "phones and native iOS",
@@ -27,7 +47,17 @@
       },
       "target": {
         "$value": "44px"
-      }
+      },
+      "control-xs": { "$value": "24px" },
+      "control-sm": { "$value": "32px" },
+      "control-md": { "$value": "36px" },
+      "control-lg": { "$value": "48px" },
+      "control-pad-xs": { "$value": "8px" },
+      "control-pad-sm": { "$value": "12px" },
+      "control-pad-md": { "$value": "14px" },
+      "control-pad-lg": { "$value": "16px" },
+      "field": { "$value": "40px" },
+      "field-pad": { "$value": "12px" }
     }
   }
 }

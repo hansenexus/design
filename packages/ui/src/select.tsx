@@ -15,7 +15,7 @@ export function SelectTrigger({
   return (
     <SelectPrimitive.Trigger
       className={cx(
-        "inline-flex h-9 min-h-hn-target w-full min-w-0 cursor-pointer items-center justify-between gap-2 rounded-hn-md border border-hn-line-strong bg-hn-surface-card px-3 font-hn-sans text-sm text-hn-ink-primary",
+        "inline-flex h-hn-control-md min-h-hn-target w-full min-w-0 cursor-pointer items-center justify-between gap-2 rounded-hn-control-field border border-hn-line-strong bg-hn-surface-card px-hn-field-pad font-hn-sans text-hn-control-md text-hn-ink-primary",
         "data-placeholder:text-hn-ink-muted disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-hn-status-crit",
         "[&>span]:truncate",
         focusRing,
@@ -50,7 +50,7 @@ export function SelectContent({
         position={position}
         sideOffset={position === "popper" ? sideOffset : undefined}
         className={cx(
-          "z-50 max-h-(--radix-select-content-available-height) min-w-(--radix-select-trigger-width) overflow-hidden rounded-hn-lg border border-hn-line-strong bg-hn-surface-card font-hn-sans shadow-hn-overlay",
+          "z-50 max-h-(--radix-select-content-available-height) min-w-(--radix-select-trigger-width) overflow-hidden rounded-hn-control-overlay border-(length:--hn-border-frame) border-hn-line-strong bg-hn-surface-card font-hn-sans shadow-hn-overlay",
           className
         )}
         {...props}
@@ -71,7 +71,7 @@ export function SelectItem({
   return (
     <SelectPrimitive.Item
       className={cx(
-        "relative flex h-8 min-h-hn-target cursor-pointer items-center rounded-hn-sm pr-8 pl-2.5 text-sm text-hn-ink-body outline-none select-none",
+        "relative flex h-8 min-h-hn-target cursor-pointer items-center rounded-hn-control-item pr-8 pl-2.5 text-sm text-hn-ink-body outline-none select-none",
         "data-highlighted:bg-hn-surface-raised data-highlighted:text-hn-ink-primary data-[state=checked]:text-hn-ink-primary",
         "data-disabled:pointer-events-none data-disabled:opacity-50",
         className

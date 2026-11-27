@@ -112,7 +112,7 @@ export function DatePicker(props: DatePickerProps) {
         aria-busy={pending || undefined}
         data-placeholder={empty ? "" : undefined}
         className={cx(
-          "inline-flex h-10 min-h-hn-target w-full min-w-0 cursor-pointer items-center gap-2 rounded-hn-md border border-hn-line-strong bg-hn-surface-page px-3 text-left font-hn-sans text-sm text-hn-ink-primary",
+          "inline-flex h-hn-field min-h-hn-target w-full min-w-0 cursor-pointer items-center gap-2 rounded-hn-control-field border border-hn-line-strong bg-hn-surface-page px-hn-field-pad text-left font-hn-sans text-hn-control-md text-hn-ink-primary",
           "data-placeholder:text-hn-ink-muted disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-hn-status-crit",
           focusRing,
           className

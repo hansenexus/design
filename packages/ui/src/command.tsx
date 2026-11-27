@@ -122,7 +122,7 @@ export type CommandProps = Omit<ComponentProps<"div">, "onSelect" | "children"> 
 };
 
 const ROW =
-  "flex h-9 min-h-hn-target cursor-pointer items-center gap-2.5 rounded-hn-sm px-2.5 text-sm text-hn-ink-body select-none " +
+  "flex h-9 min-h-hn-target cursor-pointer items-center gap-2.5 rounded-hn-control-item px-2.5 text-sm text-hn-ink-body select-none " +
   "data-active:bg-hn-surface-raised data-active:text-hn-ink-primary " +
   "aria-disabled:cursor-default aria-disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0";
 
@@ -223,7 +223,7 @@ export function Command({
     <div
       data-state={status}
       className={cx(
-        "flex min-w-0 flex-col overflow-hidden rounded-hn-xl border border-hn-line-strong bg-hn-surface-card font-hn-sans text-hn-ink-primary",
+        "flex min-w-0 flex-col overflow-hidden rounded-hn-control-dialog border-(length:--hn-border-frame) border-hn-line-strong bg-hn-surface-card font-hn-sans text-hn-ink-primary",
         className
       )}
       {...props}

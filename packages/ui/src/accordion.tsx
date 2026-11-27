@@ -13,7 +13,7 @@ export function Accordion({ className, ...props }: ComponentProps<typeof Accordi
   return (
     <AccordionPrimitive.Root
       className={cx(
-        "flex flex-col rounded-hn-lg border border-hn-line-subtle bg-hn-surface-card font-hn-sans",
+        "flex flex-col rounded-hn-control-card border-(length:--hn-border-frame) border-hn-line-subtle bg-hn-surface-card font-hn-sans",
         className
       )}
       {...props}

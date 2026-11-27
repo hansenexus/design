@@ -1025,6 +1025,9 @@ public struct HNColors: Sendable, Equatable {
 
 /// Line width in points, the border.width recipe.
 public enum HNBorder {
+  /// Outline of a card, accordion, table, popover, menu, select list, toast, dialog and the command palette
+  public static let frame: Double = 1
+
   public static let width: Double = 1
 }
 
@@ -1032,8 +1035,14 @@ public enum HNBorder {
 public struct HNControl: Sendable, Equatable {
   public let bar: Double
   public let box: Double
+  public let button: Double
+  public let card: Double
   public let chip: Double
+  public let dialog: Double
   public let dot: Double
+  public let field: Double
+  public let item: Double
+  public let overlay: Double
 
   /// The hansenexus theme's values; `of(_:)` picks another theme's.
   /// Progress and meter tracks
@@ -1042,19 +1051,37 @@ public struct HNControl: Sendable, Equatable {
   /// Checkbox
   public static let box: Double = 6
 
+  /// Button sm to lg and its icon sizes, Toggle, ToggleGroup ends, Pagination
+  public static let button: Double = 10
+
+  /// Card, Accordion, Table frame, KpiCard
+  public static let card: Double = 14
+
   /// Badge and status badge
   public static let chip: Double = 999
+
+  /// Dialog, AlertDialog, the command palette, the sheet's free edge
+  public static let dialog: Double = 18
 
   /// Radio, switch track and thumb, slider track and thumb, menu radio dot, scroll thumb, sheet grabber, usage bar
   public static let dot: Double = 999
 
+  /// Input, Textarea, Select trigger, Combobox input, DatePicker trigger
+  public static let field: Double = 10
+
+  /// Button xs, rows in menus, selects, comboboxes and the command palette, small close buttons
+  public static let item: Double = 6
+
+  /// Popover, menu, select list, toast
+  public static let overlay: Double = 14
+
   /// The theme's own values.
   public static func of(_ theme: HNTheme) -> HNControl {
     switch theme {
-    case .hansenexus: return HNControl(bar: 3, box: 6, chip: 999, dot: 999)
-    case .kommandant: return HNControl(bar: 3, box: 6, chip: 999, dot: 999)
-    case .portal: return HNControl(bar: 3, box: 6, chip: 999, dot: 999)
-    case .lexilink: return HNControl(bar: 3, box: 0, chip: 999, dot: 999)
+    case .hansenexus: return HNControl(bar: 3, box: 6, button: 10, card: 14, chip: 999, dialog: 18, dot: 999, field: 10, item: 6, overlay: 14)
+    case .kommandant: return HNControl(bar: 3, box: 6, button: 10, card: 14, chip: 999, dialog: 18, dot: 999, field: 10, item: 6, overlay: 14)
+    case .portal: return HNControl(bar: 3, box: 6, button: 10, card: 14, chip: 999, dialog: 18, dot: 999, field: 10, item: 6, overlay: 14)
+    case .lexilink: return HNControl(bar: 3, box: 0, button: 0, card: 0, chip: 999, dialog: 4, dot: 999, field: 0, item: 0, overlay: 0)
     }
   }
 }
@@ -1282,10 +1309,50 @@ public enum HNShimmer {
 
 /// Row height and minimum target in points, per theme or per density.
 public struct HNSize: Sendable, Equatable {
+  public let controlLg: Double
+  public let controlMd: Double
+  public let controlPadLg: Double
+  public let controlPadMd: Double
+  public let controlPadSm: Double
+  public let controlPadXs: Double
+  public let controlSm: Double
+  public let controlXs: Double
+  public let field: Double
+  public let fieldPad: Double
   public let row: Double
   public let target: Double
 
   /// The hansenexus theme's values; `of(_:)` picks another theme's.
+  /// Height of a large control: Button lg and icon-lg
+  public static let controlLg: Double = 48
+
+  /// Height of a control: Button md and icon, Select trigger, Toggle
+  public static let controlMd: Double = 36
+
+  /// Inline padding of a large control
+  public static let controlPadLg: Double = 16
+
+  /// Inline padding of a control
+  public static let controlPadMd: Double = 14
+
+  /// Inline padding of a small control
+  public static let controlPadSm: Double = 12
+
+  /// Inline padding of an xs control
+  public static let controlPadXs: Double = 8
+
+  /// Height of a small control: Button sm and icon-sm
+  public static let controlSm: Double = 32
+
+  /// Height of an xs control: Button xs and icon-xs
+  public static let controlXs: Double = 24
+
+  /// Height of a text field: Input, Combobox, DatePicker trigger
+  public static let field: Double = 40
+
+  /// Inline padding of a text field, Textarea and Select trigger
+  public static let fieldPad: Double = 12
+
   public static let row: Double = 48
 
   public static let target: Double = 24
@@ -1293,19 +1360,19 @@ public struct HNSize: Sendable, Equatable {
   /// The theme's own density.
   public static func of(_ theme: HNTheme) -> HNSize {
     switch theme {
-    case .hansenexus: return HNSize(row: 48, target: 24)
-    case .kommandant: return HNSize(row: 36, target: 24)
-    case .portal: return HNSize(row: 48, target: 24)
-    case .lexilink: return HNSize(row: 48, target: 24)
+    case .hansenexus: return HNSize(controlLg: 48, controlMd: 36, controlPadLg: 16, controlPadMd: 14, controlPadSm: 12, controlPadXs: 8, controlSm: 32, controlXs: 24, field: 40, fieldPad: 12, row: 48, target: 24)
+    case .kommandant: return HNSize(controlLg: 48, controlMd: 36, controlPadLg: 16, controlPadMd: 14, controlPadSm: 12, controlPadXs: 8, controlSm: 32, controlXs: 24, field: 40, fieldPad: 12, row: 36, target: 24)
+    case .portal: return HNSize(controlLg: 48, controlMd: 36, controlPadLg: 16, controlPadMd: 14, controlPadSm: 12, controlPadXs: 8, controlSm: 32, controlXs: 24, field: 40, fieldPad: 12, row: 48, target: 24)
+    case .lexilink: return HNSize(controlLg: 48, controlMd: 36, controlPadLg: 16, controlPadMd: 14, controlPadSm: 12, controlPadXs: 8, controlSm: 32, controlXs: 24, field: 40, fieldPad: 12, row: 48, target: 24)
     }
   }
 
   /// A density chosen over the theme's, like data-density on the web.
   public static func of(_ density: HNDensity) -> HNSize {
     switch density {
-    case .compact: return HNSize(row: 36, target: 24)
-    case .comfortable: return HNSize(row: 48, target: 24)
-    case .touch: return HNSize(row: 56, target: 44)
+    case .compact: return HNSize(controlLg: 48, controlMd: 36, controlPadLg: 16, controlPadMd: 14, controlPadSm: 12, controlPadXs: 8, controlSm: 32, controlXs: 24, field: 40, fieldPad: 12, row: 36, target: 24)
+    case .comfortable: return HNSize(controlLg: 48, controlMd: 36, controlPadLg: 16, controlPadMd: 14, controlPadSm: 12, controlPadXs: 8, controlSm: 32, controlXs: 24, field: 40, fieldPad: 12, row: 48, target: 24)
+    case .touch: return HNSize(controlLg: 48, controlMd: 36, controlPadLg: 16, controlPadMd: 14, controlPadSm: 12, controlPadXs: 8, controlSm: 32, controlXs: 24, field: 40, fieldPad: 12, row: 56, target: 44)
     }
   }
 }
@@ -1347,6 +1414,10 @@ public struct HNTypeScale: Sendable, Equatable {
   public let body: HNTextStyle
   public let bodySm: HNTextStyle
   public let caption: HNTextStyle
+  public let controlLg: HNTextStyle
+  public let controlMd: HNTextStyle
+  public let controlSm: HNTextStyle
+  public let controlXs: HNTextStyle
   public let display: HNTextStyle
   public let heading: HNTextStyle
   public let meta: HNTextStyle
@@ -1361,6 +1432,18 @@ public struct HNTypeScale: Sendable, Equatable {
 
   /// Chips, badges, tiny labels
   public static let caption: HNTextStyle = HNTextStyle(size: 12, lineHeight: 16, weight: 500)
+
+  /// Text in a large control (design#243). Weight 400: a Button sets its own semibold; a pack changes size and leading here
+  public static let controlLg: HNTextStyle = HNTextStyle(size: 15, lineHeight: 22, weight: 400)
+
+  /// Text in a control and a text field (design#243). Weight 400: a Button sets its own semibold; a pack changes size and leading here
+  public static let controlMd: HNTextStyle = HNTextStyle(size: 14, lineHeight: 20, weight: 400)
+
+  /// Text in a small control (design#243). Weight 400: a Button sets its own semibold; a pack changes size and leading here
+  public static let controlSm: HNTextStyle = HNTextStyle(size: 13, lineHeight: 18, weight: 400)
+
+  /// Text in an xs control (design#243). Weight 400: a Button sets its own semibold; a pack changes size and leading here
+  public static let controlXs: HNTextStyle = HNTextStyle(size: 12, lineHeight: 16, weight: 400)
 
   /// Hero titles and big numbers
   public static let display: HNTextStyle = HNTextStyle(size: 36, lineHeight: 44, weight: 600)
@@ -1377,10 +1460,10 @@ public struct HNTypeScale: Sendable, Equatable {
   /// The theme's own values.
   public static func of(_ theme: HNTheme) -> HNTypeScale {
     switch theme {
-    case .hansenexus: return HNTypeScale(body: HNTextStyle(size: 16, lineHeight: 24, weight: 400), bodySm: HNTextStyle(size: 14, lineHeight: 20, weight: 400), caption: HNTextStyle(size: 12, lineHeight: 16, weight: 500), display: HNTextStyle(size: 36, lineHeight: 44, weight: 600), heading: HNTextStyle(size: 24, lineHeight: 32, weight: 600), meta: HNTextStyle(size: 13, lineHeight: 18, weight: 400), title: HNTextStyle(size: 20, lineHeight: 28, weight: 600))
-    case .kommandant: return HNTypeScale(body: HNTextStyle(size: 13, lineHeight: 20, weight: 400), bodySm: HNTextStyle(size: 12, lineHeight: 16, weight: 400), caption: HNTextStyle(size: 10, lineHeight: 14, weight: 500), display: HNTextStyle(size: 28, lineHeight: 34, weight: 600), heading: HNTextStyle(size: 18, lineHeight: 24, weight: 600), meta: HNTextStyle(size: 11, lineHeight: 16, weight: 400), title: HNTextStyle(size: 15, lineHeight: 20, weight: 600))
-    case .portal: return HNTypeScale(body: HNTextStyle(size: 16, lineHeight: 24, weight: 400), bodySm: HNTextStyle(size: 14, lineHeight: 20, weight: 400), caption: HNTextStyle(size: 12, lineHeight: 16, weight: 500), display: HNTextStyle(size: 36, lineHeight: 44, weight: 600), heading: HNTextStyle(size: 24, lineHeight: 32, weight: 600), meta: HNTextStyle(size: 13, lineHeight: 18, weight: 400), title: HNTextStyle(size: 20, lineHeight: 28, weight: 600))
-    case .lexilink: return HNTypeScale(body: HNTextStyle(size: 16, lineHeight: 24, weight: 400), bodySm: HNTextStyle(size: 14, lineHeight: 20, weight: 400), caption: HNTextStyle(size: 12, lineHeight: 16, weight: 500), display: HNTextStyle(size: 36, lineHeight: 44, weight: 600), heading: HNTextStyle(size: 24, lineHeight: 32, weight: 600), meta: HNTextStyle(size: 13, lineHeight: 18, weight: 400), title: HNTextStyle(size: 20, lineHeight: 28, weight: 600))
+    case .hansenexus: return HNTypeScale(body: HNTextStyle(size: 16, lineHeight: 24, weight: 400), bodySm: HNTextStyle(size: 14, lineHeight: 20, weight: 400), caption: HNTextStyle(size: 12, lineHeight: 16, weight: 500), controlLg: HNTextStyle(size: 15, lineHeight: 22, weight: 400), controlMd: HNTextStyle(size: 14, lineHeight: 20, weight: 400), controlSm: HNTextStyle(size: 13, lineHeight: 18, weight: 400), controlXs: HNTextStyle(size: 12, lineHeight: 16, weight: 400), display: HNTextStyle(size: 36, lineHeight: 44, weight: 600), heading: HNTextStyle(size: 24, lineHeight: 32, weight: 600), meta: HNTextStyle(size: 13, lineHeight: 18, weight: 400), title: HNTextStyle(size: 20, lineHeight: 28, weight: 600))
+    case .kommandant: return HNTypeScale(body: HNTextStyle(size: 13, lineHeight: 20, weight: 400), bodySm: HNTextStyle(size: 12, lineHeight: 16, weight: 400), caption: HNTextStyle(size: 10, lineHeight: 14, weight: 500), controlLg: HNTextStyle(size: 15, lineHeight: 22, weight: 400), controlMd: HNTextStyle(size: 14, lineHeight: 20, weight: 400), controlSm: HNTextStyle(size: 13, lineHeight: 18, weight: 400), controlXs: HNTextStyle(size: 12, lineHeight: 16, weight: 400), display: HNTextStyle(size: 28, lineHeight: 34, weight: 600), heading: HNTextStyle(size: 18, lineHeight: 24, weight: 600), meta: HNTextStyle(size: 11, lineHeight: 16, weight: 400), title: HNTextStyle(size: 15, lineHeight: 20, weight: 600))
+    case .portal: return HNTypeScale(body: HNTextStyle(size: 16, lineHeight: 24, weight: 400), bodySm: HNTextStyle(size: 14, lineHeight: 20, weight: 400), caption: HNTextStyle(size: 12, lineHeight: 16, weight: 500), controlLg: HNTextStyle(size: 15, lineHeight: 22, weight: 400), controlMd: HNTextStyle(size: 14, lineHeight: 20, weight: 400), controlSm: HNTextStyle(size: 13, lineHeight: 18, weight: 400), controlXs: HNTextStyle(size: 12, lineHeight: 16, weight: 400), display: HNTextStyle(size: 36, lineHeight: 44, weight: 600), heading: HNTextStyle(size: 24, lineHeight: 32, weight: 600), meta: HNTextStyle(size: 13, lineHeight: 18, weight: 400), title: HNTextStyle(size: 20, lineHeight: 28, weight: 600))
+    case .lexilink: return HNTypeScale(body: HNTextStyle(size: 16, lineHeight: 24, weight: 400), bodySm: HNTextStyle(size: 14, lineHeight: 20, weight: 400), caption: HNTextStyle(size: 12, lineHeight: 16, weight: 500), controlLg: HNTextStyle(size: 15, lineHeight: 22, weight: 400), controlMd: HNTextStyle(size: 14, lineHeight: 20, weight: 400), controlSm: HNTextStyle(size: 13, lineHeight: 18, weight: 400), controlXs: HNTextStyle(size: 12, lineHeight: 16, weight: 400), display: HNTextStyle(size: 36, lineHeight: 44, weight: 600), heading: HNTextStyle(size: 24, lineHeight: 32, weight: 600), meta: HNTextStyle(size: 13, lineHeight: 18, weight: 400), title: HNTextStyle(size: 20, lineHeight: 28, weight: 600))
     }
   }
 }
@@ -1390,6 +1473,10 @@ public enum HNTextRole: String, CaseIterable, Sendable {
   case body
   case bodySm = "body-sm"
   case caption
+  case controlLg = "control-lg"
+  case controlMd = "control-md"
+  case controlSm = "control-sm"
+  case controlXs = "control-xs"
   case display
   case heading
   case meta
@@ -1403,6 +1490,10 @@ extension HNTypeScale {
     case .body: body
     case .bodySm: bodySm
     case .caption: caption
+    case .controlLg: controlLg
+    case .controlMd: controlMd
+    case .controlSm: controlSm
+    case .controlXs: controlXs
     case .display: display
     case .heading: heading
     case .meta: meta

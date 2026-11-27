@@ -7,7 +7,17 @@
     },
     "target": {
       "$value": "{density.compact.target}"
-    }
+    },
+    "control-xs": { "$value": "{density.compact.control-xs}" },
+    "control-sm": { "$value": "{density.compact.control-sm}" },
+    "control-md": { "$value": "{density.compact.control-md}" },
+    "control-lg": { "$value": "{density.compact.control-lg}" },
+    "control-pad-xs": { "$value": "{density.compact.control-pad-xs}" },
+    "control-pad-sm": { "$value": "{density.compact.control-pad-sm}" },
+    "control-pad-md": { "$value": "{density.compact.control-pad-md}" },
+    "control-pad-lg": { "$value": "{density.compact.control-pad-lg}" },
+    "field": { "$value": "{density.compact.field}" },
+    "field-pad": { "$value": "{density.compact.field-pad}" }
   },
   "font": {
     "$type": "fontFamily",

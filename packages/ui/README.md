@@ -56,7 +56,9 @@ Button variants: `primary` (default), `secondary`, `outline` (secondary on the o
 for buttons over rows, media or tinted panels), `ghost` and `danger`. Sizes: `xs` (24 px), `sm`
 (32 px), `md` (36 px, default) and `lg` (48 px), plus the square `icon-xs`, `icon-sm`, `icon` and
 `icon-lg` for a single icon, which need an `aria-label`. No size goes below the density's minimum
-target (`--hn-target`), so `xs` grows to 44 px under `data-density="touch"`.
+target (`--hn-target`), so `xs` grows to 44 px under `data-density="touch"`. The pixel values are
+the defaults of the mask tokens (design#243): `size.control-*` for height, `size.control-pad-*` for
+inline padding, `text.control-*` for type, so a theme pack or `data-density` resizes them.
 
 ```tsx
 <Button variant="outline" size="sm">Filter</Button>
@@ -525,7 +527,10 @@ bun run outdated -- ~/repos/some-app --json                  # every block with 
 - Shape comes from the recipes of @hansenexus/tokens (design#143), never a hardcoded value:
   line width from `border.width` (bare `border`), lift from `shadow-hn-raised|overlay|panel`,
   control shape from `rounded-hn-control-box|dot|bar|chip`, motifs from
-  `bg-(image:--hn-motif-hatch)`. A theme pack changes them; atoms never fork. Avatar and the
+  `bg-(image:--hn-motif-hatch)`. The mask (design#243): corners per family from
+  `rounded-hn-control-button|item|field|card|overlay|dialog`, the frame of cards, overlays and
+  dialogs from `border-(length:--hn-border-frame)`, control height, padding and type from
+  `h-hn-control-*`, `px-hn-control-pad-*`, `h-hn-field`, `px-hn-field-pad` and `text-hn-control-*`. A theme pack changes them; atoms never fork. Avatar and the
   circle skeleton stay round in every theme: they are identity shapes, not controls.
 - Structure beyond the recipes comes from skins (design#143). A molecule, organism or template
   wrapped in `skinnable(slot, Base)` (`src/skin.tsx`) renders the active pack's skin for that

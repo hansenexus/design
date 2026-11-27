@@ -7,6 +7,46 @@
     },
     "target": {
       "$value": "{density.comfortable.target}"
+    },
+    "control-xs": {
+      "$value": "{density.comfortable.control-xs}",
+      "$description": "Height of an xs control: Button xs and icon-xs"
+    },
+    "control-sm": {
+      "$value": "{density.comfortable.control-sm}",
+      "$description": "Height of a small control: Button sm and icon-sm"
+    },
+    "control-md": {
+      "$value": "{density.comfortable.control-md}",
+      "$description": "Height of a control: Button md and icon, Select trigger, Toggle"
+    },
+    "control-lg": {
+      "$value": "{density.comfortable.control-lg}",
+      "$description": "Height of a large control: Button lg and icon-lg"
+    },
+    "control-pad-xs": {
+      "$value": "{density.comfortable.control-pad-xs}",
+      "$description": "Inline padding of an xs control"
+    },
+    "control-pad-sm": {
+      "$value": "{density.comfortable.control-pad-sm}",
+      "$description": "Inline padding of a small control"
+    },
+    "control-pad-md": {
+      "$value": "{density.comfortable.control-pad-md}",
+      "$description": "Inline padding of a control"
+    },
+    "control-pad-lg": {
+      "$value": "{density.comfortable.control-pad-lg}",
+      "$description": "Inline padding of a large control"
+    },
+    "field": {
+      "$value": "{density.comfortable.field}",
+      "$description": "Height of a text field: Input, Combobox, DatePicker trigger"
+    },
+    "field-pad": {
+      "$value": "{density.comfortable.field-pad}",
+      "$description": "Inline padding of a text field, Textarea and Select trigger"
     }
   }
 }

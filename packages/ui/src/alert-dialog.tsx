@@ -58,7 +58,7 @@ export function AlertDialogContent({
         data-tone={tone}
         className={cx(
           "fixed top-1/2 left-1/2 z-50 flex max-h-[calc(100dvh-32px)] w-[calc(100vw-32px)] max-w-[440px] -translate-x-1/2 -translate-y-1/2 flex-col gap-4 overflow-y-auto",
-          "rounded-hn-xl border border-hn-line-strong bg-hn-surface-card p-[22px] font-hn-sans text-hn-ink-primary shadow-hn-overlay",
+          "rounded-hn-control-dialog border-(length:--hn-border-frame) border-hn-line-strong bg-hn-surface-card p-[22px] font-hn-sans text-hn-ink-primary shadow-hn-overlay",
           "outline-none",
           tone === "destructive" && "border-t-[3px] border-t-hn-status-crit",
           className

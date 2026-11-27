@@ -24,8 +24,12 @@ themes/<app>/                @hansenexus/theme-<app>
   and adds none; `packages/tokens/tests/packs.test.ts` holds every direction to exactly the core's
   names in both modes. The palette may be any colour: the ratchet exempts a direction's
   `palette.json` and `tokens*.json`, and nothing else in a pack.
-- **Recipes** are tokens too: `border.width`/`style`, `elevation.*`, `control.*` (control shape
-  as radii), `motif.*`, plus the existing `radius.*` and density (`size.*`). The table is in
+- **Recipes** are tokens too: `border.width`/`style`/`frame`, `elevation.*`, `control.*` (control
+  shape as radii per family: box, dot, bar, chip, button, item, field, card, overlay, dialog),
+  `motif.*`, plus the existing `radius.*`, density (`size.*`, control heights and paddings
+  included) and the control type roles `text.control-*` (design#243). Together they are the
+  pack's mask: a direction can change shape, size and type without a skin
+  (`themes/fachwerk/rund`). The table is in
   [packages/tokens/README.md](../packages/tokens/README.md#recipes). The atoms of
   `@hansenexus/ui` read them, so a pack never forks an atom.
 - **Skins.** What recipes cannot say, a skin says: a component for one slot of

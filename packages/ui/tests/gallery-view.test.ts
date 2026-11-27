@@ -82,8 +82,10 @@ describe("gallery view (#57)", () => {
       "portal",
       "lexilink",
       "fachwerk",
+      "fachwerk-rund",
       "lexilink@live",
       "fachwerk@live",
+      "fachwerk-rund@live",
     ]);
     for (const theme of ["lexilink", "fachwerk", "fachwerk@live"]) {
       const view = { ...DEFAULT_VIEW, theme };
@@ -178,7 +180,9 @@ describe("pack switcher and compare (design#149)", () => {
     expect(PACK_GROUPS.map((g) => g.pack)).toEqual(["core", "lexilink", "fachwerk"]);
     expect(PACK_GROUPS.find((g) => g.pack === "fachwerk")?.directions).toEqual([
       "fachwerk",
+      "fachwerk-rund",
       "fachwerk@live",
+      "fachwerk-rund@live",
     ]);
     expect(PACK_GROUPS.find((g) => g.pack === "core")?.directions).toEqual([
       "hansenexus",
