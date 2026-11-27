@@ -280,7 +280,9 @@ test("pack switcher: a pack picks its first direction, its live copy is a direct
   await expect(html).toHaveAttribute("data-theme", "fachwerk");
   await expect(toolbar.getByLabel("Direction").locator("option")).toHaveText([
     "fachwerk",
+    "fachwerk-rund",
     /^fachwerk \(live, .+\)$/,
+    /^fachwerk-rund \(live, .+\)$/,
   ]);
   await toolbar.getByLabel("Direction").selectOption("fachwerk@live");
   await expect(html).toHaveAttribute("data-theme", "fachwerk@live");
