@@ -32,6 +32,7 @@ export const SCENES = [
   "controls",
   "motion",
   "shell",
+  "patterns",
   "screens",
   "projects",
   "vote",
@@ -61,6 +62,7 @@ export const SCENE_LABELS: Record<Scene, string> = {
   controls: "Controls",
   motion: "Motion",
   shell: "Shell",
+  patterns: "Page patterns",
   screens: "App screens",
   projects: "Projects",
   vote: "Votes",
@@ -96,7 +98,7 @@ export const SCENE_GROUPS: { id: string; label: string; scenes: Scene[] }[] = [
     label: "Overlays",
     scenes: ["dialog", "alert-dialog", "menu", "select", "tooltip", "toast", "overlays"],
   },
-  { id: "templates", label: "Templates", scenes: ["shell", "screens", "projects"] },
+  { id: "templates", label: "Templates", scenes: ["shell", "patterns", "screens", "projects"] },
   { id: "review", label: "Review", scenes: ["vote"] },
 ];
 

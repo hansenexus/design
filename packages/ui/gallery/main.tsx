@@ -129,6 +129,7 @@ import { Motion } from "./motion-scene";
 import { Navigation } from "./navigation";
 import { Overlays } from "./overlays";
 import { packIllustrations, registerLive } from "./packs";
+import { PatternsScene } from "./patterns";
 import { BareContext, PreviewCard, ViewContext, ViewProvider } from "./preview";
 import { Projects } from "./projects-scene";
 import { Screens } from "./screens";
@@ -1163,6 +1164,8 @@ function Scenes({ scene }: { scene: Scene }) {
       return <Projects />;
     case "shell":
       return <ShellScene />;
+    case "patterns":
+      return <PatternsScene />;
     case "loading":
       return <Loading />;
     case "brand":

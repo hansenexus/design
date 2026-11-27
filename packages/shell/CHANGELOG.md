@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.4.0
+
+Page patterns on top of the 0.3 layouts (design#240, fachwerk#309). Needs `@hansenexus/ui` 0.6.0.
+
+- `TabbedPage`: settings and detail pages. Tabs in the header (`variant="tabs"`) or a section
+  list in a left sub-column (`"sections"`); the active tab in `?tab=` with Back working
+  (`url`), or controlled through `value`; manual keyboard activation; an unsaved-changes confirm
+  on switch, Back and reload for `dirty` tabs; a select under 768 px when there are many tabs;
+  the active tab's `footer` in the shell's footer bar. Helpers `readTabParam`, `withTabParam`.
+- `Wizard`: a create flow in steps, layout `focus` or `session`. The ui `Stepper` in the header
+  (done steps are buttons back, `Schritt 2 von 4` on a phone), per-step `validate`, server
+  `errors`, `draft` / `onDraftChange` to resume, a docked footer (Abbrechen, Zurück,
+  Weiter / Fertig) and an exit confirm when `dirty`. Helper `wizardStatuses`.
+- `Queue`: `mode="create"` (a form, Enter saves and goes to the next) and `mode="review"`
+  (resume at the first open item, actions with one-key shortcuts, go on to the next open one,
+  an "Alles erledigt" state). Layout `session`; the item list is the aside (column from 1280 px,
+  bottom sheet below); `?` opens a shortcut overlay; j/k and ←/→ move. Helpers `firstOpen`,
+  `nextOpen`, `stepItem`, `matchesShortcut`.
+- `PATTERN_COPY` (de, en) for the patterns' words.
+- `layout="session"` now takes an `aside`, folded until `defaultAsideOpen` or the toggle.
+- No new tokens. The registry item `shell` adds `empty-state`, `form-alert`, `select`, `stepper`
+  and `tabs` to `meta.uses`.
+
+`@hansenexus/ui` 0.6.0: the `Stepper` (full, compact, auto at 768 px of the nearest container;
+done, current, open, error; back steps as buttons; failed steps named in the compact readout).
+
 ## 0.3.0
 
 The layout system (design#239, owner ruling 2026-11-27 in the fachwerk walkthrough, fachwerk#309).

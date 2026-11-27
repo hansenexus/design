@@ -70,6 +70,7 @@ export const ITEM_SCENES: Record<string, Scene> = {
   pagination: "navigation",
   command: "overlays",
   shell: "shell",
+  stepper: "patterns",
   "context-menu": "controls",
   "scroll-area": "controls",
   slider: "controls",
