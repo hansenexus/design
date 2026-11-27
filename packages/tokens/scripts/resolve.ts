@@ -219,7 +219,9 @@ export async function resolveDensities(
           value: String(t.$value),
           raw: t.$value,
         };
-      });
+      })
+      // The order of resolveTokens, so a density lines up with the theme's size.* (Swift).
+      .sort((a, b) => a.path.localeCompare(b.path, "en", { numeric: true }));
   }
   return out;
 }

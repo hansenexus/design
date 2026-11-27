@@ -108,6 +108,31 @@ describe("markup", () => {
     expect(html).toContain("border-hn-line-strong");
   });
 
+  test("atoms read the mask tokens (design#243): size, padding, type, per-family corner, frame", () => {
+    const button = renderToStaticMarkup(<ui.Button>Go</ui.Button>);
+    for (const c of [
+      "h-hn-control-md",
+      "px-hn-control-pad-md",
+      "text-hn-control-md",
+      "rounded-hn-control-button",
+    ])
+      expect(button).toContain(c);
+    const xs = renderToStaticMarkup(<ui.Button size="xs">Go</ui.Button>);
+    for (const c of ["h-hn-control-xs", "px-hn-control-pad-xs", "rounded-hn-control-item"])
+      expect(xs).toContain(c);
+    const input = renderToStaticMarkup(<ui.Input aria-label="Host" />);
+    for (const c of [
+      "h-hn-field",
+      "px-hn-field-pad",
+      "text-hn-control-md",
+      "rounded-hn-control-field",
+    ])
+      expect(input).toContain(c);
+    const card = renderToStaticMarkup(<ui.Card>x</ui.Card>);
+    expect(card).toContain("rounded-hn-control-card");
+    expect(card).toContain("border-(length:--hn-border-frame)");
+  });
+
   test("Button sizes: compact ones keep the density target, icon ones are square", () => {
     const sizes = ["xs", "sm", "md", "lg", "icon-xs", "icon-sm", "icon", "icon-lg"] as const;
     for (const size of sizes) {
@@ -125,7 +150,7 @@ describe("markup", () => {
       // The markup escapes "&": [&amp;_svg]:size-4.
       expect(cls.filter((c) => /_svg\]:size-/.test(c))).toHaveLength(1);
       if (size.startsWith("icon")) {
-        expect(cls.some((c) => /^size-\d/.test(c))).toBe(true);
+        expect(cls.some((c) => /^size-hn-control-(xs|sm|md|lg)$/.test(c))).toBe(true);
         expect(cls).toContain("min-w-hn-target");
         expect(cls).toContain("p-0");
       }
@@ -1391,7 +1416,7 @@ describe("controls", () => {
     expect(on).toContain('aria-pressed="true"');
     expect(on).toContain('data-state="on"');
     expect(on).toContain("border-hn-line-strong");
-    expect(on).toContain("h-8");
+    expect(on).toContain("h-hn-control-sm");
   });
 
   test("ToggleGroup: single is a radio group, multiple are pressed buttons, items take the look", () => {
@@ -1403,7 +1428,7 @@ describe("controls", () => {
     );
     expect(tag(single, 'role="radiogroup"')).toContain('aria-label="View"');
     expect(tag(single, 'aria-checked="true"')).toContain('role="radio"');
-    expect(tag(single, 'aria-checked="true"')).toContain("first:rounded-l-hn-md");
+    expect(tag(single, 'aria-checked="true"')).toContain("first:rounded-l-hn-control-button");
     const multi = renderToStaticMarkup(
       <ui.ToggleGroup type="multiple" defaultValue={["crit", "warn"]} aria-label="Statuses">
         <ui.ToggleGroupItem value="crit">Crit</ui.ToggleGroupItem>
@@ -1413,7 +1438,7 @@ describe("controls", () => {
     );
     expect(multi.match(/aria-pressed="true"/g)?.length).toBe(2);
     expect(multi.match(/aria-pressed="false"/g)?.length).toBe(1);
-    expect(multi).not.toContain("first:rounded-l-hn-md");
+    expect(multi).not.toContain("first:rounded-l-hn-control-button");
   });
 
   test("Slider: one thumb per value, each thumb named (aria-valuenow lands on mount)", () => {

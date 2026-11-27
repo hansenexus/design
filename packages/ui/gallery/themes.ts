@@ -17,7 +17,7 @@ export const PACK_APPS: readonly string[] = ["lexilink", "fachwerk"];
 export const PACK_MOTION: Record<string, string> = {};
 
 /** The pack directions @hansenexus/tokens does not bundle, by data-theme. */
-export const PACK_THEMES: readonly string[] = ["fachwerk"];
+export const PACK_THEMES: readonly string[] = ["fachwerk", "fachwerk-rund"];
 
 /** The suffix of a pack direction's live copy: `fachwerk@live`. */
 export const LIVE = "@live";

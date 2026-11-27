@@ -31,7 +31,7 @@ export function Toast({ status, className, children, ...props }: ToastProps) {
   return (
     <ToastPrimitive.Root
       className={cx(
-        "relative flex items-start gap-3 rounded-hn-lg border border-hn-line-strong bg-hn-surface-card p-3.5 pr-10 font-hn-sans text-hn-ink-primary shadow-hn-overlay",
+        "relative flex items-start gap-3 rounded-hn-control-overlay border-(length:--hn-border-frame) border-hn-line-strong bg-hn-surface-card p-3.5 pr-10 font-hn-sans text-hn-ink-primary shadow-hn-overlay",
         className
       )}
       {...props}
@@ -41,7 +41,7 @@ export function Toast({ status, className, children, ...props }: ToastProps) {
       <ToastPrimitive.Close
         aria-label="Dismiss"
         className={cx(
-          "absolute top-2.5 right-2.5 inline-flex size-6 min-h-hn-target min-w-hn-target cursor-pointer items-center justify-center rounded-hn-sm text-hn-ink-muted hover:bg-hn-surface-raised hover:text-hn-ink-primary",
+          "absolute top-2.5 right-2.5 inline-flex size-6 min-h-hn-target min-w-hn-target cursor-pointer items-center justify-center rounded-hn-control-item text-hn-ink-muted hover:bg-hn-surface-raised hover:text-hn-ink-primary",
           focusRing
         )}
       >

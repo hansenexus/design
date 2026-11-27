@@ -1,0 +1,166 @@
+{
+  "surface": {
+    "$type": "color",
+    "page": {
+      "$value": "{palette.fachwerk.night-paper}",
+      "$description": "Plaster, the wall"
+    },
+    "band": {
+      "$value": "{palette.fachwerk.night-ground}",
+      "$description": "The yard beside the column"
+    },
+    "card": {
+      "$value": "{palette.fachwerk.night-limewash}",
+      "$description": "A Gefach: the lime-washed infill panel"
+    },
+    "raised": {
+      "$value": "{palette.fachwerk.night-deep}",
+      "$description": "A shaded Gefach: deeper plaster inside the frame"
+    },
+    "tint": {
+      "$value": "{palette.fachwerk.night-ochre-wash}",
+      "$description": "Hover and the active row"
+    },
+    "rail": {
+      "$value": "{palette.fachwerk.night-limewash}",
+      "$description": "The rail is a column of cells on lime wash"
+    }
+  },
+  "ink": {
+    "$type": "color",
+    "primary": {
+      "$value": "{palette.fachwerk.night-ink}",
+      "$description": "Oak"
+    },
+    "body": {
+      "$value": "{palette.fachwerk.night-ink}"
+    },
+    "muted": {
+      "$value": "{palette.fachwerk.night-grey}",
+      "$description": "Oak grey, secondary text"
+    }
+  },
+  "line": {
+    "$type": "color",
+    "subtle": {
+      "$value": "{palette.fachwerk.night-line}",
+      "$description": "Every line is a beam"
+    },
+    "strong": {
+      "$value": "{palette.fachwerk.night-grey}",
+      "$description": "The beam a control is framed by; on dark the lifted grey, so a control stays 3:1"
+    }
+  },
+  "rail": {
+    "$type": "color",
+    "ink": {
+      "$value": "{palette.fachwerk.night-ink}"
+    },
+    "muted": {
+      "$value": "{palette.fachwerk.night-grey}"
+    },
+    "line": {
+      "$value": "{palette.fachwerk.night-line}"
+    },
+    "status-ok": {
+      "$value": "{palette.fachwerk.night-ink}"
+    },
+    "status-busy": {
+      "$value": "{palette.fachwerk.night-grey}"
+    },
+    "status-warn": {
+      "$value": "{palette.fachwerk.night-ochre}"
+    },
+    "status-crit": {
+      "$value": "{palette.fachwerk.night-red-light}"
+    }
+  },
+  "scrollbar": {
+    "$type": "color",
+    "thumb-hover": {
+      "$value": "{palette.fachwerk.night-ink}",
+      "$description": "The lifted grey is already the resting thumb; the pointer turns it to oak"
+    }
+  },
+  "action": {
+    "$type": "color",
+    "primary": {
+      "$value": "{palette.fachwerk.night-terracotta}",
+      "$description": "Brick: the one primary action and the active cell"
+    },
+    "primary-hover": {
+      "$value": "{palette.fachwerk.night-terracotta}",
+      "$description": "No hover tint: brick stays brick"
+    },
+    "primary-ink": {
+      "$value": "{palette.fachwerk.night-paper}"
+    },
+    "text": {
+      "$value": "{palette.fachwerk.night-terracotta-light}",
+      "$description": "Brick as text, deepened to hold 4.5:1 on shaded plaster"
+    },
+    "text-hover": {
+      "$value": "{palette.fachwerk.night-ink}"
+    },
+    "danger": {
+      "$value": "{palette.fachwerk.night-red}"
+    },
+    "danger-ink": {
+      "$value": "{palette.fachwerk.night-paper}"
+    }
+  },
+  "status": {
+    "$type": "color",
+    "ok": {
+      "$value": "{palette.fachwerk.night-ink}",
+      "$description": "No green in direction B: done and mastered are the oak ink, the glyph carries it"
+    },
+    "busy": {
+      "$value": "{palette.fachwerk.night-grey}"
+    },
+    "warn": {
+      "$value": "{palette.fachwerk.night-ochre}",
+      "$description": "Ochre marks what is due"
+    },
+    "crit": {
+      "$value": "{palette.fachwerk.night-red-light}"
+    },
+    "off": {
+      "$value": "{palette.fachwerk.night-grey}"
+    },
+    "unknown": {
+      "$value": "{palette.fachwerk.night-grey}"
+    }
+  },
+  "skeleton": {
+    "$type": "color",
+    "base": {
+      "$value": "{palette.fachwerk.night-shade}"
+    },
+    "highlight": {
+      "$value": "{palette.fachwerk.night-shade-light}"
+    }
+  },
+  "focus": {
+    "$type": "color",
+    "ring": {
+      "$value": "{palette.fachwerk.night-terracotta}",
+      "$description": "The ring is brick (fachwerk --ring)"
+    }
+  },
+  "panel": {
+    "$type": "color",
+    "$description": "Pages sit on the plaster wall; their Gefache are the cards (fachwerk's content column is bg-background).",
+    "main": { "$value": "{surface.page}" }
+  },
+  "nav": {
+    "$type": "color",
+    "$description": "The active rail row and phone tab are a brick cell, as the fachwerk rail draws them (RAIL_ACTIVE, TAB_ACTIVE).",
+    "active": { "$value": "{action.primary}" },
+    "active-ink": { "$value": "{action.primary-ink}" },
+    "active-icon": { "$value": "{action.primary-ink}" },
+    "active-meta": { "$value": "{action.primary-ink}" },
+    "tab": { "$value": "{action.primary}" },
+    "tab-ink": { "$value": "{action.primary-ink}" }
+  }
+}

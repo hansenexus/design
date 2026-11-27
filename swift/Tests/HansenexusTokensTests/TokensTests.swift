@@ -38,7 +38,9 @@ final class TokensTests: XCTestCase {
     XCTAssertEqual(HNTypeScale.body, HNTypeScale.of(.hansenexus).body)
     XCTAssertEqual(HNTypeScale.body.size, 16)
     XCTAssertEqual(HNTextRole(rawValue: "body-sm"), .bodySm)
-    XCTAssertEqual(HNTextRole.allCases.count, 7)
+    // Seven reading roles plus four control roles (design#243), the same in every theme.
+    XCTAssertEqual(HNTextRole.allCases.count, 11)
+    XCTAssertEqual(dense[.controlMd], HNTypeScale.of(.hansenexus)[.controlMd])
     // Sizes grow with the role, in every theme.
     for theme in HNTheme.allCases {
       let scale = HNTypeScale.of(theme)
@@ -113,7 +115,10 @@ final class TokensTests: XCTestCase {
   }
 
   func testDensity() {
-    XCTAssertEqual(HNSize.of(.kommandant), HNSize(row: 36, target: 24))
+    XCTAssertEqual(HNSize.of(.kommandant).row, 36)
+    XCTAssertEqual(HNSize.of(.kommandant).target, 24)
+    XCTAssertEqual(HNSize.of(.kommandant).controlMd, 36)
+    XCTAssertEqual(HNSize.of(.touch).field, 40)
     XCTAssertEqual(HNSize.of(HNTheme.hansenexus).row, 48)
     XCTAssertEqual(HNSize.of(.touch).target, 44)
     XCTAssertEqual(HNSize.of(.compact), HNSize.of(.kommandant))

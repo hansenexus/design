@@ -280,7 +280,7 @@ export function Combobox({
             onKeyDown={handleKeyDown}
             onBlur={handleBlur}
             className={cx(
-              "h-10 w-full min-w-0 rounded-hn-md border border-hn-line-strong bg-hn-surface-page pr-9 pl-3 font-hn-sans text-sm text-hn-ink-primary",
+              "h-hn-field w-full min-w-0 rounded-hn-control-field border border-hn-line-strong bg-hn-surface-page pr-9 pl-hn-field-pad font-hn-sans text-hn-control-md text-hn-ink-primary",
               "placeholder:text-hn-ink-muted disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-hn-status-crit",
               focusRing
             )}
@@ -325,7 +325,7 @@ export function Combobox({
                 onMouseMove={() => (option.disabled ? undefined : setActive(index))}
                 onClick={() => pick(option)}
                 className={cx(
-                  "relative flex min-h-hn-target cursor-pointer flex-col justify-center rounded-hn-sm py-1.5 pr-8 pl-2.5 text-sm text-hn-ink-body select-none",
+                  "relative flex min-h-hn-target cursor-pointer flex-col justify-center rounded-hn-control-item py-1.5 pr-8 pl-2.5 text-sm text-hn-ink-body select-none",
                   "data-active:bg-hn-surface-raised data-active:text-hn-ink-primary aria-selected:text-hn-ink-primary",
                   "aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
                 )}

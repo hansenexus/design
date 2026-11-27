@@ -445,7 +445,7 @@ describe("swift", () => {
     const swift = await generateSwift();
     expect(swift).toContain("static let kommandantDark = HNColors(");
     expect(swift).toContain("page: HNRGBA(0x16140F)");
-    expect(swift).toContain("case .touch: return HNSize(row: 56, target: 44)");
+    expect(swift).toMatch(/case .touch: return HNSize\(.*field: 40, .*row: 56, target: 44\)/);
     expect(swift).toContain("public static let s4: Double = 16");
     expect(swift).toContain("public let terminal: Terminal");
     expect(swift).toContain("brightMagenta: HNRGBA(0xEFC0E3)");

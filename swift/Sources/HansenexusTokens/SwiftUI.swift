@@ -126,6 +126,10 @@ extension HNTextRole {
     case .title: .headline
     case .heading: .title3
     case .display: .largeTitle
+    case .controlXs: .caption
+    case .controlSm: .footnote
+    case .controlMd: .subheadline
+    case .controlLg: .callout
     }
   }
 }

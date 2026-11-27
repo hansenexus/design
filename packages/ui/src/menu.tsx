@@ -16,9 +16,9 @@ export const MenuRadioGroup = MenuPrimitive.RadioGroup;
  */
 export const MENU_STYLES = {
   content:
-    "z-50 flex min-w-44 flex-col gap-px overflow-hidden rounded-hn-lg border border-hn-line-strong bg-hn-surface-card p-1 font-hn-sans shadow-hn-overlay",
+    "z-50 flex min-w-44 flex-col gap-px overflow-hidden rounded-hn-control-overlay border-(length:--hn-border-frame) border-hn-line-strong bg-hn-surface-card p-1 font-hn-sans shadow-hn-overlay",
   item:
-    "relative flex h-8 min-h-hn-target cursor-pointer items-center gap-2.5 rounded-hn-sm px-2.5 text-sm text-hn-ink-body outline-none select-none " +
+    "relative flex h-8 min-h-hn-target cursor-pointer items-center gap-2.5 rounded-hn-control-item px-2.5 text-sm text-hn-ink-body outline-none select-none " +
     "data-highlighted:bg-hn-surface-raised data-highlighted:text-hn-ink-primary " +
     "data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0",
   danger: "text-hn-status-crit data-highlighted:text-hn-status-crit",

@@ -148,7 +148,7 @@ export function KpiCardSkeleton({
     <SkeletonGroup
       label={label ?? LAYOUT_COPY[locale].loading}
       className={cx(
-        "flex flex-col gap-3 rounded-hn-lg border border-hn-line-subtle bg-hn-surface-card p-4",
+        "flex flex-col gap-3 rounded-hn-control-card border-(length:--hn-border-frame) border-hn-line-subtle bg-hn-surface-card p-4",
         className
       )}
       {...props}

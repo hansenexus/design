@@ -12,7 +12,7 @@ export function Textarea({ mono = false, rows = 4, className, ...props }: Textar
     <textarea
       rows={rows}
       className={cx(
-        "block min-h-20 w-full min-w-0 resize-y rounded-hn-md border border-hn-line-strong bg-hn-surface-page px-3 py-2 text-sm leading-relaxed text-hn-ink-primary",
+        "block min-h-20 w-full min-w-0 resize-y rounded-hn-control-field border border-hn-line-strong bg-hn-surface-page px-hn-field-pad py-2 text-hn-control-md leading-relaxed text-hn-ink-primary",
         "placeholder:text-hn-ink-muted disabled:cursor-not-allowed disabled:opacity-50 read-only:bg-hn-surface-band",
         "aria-invalid:border-hn-status-crit",
         mono ? "font-hn-mono" : "font-hn-sans",

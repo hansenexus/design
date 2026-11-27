@@ -1,0 +1,128 @@
+{
+  "palette": {
+    "$type": "color",
+    "fachwerk": {
+      "$description": "fachwerk direction B (fachwerk packages/ui/src/styles/theme.css). Authored there in oklch; the hex here is the sRGB conversion. Only this direction's tokens reference it.",
+      "paper": {
+        "$value": "#f5f1ea",
+        "$description": "oklch(0.96 0.01 80): plaster, the page"
+      },
+      "limewash": {
+        "$value": "#fcfaf6",
+        "$description": "oklch(0.985 0.006 80): the infill panel (card)"
+      },
+      "plaster-deep": {
+        "$value": "#eae4da",
+        "$description": "oklch(0.92 0.015 80): a shaded panel"
+      },
+      "ground": {
+        "$value": "#ece7df",
+        "$description": "oklch(0.93 0.012 80): the yard beside the column"
+      },
+      "ink": {
+        "$value": "#34251a",
+        "$description": "oklch(0.28 0.03 60): oak, text and every beam"
+      },
+      "grey": {
+        "$value": "#706052",
+        "$description": "oklch(0.5 0.03 60): oak grey, secondary text"
+      },
+      "timber": {
+        "$value": "#cbbba9",
+        "$description": "oklch(0.8 0.03 70): weathered timber, chart-5"
+      },
+      "terracotta": {
+        "$value": "#b74b21",
+        "$description": "oklch(0.55 0.15 40): brick, the one action colour"
+      },
+      "terracotta-deep": {
+        "$value": "#9f3d15",
+        "$description": "oklch(0.49 0.14 40): brick as text, 4.5:1 on the ochre wash and shaded plaster"
+      },
+      "ochre": {
+        "$value": "#e9b452",
+        "$description": "oklch(0.8 0.13 80): the lit panel, what is due"
+      },
+      "ochre-deep": {
+        "$value": "#845a0f",
+        "$description": "oklch(0.5 0.1 75): ochre as a status colour on plaster (text and glyphs)"
+      },
+      "ochre-wash": {
+        "$value": "#e9d5b3",
+        "$description": "oklch(0.88 0.05 80): hover and the active row"
+      },
+      "red": {
+        "$value": "#c2181d",
+        "$description": "oklch(0.52 0.2 27): destructive"
+      },
+      "night-ground": {
+        "$value": "#130e0b",
+        "$description": "oklch(0.17 0.01 60): the yard at night"
+      },
+      "night-paper": {
+        "$value": "#1a1512",
+        "$description": "oklch(0.2 0.01 60): the charred wall"
+      },
+      "night-limewash": {
+        "$value": "#241e1a",
+        "$description": "oklch(0.24 0.012 60): the panel"
+      },
+      "night-deep": {
+        "$value": "#342c26",
+        "$description": "oklch(0.3 0.015 60): a shaded panel"
+      },
+      "night-line": {
+        "$value": "#66503f",
+        "$description": "oklch(0.45 0.04 60): the lit beam, decoration"
+      },
+      "night-ink": {
+        "$value": "#ece7dd",
+        "$description": "oklch(0.93 0.015 85): lime-wash text"
+      },
+      "night-grey": {
+        "$value": "#aca397",
+        "$description": "oklch(0.72 0.02 75): secondary text"
+      },
+      "night-terracotta": {
+        "$value": "#eb7a52",
+        "$description": "oklch(0.7 0.15 40): lifted brick, dark text"
+      },
+      "night-ochre": {
+        "$value": "#f0ba59",
+        "$description": "oklch(0.82 0.13 80): ochre stays lit"
+      },
+      "night-ochre-wash": {
+        "$value": "#4a321b",
+        "$description": "oklch(0.34 0.05 65): hover"
+      },
+      "night-red": {
+        "$value": "#f75e54",
+        "$description": "oklch(0.68 0.19 27): destructive, dark text"
+      },
+      "plaster-shade": {
+        "$value": "#d2c9bd",
+        "$description": "oklch(0.84 0.02 75): skeleton base"
+      },
+      "plaster-shade-light": {
+        "$value": "#d9cfc3",
+        "$description": "oklch(0.86 0.02 75): skeleton highlight"
+      },
+      "night-shade": {
+        "$value": "#473a30",
+        "$description": "oklch(0.36 0.025 60): skeleton base on dark"
+      },
+      "night-shade-light": {
+        "$value": "#52453a",
+        "$description": "oklch(0.4 0.025 60): skeleton highlight on dark"
+      },
+      "night-terracotta-light": {
+        "$value": "#f08d6a",
+        "$description": "oklch(0.74 0.13 40): brick as text on dark, 4.5:1 on the hover wash"
+      },
+      "night-red-light": {
+        "$value": "#f66d62",
+        "$description": "oklch(0.7 0.17 27): crit as a status colour on dark, 4.5:1 on shaded plaster"
+      }
+    }
+  }
+}

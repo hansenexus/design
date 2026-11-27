@@ -1,6 +1,6 @@
 {
   "name": "@hansenexus/theme-fachwerk",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "fachwerk's theme pack for the hansenexus design system: direction B \"Fachwerk\" as recipe tokens (2px beams, square controls, no shadows, brace motifs) and skins for @hansenexus/ui.",
   "license": "MIT",
   "keywords": [
@@ -42,8 +42,8 @@
     "prepublishOnly": "bun ../../scripts/theme-build.ts"
   },
   "peerDependencies": {
-    "@hansenexus/tokens": "^0.9.0",
-    "@hansenexus/ui": "^0.5.0",
+    "@hansenexus/tokens": "^0.13.0",
+    "@hansenexus/ui": "^0.7.0",
     "react": "^19.0.0"
   },
   "devDependencies": {

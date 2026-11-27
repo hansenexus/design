@@ -78,7 +78,7 @@ vars.text.body.size; // "var(--hn-text-body)"
 
 ## Type scale
 
-`semantic/type.json` names seven roles, each a size, line height and weight, no family:
+`semantic/type.json` names seven roles plus four control roles, each a size, line height and weight, no family:
 
 | Role | Default (sites) | kommandant (dense) | Weight | For |
 | --- | --- | --- | --- | --- |
@@ -89,6 +89,7 @@ vars.text.body.size; // "var(--hn-text-body)"
 | `title` | 20 / 28 | 15 / 20 | 600 | card and panel titles |
 | `heading` | 24 / 32 | 18 / 24 | 600 | page headings |
 | `display` | 36 / 44 | 28 / 34 | 600 | hero titles, big numbers |
+| `control-xs` … `control-lg` | 12/16, 13/19.5, 14/20, 15/22.5 | the same | 400 | text in controls and fields (design#243); a Button sets its own semibold |
 
 CSS: `--hn-text-<role>` (size), `--hn-text-<role>--line-height`, `--hn-text-<role>--font-weight`,
 following the theme. Tailwind: `text-hn-<role>`. Swift: `Font.hn(.body)`, `HNTypeScale.of(theme)`.
@@ -154,6 +155,7 @@ them.
 | --- | --- | --- |
 | `border.width` | `1px` | Tailwind's bare `border`, `border-t`, `divide-x` and the rest (`--default-border-width`) |
 | `border.style` | `solid` | the same utilities (`--tw-border-style`, set in the base layer; `border-dashed` still wins) |
+| `border.frame` | `border.width` | `border-(length:--hn-border-frame)`: the outline of cards, accordions, tables, overlays and dialogs, so a pack can frame heavier than its rules (design#243) |
 | `elevation.raised` | `shadow.lift` | `shadow-hn-raised`: the slider thumb |
 | `elevation.overlay` | `shadow.lift` | `shadow-hn-overlay`: menus, popovers, selects, tooltips, toasts, dialogs, sheets, ⌘K |
 | `elevation.panel` | `shadow.lift` | `shadow-hn-panel`: the shell's floating panels |
@@ -161,6 +163,16 @@ them.
 | `control.dot` | `radius.pill` | `rounded-hn-control-dot`: radio, switch, slider, scroll thumb, usage bar, menu radio dot, sheet grabber |
 | `control.bar` | `3px` | `rounded-hn-control-bar`: progress and meter tracks |
 | `control.chip` | `radius.pill` | `rounded-hn-control-chip`: badge, status badge |
+| `control.button` | `radius.md` | `rounded-hn-control-button`: Button sm to lg and icon sizes, Toggle, ToggleGroup ends, Pagination (design#243) |
+| `control.item` | `radius.sm` | `rounded-hn-control-item`: Button xs, menu, select, combobox and command rows, small close buttons |
+| `control.field` | `radius.md` | `rounded-hn-control-field`: Input, Textarea, Select trigger, Combobox, DatePicker trigger |
+| `control.card` | `radius.lg` | `rounded-hn-control-card`: Card, Accordion, Table, KpiCard |
+| `control.overlay` | `radius.lg` | `rounded-hn-control-overlay`: Popover, menu, select list, toast |
+| `control.dialog` | `radius.xl` | `rounded-hn-control-dialog`: Dialog, AlertDialog, command palette, the sheet's free edge |
+| `size.control-xs`…`lg` | 24, 32, 36, 48 px | `h-hn-control-*`, `size-hn-control-*`: control heights, per density (below) |
+| `size.control-pad-xs`…`lg` | 8, 12, 14, 16 px | `px-hn-control-pad-*`: inline padding of those controls |
+| `size.field`, `size.field-pad` | 40, 12 px | `h-hn-field`, `px-hn-field-pad`: text fields |
+| `text.control-xs`…`lg` | 12/16, 13/19.5, 14/20, 15/22.5 | `text-hn-control-*`: control and field type (type scale, below) |
 | `motif.hatch` | `none` | `bg-(image:--hn-motif-hatch)`: progress and meter tracks |
 | `motif.brace`, `motif.cross` | `none` | pack skins |
 | `radius.*`, `size.*` (density) | | as before: the corner scale and the theme's density |
@@ -173,6 +185,13 @@ them.
 | `shell.nav-divider` | `0px` | the rule under each nav row and between phone tabs |
 | `shell.brand-row` | `32px` | the brand row's height at the head of the rail |
 | `shell.measure`, `shell.board` | `65ch`, `72rem` | the session layout's slot width: the reading measure for text, the wider board for cards or a quiz (design#239); CSS lengths, web only |
+
+Together these are a theme's *mask* (design#243): what shape and size its components take,
+apart from colour. Every default is the literal the atoms carried before, so the core themes and
+fachwerk look the same; `themes/fachwerk/rund` is the proof preset that changes only the mask.
+The control sizes sit in every density scale (`primitives/density.json`) at the same values, and
+each theme maps them next to `size.row` and `size.target`, so `data-density` can resize controls
+later without a component edit.
 
 Control shape is a radius, so a square pack sets the `control.*` radii to its sawn edge and a
 round one keeps the pills; `control.box` and `control.dot` follow `radius.sm` and `radius.pill`

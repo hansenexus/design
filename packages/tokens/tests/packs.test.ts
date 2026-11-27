@@ -156,6 +156,89 @@ describe("recipes", () => {
     expect(t.get("control.dot")).toBe("999px");
   });
 
+  // design#243: the mask (control size, padding, type, per-family corners, frame weight) is
+  // tokens too. Their defaults are the literals the atoms carried before, in every theme and
+  // pack direction but the rund proof, so adopting them changes nothing on screen.
+  const MASK_DEFAULTS: Record<string, string> = {
+    "size.control-xs": "24px",
+    "size.control-sm": "32px",
+    "size.control-md": "36px",
+    "size.control-lg": "48px",
+    "size.control-pad-xs": "8px",
+    "size.control-pad-sm": "12px",
+    "size.control-pad-md": "14px",
+    "size.control-pad-lg": "16px",
+    "size.field": "40px",
+    "size.field-pad": "12px",
+  };
+  const TYPE_DEFAULTS: Record<string, [string, string]> = {
+    "text.control-xs": ["12px", "16px"],
+    "text.control-sm": ["13px", "19.5px"],
+    "text.control-md": ["14px", "20px"],
+    "text.control-lg": ["15px", "22.5px"],
+  };
+
+  test("mask defaults (design#243) are today's literals and radius steps in every theme but rund", async () => {
+    const themes = allThemes().filter((t) => t !== "fachwerk-rund");
+    expect(themes).toContain("fachwerk");
+    for (const theme of themes) {
+      for (const mode of MODES) {
+        const all = await resolveTokens(theme, mode);
+        const t = new Map(all.map((x) => [x.path, x.value]));
+        for (const [path, value] of Object.entries(MASK_DEFAULTS)) expect(t.get(path)).toBe(value);
+        for (const [path, [size, lh]] of Object.entries(TYPE_DEFAULTS)) {
+          const raw = all.find((x) => x.path === path)?.raw;
+          expect(raw).toEqual({ fontSize: size, lineHeight: lh, fontWeight: 400 });
+        }
+        expect(t.get("control.button")).toBe(t.get("radius.md"));
+        expect(t.get("control.item")).toBe(t.get("radius.sm"));
+        expect(t.get("control.field")).toBe(t.get("radius.md"));
+        expect(t.get("control.card")).toBe(t.get("radius.lg"));
+        expect(t.get("control.overlay")).toBe(t.get("radius.lg"));
+        expect(t.get("control.dialog")).toBe(t.get("radius.xl"));
+        expect(t.get("border.frame")).toBe(t.get("border.width"));
+      }
+    }
+  });
+
+  test("every density scale carries the control sizes, so data-density can change them", async () => {
+    const { resolveDensities } = await import("../scripts/resolve");
+    const densities = await resolveDensities();
+    for (const tokens of Object.values(densities)) {
+      const t = new Map(tokens.map((x) => [x.path, x.value]));
+      for (const [path, value] of Object.entries(MASK_DEFAULTS)) expect(t.get(path)).toBe(value);
+    }
+  });
+
+  test("fachwerk-rund changes the mask, not the colour: the second preset proves the recipe", async () => {
+    for (const mode of MODES) {
+      const base = await resolveTokens("fachwerk", mode);
+      const rund = new Map((await resolveTokens("fachwerk-rund", mode)).map((x) => [x.path, x]));
+      for (const t of base.filter((x) => x.type === "color"))
+        expect(rund.get(t.path)?.value).toBe(t.value);
+      const v = (path: string) => rund.get(path)?.value;
+      expect(v("control.button")).toBe("999px");
+      expect(v("control.card")).toBe("18px");
+      expect(v("border.width")).toBe("1px");
+      expect(v("border.frame")).toBe("2px");
+      expect(v("size.control-md")).toBe("40px");
+      expect(rund.get("text.control-md")?.raw).toMatchObject({ fontSize: "15px" });
+    }
+  });
+
+  test("tailwind.css: the mask tokens are utilities (h-hn-control-md, rounded-hn-control-card, text-hn-control-md)", async () => {
+    await built;
+    const tw = readFileSync(join(dist, "tailwind.css"), "utf8");
+    expect(tw).toContain("--spacing-hn-control-md: var(--hn-size-control-md);");
+    expect(tw).toContain("--spacing-hn-field-pad: var(--hn-size-field-pad);");
+    expect(tw).toContain("--radius-hn-control-card: var(--hn-control-card);");
+    expect(tw).toContain(
+      "--text-hn-control-md--line-height: var(--hn-text-control-md--line-height);"
+    );
+    // border.frame is no utility: atoms draw border-(length:--hn-border-frame).
+    expect(readFileSync(join(dist, "tokens.css"), "utf8")).toContain("--hn-border-frame: 1px;");
+  });
+
   test("tailwind.css: border width and style read the recipe, elevation and control are utilities", async () => {
     await built;
     const tw = readFileSync(join(dist, "tailwind.css"), "utf8");

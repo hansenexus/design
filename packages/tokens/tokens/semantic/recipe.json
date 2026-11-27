@@ -1,8 +1,13 @@
 {
   "border": {
-    "$description": "Recipe (design#143): how a line is drawn. Tailwind's bare border, border-t, divide-x and the rest read border.width, so a pack that draws 2px beams changes one token, not the components.",
+    "$description": "Recipe (design#143, design#243): how a line is drawn. Tailwind's bare border, border-t, divide-x and the rest read border.width, so a pack that draws 2px beams changes one token, not the components. frame is the weight of what encloses a surface (card, overlay, dialog): a pack draws hairline rules inside a heavier frame by setting it apart from width.",
     "width": { "$type": "dimension", "$value": "1px" },
-    "style": { "$type": "strokeStyle", "$value": "solid" }
+    "style": { "$type": "strokeStyle", "$value": "solid" },
+    "frame": {
+      "$type": "dimension",
+      "$value": "{border.width}",
+      "$description": "Outline of a card, accordion, table, popover, menu, select list, toast, dialog and the command palette"
+    }
   },
   "elevation": {
     "$type": "shadow",
@@ -22,14 +27,32 @@
   },
   "control": {
     "$type": "dimension",
-    "$description": "Recipe: control shape as corner radii. A square pack sets them all to its sawn edge; a round pack keeps the pills.",
+    "$description": "Recipe (design#143, design#243): control shape as corner radii, per family. A square pack sets them all to its sawn edge; a round pack keeps the pills or rounds further.",
     "box": { "$value": "{radius.sm}", "$description": "Checkbox" },
     "dot": {
       "$value": "{radius.pill}",
       "$description": "Radio, switch track and thumb, slider track and thumb, menu radio dot, scroll thumb, sheet grabber, usage bar"
     },
     "bar": { "$value": "3px", "$description": "Progress and meter tracks" },
-    "chip": { "$value": "{radius.pill}", "$description": "Badge and status badge" }
+    "chip": { "$value": "{radius.pill}", "$description": "Badge and status badge" },
+    "button": {
+      "$value": "{radius.md}",
+      "$description": "Button sm to lg and its icon sizes, Toggle, ToggleGroup ends, Pagination"
+    },
+    "item": {
+      "$value": "{radius.sm}",
+      "$description": "Button xs, rows in menus, selects, comboboxes and the command palette, small close buttons"
+    },
+    "field": {
+      "$value": "{radius.md}",
+      "$description": "Input, Textarea, Select trigger, Combobox input, DatePicker trigger"
+    },
+    "card": { "$value": "{radius.lg}", "$description": "Card, Accordion, Table frame, KpiCard" },
+    "overlay": { "$value": "{radius.lg}", "$description": "Popover, menu, select list, toast" },
+    "dialog": {
+      "$value": "{radius.xl}",
+      "$description": "Dialog, AlertDialog, the command palette, the sheet's free edge"
+    }
   },
   "motif": {
     "$type": "string",

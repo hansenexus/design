@@ -18,18 +18,18 @@ const VARIANT: Record<ButtonVariant, string> = {
     "bg-hn-action-danger text-hn-action-danger-ink border-hn-action-danger hover:brightness-110",
 };
 
-// Gap, radius and icon size live here, not in the base classes: cx appends without merging, so
+// Height, padding, text, radius (design#243 recipe tokens), gap and icon size live here, not in the base classes: cx appends without merging, so
 // two utilities for one property would race on stylesheet order. Compact and icon sizes never
 // drop below the density's minimum target (min-h-hn-target, min-w-hn-target).
 const SIZE: Record<ButtonSize, string> = {
-  xs: "h-6 gap-1 rounded-hn-sm px-2 text-xs [&_svg]:size-3.5",
-  sm: "h-8 gap-1.5 rounded-hn-md px-3 text-[13px] [&_svg]:size-4",
-  md: "h-9 gap-2 rounded-hn-md px-3.5 text-sm [&_svg]:size-4",
-  lg: "h-12 gap-2 rounded-hn-md px-4 text-[15px] [&_svg]:size-4",
-  "icon-xs": "size-6 min-w-hn-target rounded-hn-sm p-0 [&_svg]:size-3.5",
-  "icon-sm": "size-8 min-w-hn-target rounded-hn-md p-0 [&_svg]:size-4",
-  icon: "size-9 min-w-hn-target rounded-hn-md p-0 [&_svg]:size-4",
-  "icon-lg": "size-12 min-w-hn-target rounded-hn-md p-0 [&_svg]:size-5",
+  xs: "h-hn-control-xs gap-1 rounded-hn-control-item px-hn-control-pad-xs text-hn-control-xs [&_svg]:size-3.5",
+  sm: "h-hn-control-sm gap-1.5 rounded-hn-control-button px-hn-control-pad-sm text-hn-control-sm [&_svg]:size-4",
+  md: "h-hn-control-md gap-2 rounded-hn-control-button px-hn-control-pad-md text-hn-control-md [&_svg]:size-4",
+  lg: "h-hn-control-lg gap-2 rounded-hn-control-button px-hn-control-pad-lg text-hn-control-lg [&_svg]:size-4",
+  "icon-xs": "size-hn-control-xs min-w-hn-target rounded-hn-control-item p-0 [&_svg]:size-3.5",
+  "icon-sm": "size-hn-control-sm min-w-hn-target rounded-hn-control-button p-0 [&_svg]:size-4",
+  icon: "size-hn-control-md min-w-hn-target rounded-hn-control-button p-0 [&_svg]:size-4",
+  "icon-lg": "size-hn-control-lg min-w-hn-target rounded-hn-control-button p-0 [&_svg]:size-5",
 };
 
 export type ButtonProps = ComponentProps<"button"> & {

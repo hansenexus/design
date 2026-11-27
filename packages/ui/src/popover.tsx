@@ -31,7 +31,7 @@ export function PopoverContent({
         align={align}
         sideOffset={sideOffset}
         className={cx(
-          "z-50 rounded-hn-lg border border-hn-line-strong bg-hn-surface-card font-hn-sans text-hn-ink-body shadow-hn-overlay outline-none",
+          "z-50 rounded-hn-control-overlay border-(length:--hn-border-frame) border-hn-line-strong bg-hn-surface-card font-hn-sans text-hn-ink-body shadow-hn-overlay outline-none",
           className
         )}
         {...props}
