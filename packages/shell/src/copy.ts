@@ -2,16 +2,35 @@ import type { StateLocale } from "@hansenexus/ui";
 
 /** The shell's own words; the palette's come from @hansenexus/ui's STATE_COPY.command. */
 export type ShellCopy = {
-  /** The nav landmark. */
+  /** The nav landmark, and the nav drawer's heading. */
   nav: string;
-  /** The context pane landmark. */
+  /** The aside landmark (the right column), and the aside sheet's heading. */
   context: string;
+  /** The aside toggle while the aside is hidden. */
   showContext: string;
+  /** The aside toggle while the aside is shown. */
   hideContext: string;
   /** The button that opens the ⌘K container, for touch and for anyone who does not know ⌘K. */
   openCommand: string;
-  /** The phone tab that opens the whole nav when it has more rows than tabs. */
+  /** @deprecated 0.2's phone More tab; the 0.3 shell has no tab bar. Kept for 0.2 callers. */
   more: string;
+  /** The header's menu button that opens the nav drawer under 768 px of shell width. */
+  openNav: string;
+  /** The close button of the nav drawer and the aside sheet. */
+  close: string;
+  /** The skip link, the first stop of the keyboard, to the page's slot. */
+  skip: string;
+  /** The full layout's back link, when the page gives it no label of its own. */
+  back: string;
+  /** The session header's exit button (×). */
+  exit: string;
+  /** The session's progress bar, when the page gives it no name of its own. */
+  progress: string;
+  /** The confirm before an exit that would lose progress: heading, body, leave, stay. */
+  exitConfirmTitle: string;
+  exitConfirmBody: string;
+  exitLeave: string;
+  exitStay: string;
 };
 
 export const SHELL_COPY: Record<StateLocale, ShellCopy> = {
@@ -22,6 +41,16 @@ export const SHELL_COPY: Record<StateLocale, ShellCopy> = {
     hideContext: "Hide context panel",
     openCommand: "Search or run a command",
     more: "More",
+    openNav: "Open navigation",
+    close: "Close",
+    skip: "Skip to content",
+    back: "Back",
+    exit: "Exit session",
+    progress: "Progress",
+    exitConfirmTitle: "Leave this session?",
+    exitConfirmBody: "Your progress in this session will be lost.",
+    exitLeave: "Leave",
+    exitStay: "Stay",
   },
   de: {
     nav: "App",
@@ -30,5 +59,15 @@ export const SHELL_COPY: Record<StateLocale, ShellCopy> = {
     hideContext: "Kontextbereich ausblenden",
     openCommand: "Suchen oder Befehl ausführen",
     more: "Mehr",
+    openNav: "Navigation öffnen",
+    close: "Schließen",
+    skip: "Zum Inhalt springen",
+    back: "Zurück",
+    exit: "Sitzung beenden",
+    progress: "Fortschritt",
+    exitConfirmTitle: "Sitzung verlassen?",
+    exitConfirmBody: "Dein Fortschritt in dieser Sitzung geht verloren.",
+    exitLeave: "Verlassen",
+    exitStay: "Bleiben",
   },
 };

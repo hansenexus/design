@@ -27,7 +27,7 @@
     },
     "packages/shell": {
       "name": "@hansenexus/shell",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "dependencies": {
         "radix-ui": "1.6.7",
       },
@@ -60,7 +60,7 @@
     },
     "packages/tokens": {
       "name": "@hansenexus/tokens",
-      "version": "0.11.0",
+      "version": "0.12.0",
       "devDependencies": {
         "style-dictionary": "5.5.5",
       },

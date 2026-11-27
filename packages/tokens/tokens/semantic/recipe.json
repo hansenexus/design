@@ -77,6 +77,16 @@
     "brand-row": {
       "$value": "32px",
       "$description": "Height of the brand row at the head of the rail"
+    },
+    "measure": {
+      "$type": "string",
+      "$value": "65ch",
+      "$description": "Max width of the session layout's slot for text: the reading measure (design#239). A CSS length, web only"
+    },
+    "board": {
+      "$type": "string",
+      "$value": "72rem",
+      "$description": "Max width of the session layout's slot for cards or a quiz board (design#239). A CSS length, web only"
     }
   },
   "scrollbar": {

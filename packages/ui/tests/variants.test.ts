@@ -253,7 +253,7 @@ describe("shell-layout", () => {
     const html = renderToStaticMarkup(category.fixtures[0].render(floating?.variant));
     expect(html).toContain('data-glass="off"');
     expect(html).toContain('data-shell=""');
-    expect(html.match(/data-shell-panel="(?:nav|header|main|context)"/g)).toHaveLength(4);
+    expect(html.match(/data-shell-panel="(?:nav|header|main|aside)"/g)).toHaveLength(4);
   });
 
   test("the floating-panels glass toggle turns every fixture translucent and blurred", async () => {

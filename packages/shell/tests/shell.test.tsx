@@ -10,21 +10,27 @@ import {
   activeNavId,
   commandGroups,
   findCommand,
+  keyboardInset,
   navCommands,
   navVisible,
   PaletteBody,
   runCommand,
+  SHELL_BREAKPOINTS,
   SHELL_PANEL,
   Shell,
+  ShellAsideToggle,
   type ShellCommandSet,
   ShellCommandTrigger,
   ShellContextToggle,
+  ShellMenuButton,
   ShellNav,
   type ShellNavItem,
   type ShellNavLink,
   type ShellPalette,
+  shellWidthOf,
   visibleNavItems,
 } from "../src";
+import { swipedClosed } from "../src/overlay";
 
 const ROOT = resolve(import.meta.dir, "..");
 const UI = resolve(ROOT, "../ui");
@@ -103,6 +109,8 @@ describe("package", () => {
       "Shell",
       "ShellNav",
       "ShellContextToggle",
+      "ShellAsideToggle",
+      "ShellMenuButton",
       "ShellCommandTrigger",
       "useShell",
       "navVisible",
@@ -138,26 +146,32 @@ describe("slots", () => {
   const slots = {
     nav: <ShellNav items={NAV} activeId="machines" />,
     header: <span>Header slot</span>,
-    main: <p>Main slot</p>,
+    children: <p>Main slot</p>,
   };
 
-  test("nav, header and main in their landmarks, each a panel", () => {
+  test("nav, header and slot in their landmarks, each a panel", () => {
     const html = render(<Shell {...slots} />);
     expect(html).toContain('<nav aria-label="App" data-shell-panel="nav"');
     expect(html).toMatch(/<header data-shell-panel="header"[^>]*>.*Header slot/);
-    expect(html).toMatch(/<main data-shell-panel="main"[^>]*>.*Main slot/);
+    expect(html).toMatch(/<main id="[^"]+" tabindex="-1" data-shell-panel="main"[^>]*>.*Main slot/);
     expect(html).not.toContain("<aside");
-    expect(html.match(/data-shell-panel=/g)).toHaveLength(3);
+    expect(html).not.toContain("<footer");
+    expect(html.match(/data-shell-panel=/g)).toHaveLength(4); // nav, page, header, main
     // design#152: main's fill is panel.main alone; a second bg utility would win by sort order.
-    const mainTag = html.match(/<main data-shell-panel="main"[^>]*>/)?.[0] ?? "";
+    const mainTag = html.match(/<main [^>]*data-shell-panel="main"[^>]*>/)?.[0] ?? "";
     expect(mainTag).toContain("bg-hn-panel-main");
     expect(mainTag).not.toContain("bg-hn-surface-card");
-    // fachwerk#286: rail/tab bar and header are sticky, so the dev HUD pill dodges them.
+    // fachwerk#286: the nav column and the header are sticky, so the dev HUD pill dodges them.
     const navTag = html.match(/<nav aria-label="App" data-shell-panel="nav"[^>]*>/)?.[0] ?? "";
     const headerTag = html.match(/<header data-shell-panel="header"[^>]*>/)?.[0] ?? "";
     expect(navTag).toMatch(/\bsticky\b/);
     expect(headerTag).toMatch(/\bsticky\b/);
     expect(mainTag).not.toMatch(/\bsticky\b/);
+  });
+
+  test("0.2's main prop still fills the slot", () => {
+    const html = render(<Shell nav={slots.nav} header={slots.header} main={<p>Old main</p>} />);
+    expect(html).toMatch(/data-shell-panel="main"[^>]*>.*Old main/);
   });
 
   test("the shell is the template slot of a theme pack (design#143)", () => {
@@ -188,76 +202,314 @@ describe("slots", () => {
     expect(framed).toBe(`<div data-pack-frame="">${plain}</div>`);
   });
 
-  test("the context pane is optional, open by default and can start closed", () => {
-    const open = render(<Shell {...slots} contextPane={<p>Detail</p>} />);
-    expect(open).toMatch(/<aside aria-label="Context" data-shell-panel="context"[^>]*>.*Detail/);
-    const closed = render(
-      <Shell {...slots} contextPane={<p>Detail</p>} defaultContextOpen={false} />
+  test("a skip link to the slot comes first", () => {
+    const html = render(<Shell {...slots} />);
+    const id = html.match(/<main id="([^"]+)"/)?.[1];
+    expect(id).toBeDefined();
+    const skip = html.match(/<a href="#([^"]+)" data-shell-control="skip"[^>]*>([^<]+)</);
+    expect(skip?.[1]).toBe(id);
+    expect(skip?.[2]).toBe("Skip to content");
+    expect(html.indexOf('data-shell-control="skip"')).toBeLessThan(html.indexOf("<nav"));
+    // sr-only needs a positioned ancestor, or it scrolls the page sideways (vote 390 lesson).
+    expect(html).toMatch(/^<div data-shell=""[^>]*class="[^"]*\brelative\b/);
+    expect(render(<Shell {...slots} locale="de" />)).toContain("Zum Inhalt springen");
+  });
+
+  test("the footer bar is a contentinfo landmark under the slot, docked and safe-area aware", () => {
+    const html = render(<Shell {...slots} footer={<button type="button">Save</button>} />);
+    const footer = html.match(/<footer data-shell-panel="footer"[^>]*>/)?.[0] ?? "";
+    expect(footer).not.toBe("");
+    expect(html.indexOf("<footer")).toBeGreaterThan(html.indexOf("</main>"));
+    // Not inside main, aside, nav or a section, so it maps to contentinfo.
+    expect(html.slice(html.indexOf("</main>"), html.indexOf("<footer"))).not.toMatch(
+      /<(main|aside|section|article|nav)\b/
     );
+    expect(footer).toContain("env(safe-area-inset-bottom)");
+    expect(footer).toContain("--hn-shell-keyboard");
+    expect(footer).toContain("shrink-0");
+  });
+
+  test("work: the aside is a column, open by default, and can start closed", () => {
+    const open = render(<Shell {...slots} aside={<p>Detail</p>} />);
+    expect(open).toMatch(/<aside aria-label="Context" data-shell-panel="aside"[^>]*>.*Detail/);
+    expect(open).toContain('data-layout="work"');
+    const closed = render(<Shell {...slots} aside={<p>Detail</p>} defaultAsideOpen={false} />);
     expect(closed).not.toContain("Detail");
+    // 0.2's names still work.
+    expect(render(<Shell {...slots} contextPane={<p>Old</p>} />)).toMatch(/<aside[^>]*>.*Old/);
+    expect(
+      render(<Shell {...slots} contextPane={<p>Old</p>} defaultContextOpen={false} />)
+    ).not.toContain("Old");
+  });
+
+  test("focus: the aside starts folded and the toggle offers to show it", () => {
+    const html = render(
+      <Shell {...slots} layout="focus" header={<ShellAsideToggle />} aside={<p>Detail</p>} />
+    );
+    expect(html).toContain('data-layout="focus"');
+    expect(html).not.toContain("<aside");
+    expect(html).toContain('aria-label="Show context panel"');
+    expect(html).toContain('aria-expanded="false"');
+    // The nav column stays.
+    expect(html).toContain('data-shell-panel="nav"');
+    const opened = render(
+      <Shell {...slots} layout="focus" aside={<p>Detail</p>} defaultAsideOpen />
+    );
+    expect(opened).toMatch(/<aside[^>]*>.*Detail/);
+  });
+
+  test("full: no nav column, no menu button, its own back link first in the header", () => {
+    const html = render(
+      <Shell
+        {...slots}
+        layout="full"
+        back={{ href: "/space/quiz", label: "Quizzes" }}
+        aside={<p>Detail</p>}
+      />
+    );
+    expect(html).toContain('data-layout="full"');
+    expect(html).not.toContain("<nav");
+    expect(html).not.toContain('data-shell-control="menu"');
+    expect(html).not.toContain("<aside");
+    expect(html).toMatch(
+      /<header[^>]*><a href="\/space\/quiz" data-shell-control="back"[^>]*>.*Quizzes<\/span><\/a><span>Header slot/
+    );
+    expect(html).toContain("@3xl:grid-cols-[minmax(0,1fr)]");
+    // The default label, and a router's Link.
+    const Link: ShellNavLink = ({ href, ...props }) => <a data-router="" href={href} {...props} />;
+    const de = render(
+      <Shell {...slots} layout="full" locale="de" back={{ href: "/", link: Link }} />
+    );
+    expect(de).toMatch(/<a data-router="" href="\/"[^>]*data-shell-control="back"[^>]*>.*Zurück/);
+    // Work and focus ignore back.
+    expect(render(<Shell {...slots} back={{ href: "/x" }} />)).not.toContain(
+      'data-shell-control="back"'
+    );
+  });
+
+  test("the menu button opens the nav drawer under 768 px of shell width", () => {
+    const html = render(<Shell {...slots} />);
+    const menu = html.match(/<button[^>]*data-shell-control="menu"[^>]*>/)?.[0] ?? "";
+    expect(menu).toContain('aria-haspopup="dialog"');
+    expect(menu).toContain('aria-expanded="false"');
+    expect(menu).toContain('aria-label="Open navigation"');
+    expect(menu).toContain("@3xl:hidden");
+    // First in the header, before the page's own content.
+    expect(html).toMatch(/<header[^>]*><button[^>]*data-shell-control="menu"/);
+    // No nav, no menu.
+    expect(render(<Shell header={slots.header}>x</Shell>)).not.toContain(
+      'data-shell-control="menu"'
+    );
   });
 
   test("German landmark names", () => {
-    const html = render(<Shell {...slots} contextPane={<p>Detail</p>} locale="de" />);
+    const html = render(<Shell {...slots} aside={<p>Detail</p>} locale="de" />);
     expect(html).toContain('aria-label="Kontext"');
+    expect(html).toContain('aria-label="Navigation öffnen"');
   });
 
   // dec_2026-09-25_kommandant-visual-flat-lime-only: flat panels, the one lift, no glass.
   test("flat: opaque panels with the one lift, no blur, no translucent surface", () => {
     expect(SHELL_PANEL).toContain("shadow-hn-panel"); // the elevation.panel recipe, the one lift by default
     expect(SHELL_PANEL).toContain("bg-hn-surface-card");
-    const html = render(<Shell {...slots} contextPane={<p>Detail</p>} />);
+    const html = render(<Shell {...slots} aside={<p>Detail</p>} footer="Bar" />);
     expect(html).not.toMatch(/blur|bg-[a-z-]+\/\d/);
   });
 
   test("the layout follows the shell's width (container queries), not the viewport's", () => {
-    const html = render(<Shell {...slots} contextPane={<p>Detail</p>} />);
+    const html = render(<Shell {...slots} aside={<p>Detail</p>} />);
     expect(html).toContain("@container");
     expect(html).toContain("@3xl:grid");
-    expect(html).toContain("@5xl:block");
+    expect(html).toContain("@7xl:block");
+    expect(html).toContain(
+      "@7xl:grid-cols-[var(--hn-shell-rail)_minmax(0,1fr)_var(--hn-shell-context)]"
+    );
     expect(html).not.toMatch(/\b(?:sm|md|lg|xl):/);
   });
 
-  test("ShellNav draws the rail and the tab bar, active row and capabilities in both", () => {
+  test("shellWidthOf: compact under 768, medium to 1280, wide from there", () => {
+    expect(shellWidthOf(390)).toBe("compact");
+    expect(shellWidthOf(767)).toBe("compact");
+    expect(shellWidthOf(768)).toBe("medium");
+    expect(shellWidthOf(1279)).toBe("medium");
+    expect(shellWidthOf(1280)).toBe("wide");
+    expect(SHELL_BREAKPOINTS).toEqual({ medium: 768, wide: 1280 });
+  });
+
+  test("keyboardInset: lifts the footer only by the keyboard that covers the shell", () => {
+    // No keyboard: the visual viewport is the layout viewport.
+    expect(keyboardInset(844, { innerHeight: 844, offsetTop: 0, height: 844 })).toBe(0);
+    // A shell taller than the window (a gallery card) with no keyboard is not lifted.
+    expect(keyboardInset(1600, { innerHeight: 844, offsetTop: 0, height: 844 })).toBe(0);
+    // iOS: a 300 px keyboard over a full-height shell.
+    expect(keyboardInset(844, { innerHeight: 844, offsetTop: 0, height: 544 })).toBe(300);
+    // The shell ends above the keyboard: nothing to lift.
+    expect(keyboardInset(500, { innerHeight: 844, offsetTop: 0, height: 544 })).toBe(0);
+  });
+
+  test("swipedClosed: a leftward swipe of 48 px closes the drawer, a scroll does not", () => {
+    expect(swipedClosed({ x: 200, y: 100 }, { x: 140, y: 110 })).toBe(true);
+    expect(swipedClosed({ x: 200, y: 100 }, { x: 170, y: 100 })).toBe(false);
+    expect(swipedClosed({ x: 200, y: 100 }, { x: 140, y: 200 })).toBe(false);
+    expect(swipedClosed({ x: 100, y: 100 }, { x: 200, y: 100 })).toBe(false);
+  });
+
+  test("the overlays are reduced-motion safe and read the shell recipe", () => {
+    const source = readFileSync(resolve(ROOT, "src/overlay.tsx"), "utf8");
+    expect(source).toContain("motion-reduce:transition-none");
+    for (const token of ["--hn-shell-rail", "--hn-shell-context", "--hn-shell-radius"])
+      expect(source).toContain(token);
+    expect(source).toContain("env(safe-area-inset-bottom)");
+  });
+
+  test("ShellNav draws one rail, active row and capabilities applied", () => {
     const html = render(<ShellNav items={NAV} activeId="map" capabilities={{ infra: true }} />);
     expect(html).toContain('data-shell-nav="rail"');
-    expect(html).toContain('data-shell-nav="tabs"');
-    expect(html.match(/href="\/map"/g)).toHaveLength(2);
-    expect(html.match(/aria-current="page"/g)).toHaveLength(2);
+    expect(html).not.toContain('data-shell-nav="tabs"');
+    expect(html.match(/href="\/map"/g)).toHaveLength(1);
+    expect(html.match(/aria-current="page"/g)).toHaveLength(1);
     expect(html).not.toContain("/terminal");
     expect(html).not.toContain("/gateway");
   });
 
   test("the controls render only when the shell has what they control", () => {
-    const bare = render(
-      <Shell
-        {...slots}
-        header={[<ShellCommandTrigger key="k" />, <ShellContextToggle key="c" />]}
-      />
-    );
-    expect(bare).not.toContain("aria-haspopup");
-    expect(bare).not.toContain("aria-pressed");
-    const full = render(
-      <Shell
-        {...slots}
-        header={[<ShellCommandTrigger key="k" />, <ShellContextToggle key="c" />]}
-        contextPane={<p>Detail</p>}
-        commands={SETS}
-      />
-    );
-    expect(full).toContain('aria-haspopup="dialog"');
+    const header = [<ShellCommandTrigger key="k" />, <ShellAsideToggle key="c" />];
+    const bare = render(<Shell {...slots} header={header} />);
+    expect(bare).not.toContain('aria-label="Search or run a command"');
+    expect(bare).not.toContain('data-shell-control="aside"');
+    const full = render(<Shell {...slots} header={header} aside={<p>Detail</p>} commands={SETS} />);
     expect(full).toContain('aria-label="Search or run a command"');
-    expect(full).toContain('aria-pressed="true"');
+    expect(full).toMatch(/data-shell-control="aside"[^>]*aria-expanded="true"/);
     expect(full).toContain('aria-label="Hide context panel"');
+    // 0.2's name is the same control.
+    expect(ShellContextToggle).toBe(ShellAsideToggle);
   });
 
   test("useShell outside a Shell throws", () => {
-    expect(() => render(<ShellContextToggle />)).toThrow(/not inside a <Shell>/);
+    expect(() => render(<ShellAsideToggle />)).toThrow(/not inside a <Shell>/);
+    expect(() => render(<ShellMenuButton />)).toThrow(/not inside a <Shell>/);
+  });
+});
+
+// design#239 addendum: learning, reading and play on a page of their own.
+describe("session layout", () => {
+  const exit = () => {};
+  const page = (
+    props: Partial<shell.ShellProps> = {},
+    head: Partial<shell.SessionHeaderProps> = {}
+  ) =>
+    render(
+      <Shell
+        layout="session"
+        nav={<ShellNav items={NAV} activeId="machines" />}
+        aside={<p>Detail</p>}
+        header={
+          <shell.SessionHeader
+            title="Deck 3: Verben"
+            onExit={exit}
+            progress={{ value: 7, max: 20 }}
+            status={<span>04:12</span>}
+            {...head}
+          />
+        }
+        footer={
+          <shell.SessionFooter>
+            <button type="button">Aufdecken</button>
+          </shell.SessionFooter>
+        }
+        {...props}
+      >
+        <p>Card</p>
+      </Shell>
+    );
+
+  test("session is the fourth layout", () => {
+    expect(shell.SHELL_LAYOUTS).toEqual(["work", "focus", "full", "session"]);
+  });
+
+  test("no nav, no menu button, no aside: header, main and footer landmarks only", () => {
+    const html = page();
+    expect(html).toContain('data-layout="session"');
+    expect(html).not.toContain("<nav");
+    expect(html).not.toContain('data-shell-control="menu"');
+    expect(html).not.toContain("<aside");
+    expect(html).not.toContain("Detail");
+    expect(html).toMatch(/<header data-shell-panel="header"[^>]*data-session=""/);
+    expect(html).toMatch(/<main [^>]*data-shell-panel="main"/);
+    expect(html).toMatch(/<footer data-shell-panel="footer"[^>]*>.*Aufdecken/);
+    expect(html).toContain("@3xl:grid-cols-[minmax(0,1fr)]");
+  });
+
+  test("the session header: exit first, the title, a progress bar with 7/20, the status", () => {
+    const html = page();
+    expect(html).toMatch(
+      /data-session-header=""[^>]*><button[^>]*data-shell-control="exit" aria-label="Exit session"/
+    );
+    expect(html).toMatch(/<h1 data-session-title=""[^>]*>Deck 3: Verben<\/h1>/);
+    expect(html).toMatch(
+      /role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="20" aria-valuenow="7" aria-valuetext="7\/20"/
+    );
+    expect(html).toContain(">7/20</span>");
+    expect(html).toMatch(/data-session-status=""[^>]*><span>04:12/);
+    // Compact under 768 px: the title is for screen readers only, exit and progress stay.
+    expect(html).toContain("sr-only m-0 truncate");
+    expect(html).toContain("@3xl:not-sr-only");
+  });
+
+  test("German words, a progress node of the page's own, no status", () => {
+    const html = page(
+      { locale: "de" },
+      { progress: <span data-own="">Frage 3</span>, status: undefined }
+    );
+    expect(html).toContain('aria-label="Sitzung beenden"');
+    expect(html).toContain('<span data-own="">Frage 3</span>');
+    expect(html).not.toContain('role="progressbar"');
+    expect(html).not.toContain("data-session-status");
+  });
+
+  test("the slot is centred to the measure; board is wider; the footer lines up", () => {
+    const text = page();
+    expect(text).toMatch(
+      /data-shell-measure="text" class="mx-auto flex min-h-full w-full flex-col max-w-\[var\(--hn-shell-measure,65ch\)\]"><p>Card/
+    );
+    expect(text).toMatch(
+      /data-session-footer="" class="[^"]*max-w-\[var\(--hn-shell-measure,65ch\)\]/
+    );
+    const board = page({ measure: "board" });
+    expect(board).toContain('data-shell-measure="board"');
+    expect(board).toContain("max-w-[var(--hn-shell-board,72rem)]");
+    // Other layouts draw the slot as it is.
+    expect(render(<Shell header={<span />}>x</Shell>)).not.toContain("data-shell-measure");
+  });
+
+  test("no footer: the slot fills the height", () => {
+    const html = page({ footer: undefined });
+    expect(html).not.toContain("<footer");
+    expect(html).toMatch(/data-shell-panel="main" class="[^"]*flex-1/);
+  });
+
+  test("Escape and the focus trap are wired; the confirm sits in the shell", () => {
+    const src = readFileSync(resolve(ROOT, "src/session.tsx"), "utf8");
+    expect(src).toContain('e.key !== "Escape"');
+    expect(src).toContain("escapeTaken(e, portal)");
+    expect(src).toContain("container={portal}");
+    const shellSrc = readFileSync(resolve(ROOT, "src/shell.tsx"), "utf8");
+    expect(shellSrc).toContain("if (!session || !root) return;");
+    expect(shellSrc).toContain("trapTab(root, e)");
+  });
+
+  test("the session blocks need a Shell", () => {
+    expect(() => render(<shell.SessionHeader title="x" onExit={exit} />)).toThrow(
+      /not inside a <Shell>/
+    );
+    expect(() => render(<shell.SessionFooter>x</shell.SessionFooter>)).toThrow(
+      /not inside a <Shell>/
+    );
   });
 });
 
 // design#152: what fachwerk needed to mount the shell instead of its own.
-describe("nav: sections, active path, More, link", () => {
+describe("nav: sections, active path, link", () => {
   const ROWS: ShellNavItem[] = [
     { id: "home", label: "Start", href: "/space" },
     { id: "classes", label: "Classes", href: "/space/classes", section: "teach" },
@@ -290,44 +542,24 @@ describe("nav: sections, active path, More, link", () => {
     expect(onlyHome).not.toContain("data-shell-nav-section");
   });
 
-  test("tabLimit: the first tabLimit - 1 rows and a More tab; no More when all fit", () => {
-    const html = render(<ShellNav items={ROWS} tabLimit={4} activeId="modules" />);
-    const tabs = html.slice(html.indexOf('data-shell-nav="tabs"'));
-    expect(tabs.match(/<a /g)).toHaveLength(3);
-    expect(tabs).toContain('title="More"');
-    // The active row sits behind More, so More carries aria-current.
-    expect(tabs).toMatch(/<button[^>]*aria-current="page"[^>]*title="More"/);
-    const fits = render(<ShellNav items={ROWS} tabLimit={5} />);
-    expect(fits).not.toContain('title="More"');
+  test("0.2's tabLimit is accepted and ignored: every visible row is in the rail", () => {
+    const html = render(<ShellNav items={ROWS} tabLimit={3} activeId="modules" />);
+    expect(html.match(/<a /g)).toHaveLength(5);
+    expect(html).not.toContain('title="More"');
   });
 
-  test("More speaks German inside a German shell", () => {
-    const html = render(
-      <Shell
-        locale="de"
-        nav={<ShellNav items={ROWS} tabLimit={3} />}
-        header={<h1>Start</h1>}
-        main={<p>Body</p>}
-      />
-    );
-    expect(html).toContain('title="Mehr"');
-  });
-
-  test("link renders every row and tab through the router's component", () => {
+  test("link renders every row through the router's component", () => {
     const Link: ShellNavLink = ({ href, ...props }) => <a data-router="" href={href} {...props} />;
     const html = render(<ShellNav items={ROWS.slice(0, 2)} link={Link} activeId="home" />);
-    expect(html.match(/data-router=""/g)).toHaveLength(4);
-    expect(html.match(/aria-current="page"/g)).toHaveLength(2);
+    expect(html.match(/data-router=""/g)).toHaveLength(2);
+    expect(html.match(/aria-current="page"/g)).toHaveLength(1);
   });
 
   test("the layout reads the shell recipe: inset, gap, rail width, seam, panel radius", () => {
     const html = render(
-      <Shell
-        nav={<ShellNav items={ROWS} />}
-        header={<h1>Start</h1>}
-        main={<p>Body</p>}
-        contextPane={<p>Detail</p>}
-      />
+      <Shell nav={<ShellNav items={ROWS} />} header={<h1>Start</h1>} aside={<p>Detail</p>}>
+        <p>Body</p>
+      </Shell>
     );
     for (const name of ["inset", "gap", "rail", "context", "seam"])
       expect(html).toContain(`--hn-shell-${name}`);
